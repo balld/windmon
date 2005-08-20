@@ -66,7 +66,7 @@ public class WindMonitor
         JMenu mfile = new JMenu("File");
         Action exit = new ButtonExit("Exit",
         		                     new ImageIcon("images/icon_exit.gif"), frame);
-        Action options = new ButtonExit("Options",
+        Action options = new ButtonOptions("Options",
                                      new ImageIcon("images/icon_exit.gif"), frame);
         mfile.add(options);
         mfile.addSeparator();

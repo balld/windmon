@@ -90,9 +90,12 @@ public class WindDisplay extends JPanel implements Runnable
 //        splitPane.setDividerLocation(200);
 //        add(splitPane, BorderLayout.CENTER);
 
-        add(new Border3D(jp1), BorderLayout.NORTH);
-        add(new Border3D(wg), BorderLayout.CENTER);
-        add(new Border3D(wd), BorderLayout.EAST);
+//        add(new Border3D(jp1), BorderLayout.NORTH);
+//        add(new Border3D(wg), BorderLayout.CENTER);
+//        add(new Border3D(wd), BorderLayout.EAST);
+        add(jp1, BorderLayout.NORTH);
+        add(wg, BorderLayout.CENTER);
+        add(wd, BorderLayout.EAST);
 //        add(new Border3D(dc), BorderLayout.SOUTH);
 //        add(dc, BorderLayout.CENTER);
         link = new SocketNMEALink("msc001", 2468);
