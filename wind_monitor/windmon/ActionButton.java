@@ -9,6 +9,7 @@ package windmon;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 
 import java.util.Hashtable;
 
@@ -22,8 +23,24 @@ public abstract class ActionButton extends AbstractAction implements Action {
 
 	Hashtable properties;
 
-	public AbstractButton (String caption, Icon img)
+	public ActionButton(String caption, Icon img)
 	{
-		
+		properties = new Hashtable();
+		properties.put(DEFAULT, caption);
+		properties.put(NAME, caption);
+		properties.put(SHORT_DESCRIPTION, caption);
+		properties.put(SMALL_ICON, img);
 	}
+	
+	public void putValue(String key, Object value)
+	{
+		properties.put(key, value);
+	}
+	
+	public Object getValue(String key)
+	{
+		return properties.get(key);
+	}
+	
+	public abstract void actionPerformed(ActionEvent e);
 }
