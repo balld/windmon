@@ -64,17 +64,26 @@ public class WindMonitor
         
         JMenuBar mbar = new JMenuBar();
         JMenu mfile = new JMenu("File");
+        JMenu mhelp = new JMenu("Help");
         Action exit = new ButtonExit("Exit",
         		                     new ImageIcon("images/icon_exit.gif"), frame);
         Action options = new ButtonOptions("Options",
-                                     new ImageIcon("images/icon_exit.gif"), frame);
+                                     new ImageIcon("images/icon_options.gif"), frame);
+        
+        Action about = new ButtonAbout("About Wind Monitor",
+        		                       new ImageIcon("images/icon_help.gif"), frame);
+
         mfile.add(options);
         mfile.addSeparator();
         mfile.add(exit);
+        
+        mhelp.add(about);
+        
         mbar.add(mfile);
+        mbar.add(mhelp);
         frame.getContentPane().add(mbar, BorderLayout.NORTH);
         // frame.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-
+        
         frame.setBackground(Color.pink);
        	frame.setVisible(true);
         frame.validate();
