@@ -63,8 +63,16 @@ public class WindMonitor
         frame.getContentPane().add(wv, BorderLayout.CENTER);
         
         JMenuBar mbar = new JMenuBar();
-        
-
+        JMenu mfile = new JMenu("File");
+        Action exit = new ButtonExit("Exit",
+        		                     new ImageIcon("images/icon_exit.gif"), frame);
+        Action options = new ButtonExit("Options",
+                                     new ImageIcon("images/icon_exit.gif"), frame);
+        mfile.add(options);
+        mfile.addSeparator();
+        mfile.add(exit);
+        mbar.add(mfile);
+        frame.getContentPane().add(mbar, BorderLayout.NORTH);
         // frame.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 
         frame.setBackground(Color.pink);

@@ -14,6 +14,7 @@ package windmon;
  */
 public class NMEAController implements Runnable {
 
+	private static NMEAController instance = null;
 	private final double MAX_NMEA_PERIOD = 2.0;
     private Thread thread = null;
     
@@ -26,6 +27,12 @@ public class NMEAController implements Runnable {
     {
         this.wv = wv;
         this.link = link;
+        instance = this;
+    }
+    
+    public static NMEAController getInstance()
+    {
+    	return instance;
     }
     
     public void start() {
