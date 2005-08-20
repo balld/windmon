@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.JFrame;
 import javax.swing.Icon;
 import javax.swing.JDialog;
+import java.awt.Dimension;
 
 
 /**
@@ -41,7 +42,7 @@ public class ButtonOptions extends ActionButton {
 		
 		OptionsPanel op = new OptionsPanel(nmea);
 		dialog.getContentPane().add(op);
-		dialog.setSize(op.getPreferredSize());
+		dialog.setSize(new Dimension(650,300));
 		dialog.validate();
 		dialog.setVisible(true);
 	}

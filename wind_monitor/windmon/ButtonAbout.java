@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JTextPane;
+import java.awt.Dimension;
 
 
 /**
@@ -39,8 +40,9 @@ public class ButtonAbout extends ActionButton {
 				"\n" +
 				"NMEA visual display software\n" +
 				"by David Ball.\n" );
+		tp.setEditable(false);
 		dialog.getContentPane().add(tp);
-		dialog.setSize(tp.getPreferredSize());
+		dialog.setSize(new Dimension(400,400));
 		dialog.validate();
 		dialog.setVisible(true);
 	}
