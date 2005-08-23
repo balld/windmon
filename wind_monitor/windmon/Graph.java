@@ -34,46 +34,66 @@ public class Graph extends JPanel {
     private Image     buffer = null;
     private Graphics2D  buffer_g = null;
     
+    // If anything has changed since last render, we need to know
+    private boolean refresh = true;
+    
     // Layout variables derived at start-up and on re-size
     private Dimension dim = null;
     private Insets ins = null;
 
     // Private data set vector
-    private Vector dataSets = new Vector();
-    private Vector xrules = new Vector();
-    private Vector yrules = new Vector();
+    private Vector dataSets = new Vector(); /* Vector<DataSet> */
+    private Vector rulers = new Vector();   /* Vector<Ruler> */
     
-    // Public variables (gets and sets needed)
-    public double ymin = -1.0;
-    public double ymax = 1.0; 
-    public double xmin = -1.0;
-    public double xmax = 1.0;
-    public double xorig = 0.0;
-    public double yorig = 0.0;
-    public String title = "Graph Title";
-    public String xlabel = "X Label";
-    public String ylabel = "Y Label";
-    public Vector xscale = null;
-    public Vector yscale = null;
-    public Font titleFont = new Font("serif", Font.PLAIN, 18);
-    public Font labelFont = new Font("serif", Font.PLAIN, 12);
-    public Font xscaleFont = new Font("serif", Font.PLAIN, 10);
-    public Font yscaleFont = new Font("serif", Font.PLAIN, 10);
-    public Color titleColor = Color.RED; 
-    public Color labelColor = Color.RED;
-    public Color xscaleColor = Color.YELLOW;
-    public Color yscaleColor = Color.GREEN;
-    public Color xaxisColor = Color.YELLOW;
-    public Color yaxisColor = Color.GREEN;
-    public Color plotAreaColor = Color.GRAY;
+    // Accessible variables (gets and sets needed)
+    private double ymin = -1.0;
+    private double ymax = 1.0; 
+    private double xmin = -1.0;
+    private double xmax = 1.0;
+    private double xorig = 0.0;
+    private double yorig = 0.0;
+    private String title = "Graph Title";
+    private String xlabel = "X Label";
+    private String ylabel = "Y Label";
+    private Vector xscale = null;
+    private Vector yscale = null;
+    private Font titleFont = new Font("serif", Font.PLAIN, 18);
+    private Font labelFont = new Font("serif", Font.PLAIN, 12);
+    private Font xscaleFont = new Font("serif", Font.PLAIN, 10);
+    private Font yscaleFont = new Font("serif", Font.PLAIN, 10);
+    private Color titleColor = Color.RED; 
+    private Color labelColor = Color.RED;
+    private Color xscaleColor = Color.YELLOW;
+    private Color yscaleColor = Color.GREEN;
+    private Color xaxisColor = Color.YELLOW;
+    private Color yaxisColor = Color.GREEN;
+    private Color plotAreaColor = Color.BLACK;
+    private Color background = Color.GRAY;
     
-    // private layout variables
+    // Boundary Coordinates of data plot area - set later
+    private int plotTop, plotBottom, plotLeft, plotRight, xplotOrig, yplotOrig;
+
+    // Other layout values we set later.
+    private int labelFontHeight, titleFontHeight, xscaleFontHeight,
+	            yscaleFontWidth;
+    private int xaxisTotalHeight, yaxisTotalHeight;
+    private int xlen, ylen;
+
+    // Other layout values we set now but may modify later
+    private int xlabelSpacing = 5;
+    private int ylabelSpacing = 5;
+    private int titleSpacing  = 5;
+    private int scaleMarkHeight = 5;
+    private int yscaleMaxChars  = 5;
+    
+    private double xrange, yrange;
+
     
     Graph()
     {
         setDoubleBuffered(true);
         toolkit = getToolkit();
-        setBackground(Color.lightGray);
+        setBackground(background);
         setPreferredSize(ps);
     }
 
@@ -90,13 +110,15 @@ public class Graph extends JPanel {
 
         // Obtain the current size of this component
         Dimension size = getSize();
+        Insets insets = getInsets();
         
         // Set rendering options
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
 
         // Check for uninitiated background images or Panel re-size
-        if ( buffer == null || !dim.equals(size))
+        if ( buffer == null || !dim.equals(size) || !ins.equals(insets) 
+             || refresh == true)
         {
             renderGraph(g2);
         }
@@ -109,6 +131,7 @@ public class Graph extends JPanel {
     {
         this.dim = getSize();
         this.ins = getInsets();
+        this.refresh = false;
         
         // Dispose of old graphics object. Good practice I think.
         if ( buffer_g != null)
@@ -127,6 +150,85 @@ public class Graph extends JPanel {
         // Set rendering properties        
         buffer_g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         buffer_g.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
+        
+        // OK - lets work out all these dimensions!
+        labelFontHeight = buffer_g.getFontMetrics(labelFont).getHeight();
+        titleFontHeight = buffer_g.getFontMetrics(titleFont).getHeight();
+        xscaleFontHeight = buffer_g.getFontMetrics(xscaleFont).getHeight();
+        yscaleFontWidth = buffer_g.getFontMetrics(yscaleFont).getMaxAdvance();
+        
+        xaxisTotalHeight =   labelFontHeight
+		                   + xlabelSpacing
+						   + xscaleFontHeight
+						   + scaleMarkHeight;
+        
+        yaxisTotalHeight =   labelFontHeight
+		                   + ylabelSpacing
+						   + yscaleFontWidth * yscaleMaxChars
+						   + scaleMarkHeight;
+        
+        plotTop = ins.top + titleFontHeight + titleSpacing;
+        plotBottom = dim.height - ins.bottom - xaxisTotalHeight;
+        plotLeft = ins.left + yaxisTotalHeight;
+        plotRight = dim.width - ins.right - yaxisTotalHeight;
+        
+        xlen = plotRight - plotLeft;
+        ylen = plotBottom - plotTop;
+        
+        /* Calculate ranges in scale */
+        xrange = xmax - xmin;
+        yrange = ymax - ymin;
+        
+        /* Offset of x-axis from plotTop */
+        xplotOrig =   plotTop
+		            + (int) (((double)ylen) * (ymax - yorig)/yrange);
+
+        /* Offset of y-axis from plotLeft */
+        yplotOrig =   plotLeft
+		            + (int) (((double)xlen) * (xorig - xmin)/xrange);
+
+        /* Shade in the plot area */
+        buffer_g.setColor(plotAreaColor);
+        buffer_g.fill(new Rectangle(plotLeft, plotTop, xlen, ylen));
+        
+        /* Draw the axis */
+        buffer_g.setColor(xaxisColor);
+        buffer_g.drawLine(plotLeft, xplotOrig, plotRight, xplotOrig);
+        for (int i = 0; i < xscale.size(); i++)
+        {
+        	ScalePoint p = (ScalePoint) xscale.elementAt(i);
+        	int offset = plotLeft + (int)((double)xlen * (p.getValue() - xmin) / xrange);
+            buffer_g.setColor(xaxisColor);
+        	buffer_g.drawLine(offset, xplotOrig,
+        			          offset, xplotOrig + scaleMarkHeight);
+            buffer_g.setColor(xscaleColor);
+        	TextLayout tl = new TextLayout(p.getLabel(),
+        			                       xscaleFont,
+					                       buffer_g.getFontRenderContext());
+        	tl.draw(buffer_g,
+        			offset -(float) tl.getBounds().getCenterX(),
+        			xplotOrig + scaleMarkHeight + xscaleFontHeight);
+        }
+        
+        buffer_g.setColor(yaxisColor);
+        buffer_g.drawLine(yplotOrig, plotTop, yplotOrig, plotBottom);
+        for (int i = 0; i < yscale.size(); i++)
+        {
+        	ScalePoint p = (ScalePoint) yscale.elementAt(i);
+        	int offset = plotTop + (int)((double)ylen * (ymax - p.getValue()) / yrange);
+            buffer_g.setColor(yaxisColor);
+        	buffer_g.drawLine(yplotOrig, offset,
+        			          yplotOrig - scaleMarkHeight, offset);
+            buffer_g.setColor(yscaleColor);
+        	TextLayout tl = new TextLayout(p.getLabel(),
+        			                       yscaleFont,
+					                       buffer_g.getFontRenderContext());
+        	tl.draw(buffer_g,
+        			yplotOrig - scaleMarkHeight - (float) tl.getBounds().getWidth()
+					          - 2,
+        			offset - (float) tl.getBounds().getCenterY());
+        }
+        
     }
 
     
@@ -141,6 +243,7 @@ public class Graph extends JPanel {
 	 */
 	public void setLabelColor(Color labelColor) {
 		this.labelColor = labelColor;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the labelFont.
@@ -153,6 +256,7 @@ public class Graph extends JPanel {
 	 */
 	public void setLabelFont(Font labelFont) {
 		this.labelFont = labelFont;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the plotAreaColor.
@@ -165,6 +269,7 @@ public class Graph extends JPanel {
 	 */
 	public void setPlotAreaColor(Color plotAreaColor) {
 		this.plotAreaColor = plotAreaColor;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the title.
@@ -177,6 +282,7 @@ public class Graph extends JPanel {
 	 */
 	public void setTitle(String title) {
 		this.title = title;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the titleColor.
@@ -189,6 +295,7 @@ public class Graph extends JPanel {
 	 */
 	public void setTitleColor(Color titleColor) {
 		this.titleColor = titleColor;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the titleFont.
@@ -201,6 +308,7 @@ public class Graph extends JPanel {
 	 */
 	public void setTitleFont(Font titleFont) {
 		this.titleFont = titleFont;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the xaxisColor.
@@ -213,6 +321,7 @@ public class Graph extends JPanel {
 	 */
 	public void setXaxisColor(Color xaxisColor) {
 		this.xaxisColor = xaxisColor;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the xlabel.
@@ -225,6 +334,7 @@ public class Graph extends JPanel {
 	 */
 	public void setXlabel(String xlabel) {
 		this.xlabel = xlabel;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the xmax.
@@ -237,6 +347,7 @@ public class Graph extends JPanel {
 	 */
 	public void setXmax(double xmax) {
 		this.xmax = xmax;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the xmin.
@@ -249,6 +360,7 @@ public class Graph extends JPanel {
 	 */
 	public void setXmin(double xmin) {
 		this.xmin = xmin;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the xorig.
@@ -261,6 +373,7 @@ public class Graph extends JPanel {
 	 */
 	public void setXorig(double xorig) {
 		this.xorig = xorig;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the xscale.
@@ -273,6 +386,7 @@ public class Graph extends JPanel {
 	 */
 	public void setXscale(Vector xscale) {
 		this.xscale = xscale;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the xscaleColor.
@@ -285,6 +399,7 @@ public class Graph extends JPanel {
 	 */
 	public void setXscaleColor(Color xscaleColor) {
 		this.xscaleColor = xscaleColor;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the xscaleFont.
@@ -297,6 +412,7 @@ public class Graph extends JPanel {
 	 */
 	public void setXscaleFont(Font xscaleFont) {
 		this.xscaleFont = xscaleFont;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the yaxisColor.
@@ -309,6 +425,7 @@ public class Graph extends JPanel {
 	 */
 	public void setYaxisColor(Color yaxisColor) {
 		this.yaxisColor = yaxisColor;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the ylabel.
@@ -321,6 +438,7 @@ public class Graph extends JPanel {
 	 */
 	public void setYlabel(String ylabel) {
 		this.ylabel = ylabel;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the ymax.
@@ -333,6 +451,7 @@ public class Graph extends JPanel {
 	 */
 	public void setYmax(double ymax) {
 		this.ymax = ymax;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the ymin.
@@ -345,6 +464,7 @@ public class Graph extends JPanel {
 	 */
 	public void setYmin(double ymin) {
 		this.ymin = ymin;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the yorig.
@@ -357,6 +477,7 @@ public class Graph extends JPanel {
 	 */
 	public void setYorig(double yorig) {
 		this.yorig = yorig;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the yscale.
@@ -369,6 +490,7 @@ public class Graph extends JPanel {
 	 */
 	public void setYscale(Vector yscale) {
 		this.yscale = yscale;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the yscaleColor.
@@ -381,6 +503,7 @@ public class Graph extends JPanel {
 	 */
 	public void setYscaleColor(Color yscaleColor) {
 		this.yscaleColor = yscaleColor;
+		this.refresh = true;
 	}
 	/**
 	 * @return Returns the yscaleFont.
@@ -393,5 +516,6 @@ public class Graph extends JPanel {
 	 */
 	public void setYscaleFont(Font yscaleFont) {
 		this.yscaleFont = yscaleFont;
+		this.refresh = true;
 	}
 }

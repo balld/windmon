@@ -98,7 +98,7 @@ public class WindDisplay extends JPanel implements Runnable
         add(wd, BorderLayout.EAST);
 //        add(new Border3D(dc), BorderLayout.SOUTH);
 //        add(dc, BorderLayout.CENTER);
-        link = new SocketNMEALink("msc001", 2468);
+        link = new SocketNMEALink("msc001", 2689);
         nmea = new NMEAController(this, link);
 
 //        op = new OptionsPanel(nmea);

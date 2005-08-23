@@ -145,7 +145,9 @@ public class DigitalClock extends JPanel implements Runnable {
 //                -(float) tl.getBounds().getCenterY());
         int h = (int) tl.getBounds().getHeight();
         int y = h + ((size.height - h ) / 2);
-        tl.draw(g2, 0.0f, (float) y );
+        int w = (int) tl.getBounds().getWidth();
+        int x = (size.width - w) / 2;
+        tl.draw(g2, (float) x, (float) y );
 
         
         

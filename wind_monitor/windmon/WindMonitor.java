@@ -62,6 +62,9 @@ public class WindMonitor
         frame.getContentPane().setLayout(new BorderLayout());
         frame.getContentPane().add(wv, BorderLayout.CENTER);
         
+        Graph graph = new TestGraph();
+        frame.getContentPane().add(graph, BorderLayout.SOUTH);
+        
         JMenuBar mbar = new JMenuBar();
         JMenu mfile = new JMenu("File");
         JMenu mhelp = new JMenu("Help");
