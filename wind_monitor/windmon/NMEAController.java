@@ -6,6 +6,8 @@
  */
 package windmon;
 
+import java.util.Vector;
+
 /**
  * @author BallD
  *
@@ -17,15 +19,14 @@ public class NMEAController implements Runnable {
 	private static NMEAController instance = null;
 	private final double MAX_NMEA_PERIOD = 2.0;
     private Thread thread = null;
-    
     private NMEALink link = null;
-    private WindDisplay wv = null;
     
     private long sleepAmount = 0;
     
-    public NMEAController (WindDisplay wv, NMEALink link)
+    private Vector listeners = new Vector();
+    
+    private NMEAController (NMEALink link)
     {
-        this.wv = wv;
         this.link = link;
         instance = this;
     }
@@ -34,6 +35,16 @@ public class NMEAController implements Runnable {
     {
     	return instance;
     }
+    
+    public static NMEAController getCreateInstance(NMEALink link)
+    {
+    	if (instance == null)
+    	{
+    		instance = new NMEAController(link);
+    	}
+    	return instance;
+    }
+    
     
     public void start() {
         if (thread == null) {
