@@ -28,7 +28,7 @@ import javax.swing.border.*;
  * @version @(#)WeatherView.java	0.1 26/01/2005
  * @author David Ball
  */
-public class WindDisplay extends JPanel implements Runnable
+public class WindDisplay extends JPanel implements Runnable, WindDataListener
 {
     private static int WIDTH = 850, HEIGHT = 600;
     private static WindDisplay wv = null;
@@ -98,8 +98,6 @@ public class WindDisplay extends JPanel implements Runnable
         add(wd, BorderLayout.EAST);
 //        add(new Border3D(dc), BorderLayout.SOUTH);
 //        add(dc, BorderLayout.CENTER);
-        link = new SocketNMEALink("msc001", 2689);
-        nmea = new NMEAController(this, link);
 
 //        op = new OptionsPanel(nmea);
 //        add(new Border3D(op), BorderLayout.SOUTH);
@@ -185,40 +183,11 @@ public class WindDisplay extends JPanel implements Runnable
         update=true;
         notifyAll();
     }
-    /**
-     * @return Returns the windAngle.
-     */
-    public double getWindAngle() {
-        return windAngle;
-    }
-    /**
-     * @param windAngle The windAngle to set.
-     */
-    public  synchronized void setWindAngle(double windAngle) {
-        this.windAngle = windAngle;
-        // Trigger re-draw
-        update=true;
-        notifyAll();
-    }
-    /**
-     * @return Returns the windSpeed.
-     */
-    public double getWindSpeed() {
-        return windSpeed;
-    }
-    /**
-     * @param windSpeed The windSpeed to set.
-     */
-    public  synchronized void setWindSpeed(double windSpeed) {
-        this.windSpeed = windSpeed;
-        // Trigger re-draw
-        update=true;
-        notifyAll();
-    }
 
-    public  synchronized void setWindSpeedAndAngle(double windSpeed, double windAngle) {
-        this.windSpeed = windSpeed;
-        this.windAngle = windAngle;
+    public synchronized void windDataEventReceived(WindDataEvent e)
+    {
+        this.windSpeed = e.getWindSpeed();
+        this.windAngle = e.getWindAngle();
         // Trigger re-draw
         update=true;
         notifyAll();

@@ -73,6 +73,7 @@ public class NMEAController implements Runnable {
     public void run() {
         NMEAMessage msg = null;
         Thread me = Thread.currentThread();
+        WindDataEvent e = new WindDataEvent();
 
         while (thread == me && link != null) {
             msg = link.getNMEAMessage();
@@ -83,8 +84,12 @@ public class NMEAController implements Runnable {
                  && msg.getTalkerIDString().equals("WI")
                  && msg.getSentenceIDString().equals("MWV"))
             {
-                wv.setWindSpeedAndAngle(Double.parseDouble(msg.getField(2)),
-                		                Double.parseDouble(msg.getField(0)));
+            	e.setWindAngle(Float.parseFloat(msg.getField(0)));
+            	e.setWindSpeed(Float.parseFloat(msg.getField(2)));
+            	for (int i = 0; i < listeners.size(); i++)
+            	{
+            		((WindDataListener)listeners.get(i)).windDataEventReceived(e);
+            	}
             }
             try {
                 Thread.sleep(sleepAmount);
@@ -179,5 +184,15 @@ public class NMEAController implements Runnable {
         String fields[] = { "IIMWV", "TXP", Double.toString(period) };
         NMEAMessage msg = new NMEAMessage("ATC", fields);
         link.sendNMEAMessage(msg);
+    }
+    
+    public void addWindDataListener (WindDataListener l)
+    {
+    	listeners.add(l);
+    }
+    
+    public void removeWindDataListener (WindDataListener l)
+    {
+    	listeners.remove(l);
     }
 }
