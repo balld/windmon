@@ -30,30 +30,18 @@ import javax.swing.border.*;
  */
 public class WindDisplay extends JPanel implements Runnable, WindDataListener
 {
-    private static int WIDTH = 850, HEIGHT = 600;
-    private static WindDisplay wv = null;
-
     private Banner bn = null;
     private WindDial wg = null;
     private WindDigits wd = null;
     private DigitalClock dc = null;
-    private OptionsPanel op = null;
-    private NMEAController nmea = null;
     
     private double windSpeed = 0.0;
     private double maxWindSpeed = 80.0;
     private double windAngle = 0.0;
     
-    private long sleepAmount = 10;
-    private long display_update_interval = 1000;
-    private boolean up = true;
+    private long display_update_interval = 500;
     
     private boolean update = true;
-    
-    private NMEALink link = null;
-    
-    // Port name. Default is 4.
-    private String portName = "";
     
     public Thread thread;
     
@@ -110,7 +98,6 @@ public class WindDisplay extends JPanel implements Runnable, WindDataListener
             thread.start();
         }
         dc.start();
-        nmea.start();
     }
 
 

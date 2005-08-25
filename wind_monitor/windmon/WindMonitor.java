@@ -62,19 +62,19 @@ public class WindMonitor extends JFrame
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(wv, BorderLayout.CENTER);
         
-        Graph graph = new TestGraph();
-        getContentPane().add(graph, BorderLayout.SOUTH);
+//        Graph graph = new TestGraph();
+//        getContentPane().add(graph, BorderLayout.SOUTH);
         
         JMenuBar mbar = new JMenuBar();
         JMenu mfile = new JMenu("File");
         JMenu mhelp = new JMenu("Help");
         Action exit = new ButtonExit("Exit",
-        		                     new ImageIcon("images/icon_exit.gif"), ;
+        		                     new ImageIcon("images/icon_exit.gif"), this);
         Action options = new ButtonOptions("Options",
-                                     new ImageIcon("images/icon_options.gif"), ;
+                                     new ImageIcon("images/icon_options.gif"), this);
         
         Action about = new ButtonAbout("About Wind Monitor",
-        		                       new ImageIcon("images/icon_help.gif"), ;
+        		                       new ImageIcon("images/icon_help.gif"), this);
 
         mfile.add(options);
         mfile.addSeparator();
@@ -91,16 +91,20 @@ public class WindMonitor extends JFrame
         NMEALink link = new SocketNMEALink("msc001", 2689);
         NMEAController nmea = NMEAController.getCreateInstance(link);
         nmea.addWindDataListener(wv);
+        WindDataLogger logger = new WindDataLogger(1000);
+        nmea.addWindDataListener(logger);
         
         setBackground(Color.pink);
        	setVisible(true);
         validate();
-        setExtendedState(getExtendedState() | JMAXIMIZED_BOTH);
+        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
         repaint();
         wv.start();
+        nmea.start();
     }
     
     public static void main(String args[])
     {
     	WindMonitor wm = new WindMonitor();
+    }
 }
