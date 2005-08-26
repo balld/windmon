@@ -49,7 +49,7 @@ public class WindDigits extends JPanel implements Runnable {
     public WindDigits()
     {
         setDoubleBuffered(true);
-        setBackground(Color.lightGray);
+        setBackground(Color.BLACK);
         b_font = Utils.getFont("LCD-N___.TTF");
         l_font = b_font.deriveFont(Font.PLAIN, l_font_size);
         s_font = b_font.deriveFont(Font.PLAIN, s_font_size);
@@ -79,7 +79,7 @@ public class WindDigits extends JPanel implements Runnable {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
         
-        g2.setColor(Color.black);
+        g2.setColor(Color.GREEN);
 
         String speed_str = "" + (int) wind_speed;
         String angle_str   = "" + (int) wind_angle;

@@ -60,13 +60,13 @@ public class WindDial extends JPanel {
     private static Color border_col = Color.gray;
     private static Color scale_col = Color.white;
 	private static Color needle_fill_col = Color.red;
-	private static Color needle_line_col = Color.black;
+	private static Color needle_line_col = Color.white;
     private static Color bg_col = Color.darkGray;
     private static Color arrow_col_low =  new Color(50, 50, 128);
     private static Color arrow_col_high = new Color(100, 100, 255);
     private static Color rose_col_high = arrow_col_high;
     private static Color rose_col_low  = arrow_col_low;
-    private static Color rose_char_col = Color.black;
+    private static Color rose_char_col = Color.WHITE;
     
     /*
      * Wind speed dial layout settings
@@ -132,7 +132,7 @@ public class WindDial extends JPanel {
     {
         setDoubleBuffered(true);
         toolkit = getToolkit();
-        setBackground(Color.lightGray);
+        setBackground(Color.BLACK);
     }
 
     public void setSpeed ( double d )

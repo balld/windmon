@@ -39,6 +39,8 @@ public class WindMonitor extends JFrame
         getAccessibleContext().setAccessibleDescription(
                                               "Wind Monitoring Application");
 
+        Config cfg = Config.getCreateConfig();
+        
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {System.exit(0);}
             public void windowDeiconified(WindowEvent e) { 
@@ -49,9 +51,10 @@ public class WindMonitor extends JFrame
             }
         });
         
-        setSize(WIDTH, HEIGHT);
-//        Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-//        setLocation(d.width/2 - WIDTH/2, d.height/2 - HEIGHT/2);
+        Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+        setLocation(0,0);
+        setSize(d.width, d.height);
+//        setSize(WIDTH, HEIGHT);
         wv = new WindDisplay();
 
 
@@ -91,7 +94,7 @@ public class WindMonitor extends JFrame
         NMEALink link = new SocketNMEALink("msc001", 2689);
         NMEAController nmea = NMEAController.getCreateInstance(link);
         nmea.addWindDataListener(wv);
-        WindDataLogger logger = new WindDataLogger(1000);
+        WindDataLogger logger = new WindDataLogger(10000);
         nmea.addWindDataListener(logger);
         
         setBackground(Color.pink);

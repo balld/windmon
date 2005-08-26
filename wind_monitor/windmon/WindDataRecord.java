@@ -66,7 +66,7 @@ public class WindDataRecord {
 	public String toString()
 	{
 		DecimalFormat df = new DecimalFormat("0.0");
-		return (    recordType + startTime + ","
+		return (    recordType + "," + startTime + ","
 	              + endTime + ","
 	    	      + numReadings + ","
 		          + df.format(minSpeed) + ","
