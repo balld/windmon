@@ -11,6 +11,7 @@ import java.util.TimerTask;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Date;
+import java.util.Vector;
 
 /**
  * @author David
@@ -23,15 +24,22 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 	private WindDataLoggerSet currentSet;
 	private WindDataLoggerSet lastSet;
 	private Timer timer;
-
+	
+	private long analysisInterval = 3600000; // Hold 1 hour of data in memory
+    private long recordInterval = 10000; // Record data every 10 secs
+    
+    private Vector dataRecords;
+	
 	public WindDataLogger (long interval)
 	{
+		dataRecords = new Vector();
+		
 		currentSet = new WindDataLoggerSet();
 		currentSet.reset(System.currentTimeMillis());
 		timer = new Timer();
 		timer.schedule(this, new Date(0), interval);
-//		timer.schedule(this, 0, interval);
 	}
+
 	/* (non-Javadoc)
 	 * @see windmon.WindDataListener#windDataEventReceived(windmon.WindDataEvent)
 	 */
