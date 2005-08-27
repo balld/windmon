@@ -74,8 +74,8 @@ public class Config {
 				int j = ln.indexOf('=');
 				if ( j > 0 ) // Need at least one character before '='
 				{
-					params.put(ln.substring(0, j-1),
-							   ln.substring(j+1, ln.length()-1));
+					params.put(ln.substring(0, j),
+							   ln.substring(j+1, ln.length()));
 				}
 				
 			}
