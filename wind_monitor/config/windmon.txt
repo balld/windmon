@@ -10,5 +10,5 @@ DisplayHistoryDurationSec=7200
 DisplayDigitalUpdateIntervalMilliSec=500
 
 WindLogRecordIntervalSec=10
-WindLogDataDirectory=/tmp/
+WindLogDataDirectory=/home/david/wind/
 WindLogHistorySec=30

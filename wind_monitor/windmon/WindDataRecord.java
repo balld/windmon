@@ -51,18 +51,6 @@ public class WindDataRecord {
 	{
 	}
 	
-	public void write (PrintWriter wr)
-	{
-		try
-		{
-			wr.println(toString());
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-	
 	public String toString()
 	{
 		DecimalFormat df = new DecimalFormat("0.0");
@@ -75,18 +63,10 @@ public class WindDataRecord {
 		          + df.format(aveAngle) );
 	}
 	
-	public void read (BufferedReader br)
+	public static WindDataRecord parse (String s)
 	{
-		String s,i;
-		try
-		{
-			s = br.readLine();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return;
-		}
+		String i;
+		WindDataRecord rec = new WindDataRecord();
 		
 		StringTokenizer tok = new StringTokenizer(s, ",");
 		// Record type
@@ -96,7 +76,7 @@ public class WindDataRecord {
 			if (!i.equals(recordType))
 			{
 				System.err.println("Unrecognised record type: " + i);
-				return;
+				return null;
 			}
 		}
 		else
@@ -108,76 +88,84 @@ public class WindDataRecord {
 		if ( tok.hasMoreTokens())
 		{
 			i = tok.nextToken();
-			startTime = Long.parseLong(i);
+			rec.setStartTime(Long.parseLong(i));
 		}
 		else
 		{
 			System.err.println("Record terminates early: " + s);
+			return null;
 		}
 
 		// End Time
 		if ( tok.hasMoreTokens())
 		{
 			i = tok.nextToken();
-			endTime = Long.parseLong(i);
+			rec.setEndTime(Long.parseLong(i));
 		}
 		else
 		{
 			System.err.println("Record terminates early: " + s);
+			return null;
 		}
 
 		// Number of Readings
 		if ( tok.hasMoreTokens())
 		{
 			i = tok.nextToken();
-			numReadings = Integer.parseInt(i);
+			rec.setNumReadings(Integer.parseInt(i));
 		}
 		else
 		{
 			System.err.println("Record terminates early: " + s);
+			return null;
 		}
 
 		// Min wind speed
 		if ( tok.hasMoreTokens())
 		{
 			i = tok.nextToken();
-			minSpeed = Float.parseFloat(i);
+			rec.setMinSpeed(Float.parseFloat(i));
 		}
 		else
 		{
 			System.err.println("Record terminates early: " + s);
+			return null;
 		}
 		// Ave wind speed
 		if ( tok.hasMoreTokens())
 		{
 			i = tok.nextToken();
-			aveSpeed = Float.parseFloat(i);
+			rec.setAveSpeed(Float.parseFloat(i));
 		}
 		else
 		{
 			System.err.println("Record terminates early: " + s);
+			return null;
 		}
 		// Max wind speed
 		if ( tok.hasMoreTokens())
 		{
 			i = tok.nextToken();
-			maxSpeed = Float.parseFloat(i);
+			rec.setMaxSpeed(Float.parseFloat(i));
 		}
 		else
 		{
 			System.err.println("Record terminates early: " + s);
+			return null;
 		}
 
 		// Ave wind angle
 		if ( tok.hasMoreTokens())
 		{
 			i = tok.nextToken();
-			aveAngle = Float.parseFloat(i);
+			rec.setAveAngle(Float.parseFloat(i));
 		}
 		else
 		{
 			System.err.println("Record terminates early: " + s);
+			return null;
 		}
+		return rec;
 	}
 	/**
 	 * @return Returns the aveAngle.
