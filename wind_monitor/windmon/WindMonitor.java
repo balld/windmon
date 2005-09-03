@@ -39,7 +39,7 @@ public class WindMonitor extends JFrame
         getAccessibleContext().setAccessibleDescription(
                                               "Wind Monitoring Application");
 
-        Config cfg = Config.getCreateConfig();
+        Config.loadConfig();
         
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {System.exit(0);}
@@ -67,6 +67,8 @@ public class WindMonitor extends JFrame
         
 //        Graph graph = new TestGraph();
 //        getContentPane().add(graph, BorderLayout.SOUTH);
+        JFreeChartPlotter plotter = new JFreeChartPlotter();
+        getContentPane().add(plotter, BorderLayout.SOUTH);
         
         JMenuBar mbar = new JMenuBar();
         JMenu mfile = new JMenu("File");
@@ -91,11 +93,12 @@ public class WindMonitor extends JFrame
 
         // setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         
-        NMEALink link = new SocketNMEALink(cfg.getParamAsString("NMEADefaultServerHost"),
-        		                           cfg.getParamAsInt("NMEADefaultServerPort"));
+        NMEALink link = new SocketNMEALink(
+        		Config.getParamAsString("NMEADefaultServerHost", "localhost"),
+        		Config.getParamAsInt("NMEADefaultServerPort", 2468));
         NMEAController nmea = NMEAController.getCreateInstance(link);
         nmea.addWindDataListener(wv);
-        WindDataLogger logger = new WindDataLogger(10000);
+        WindDataLogger logger = new WindDataLogger(plotter);
         nmea.addWindDataListener(logger);
         
         setBackground(Color.pink);

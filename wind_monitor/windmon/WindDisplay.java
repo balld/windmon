@@ -49,8 +49,10 @@ public class WindDisplay extends JPanel implements Runnable, WindDataListener
     {
         super();
         setDoubleBuffered(true);
-        setBorder(new EmptyBorder(5,5,5,5));
-        setLayout(new BorderLayout(5,5));
+//        setBorder(new EmptyBorder(5,5,5,5));
+        setBorder(new EmptyBorder(0,0,0,0));
+//        setLayout(new BorderLayout(5,5));
+        setLayout(new BorderLayout(0,0));
 
         bn = new Banner();
         wg = new WindDial();

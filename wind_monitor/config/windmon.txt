@@ -4,10 +4,11 @@ AppIcon=images/MSCLogo.gif
 
 NMEADefaultServerHost=msc001
 NMEADefaultServerPort=2689
-NMEALinkRetryIntervalSec 60
+NMEALinkRetryIntervalSec=60
 
 DisplayHistoryDurationSec=7200
 DisplayDigitalUpdateIntervalMilliSec=500
 
-WindLogIntervalSec=60
-WindLogDirectory=/tmp/
+WindLogRecordIntervalSec=10
+WindLogDataDirectory=/tmp/
+WindLogHistorySec=30

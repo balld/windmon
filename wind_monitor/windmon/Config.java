@@ -20,29 +20,13 @@ public class Config {
 	private static String filename = "config/windmon.txt";
 	private static Config config = null;
 	
-	private Hashtable params;
+	private static Hashtable params;
 	
 	private Config()
 	{
 	}
-	
-	public static Config getCreateConfig()
-	{
-		if ( config == null)
-		{
-			config = new Config();
-			config.loadConfig();
-		}
 		
-		return config;
-	}
-	
-	public static Config getConfig()
-	{
-		return config;
-	}
-	
-	public void loadConfig()
+	public static void loadConfig()
 	{
 		BufferedReader br;
 		params = new Hashtable();
@@ -88,55 +72,104 @@ public class Config {
 		System.out.println(params.toString());
 	}
 	
-	public int getParamAsInt(String param)
+
+	public static int getParamAsInt(String param, int dflt)
 	{
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			return -1;
+			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			return dflt;
 		}
 		else
 		{
+			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
 			return Integer.parseInt((String) ob);
 		}
 	}
 
-	public float getParamAsFloat(String param)
+	public static int getParamAsInt(String param)
+	{
+		return getParamAsInt(param, -1);
+	}
+	
+	public static long getParamAsLong(String param, long dflt)
 	{
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			return -1.0f;
+			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			return dflt;
 		}
 		else
 		{
+			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+			return Long.parseLong((String) ob);
+		}
+	}
+
+	public static long getParamAsLong(String param)
+	{
+		return getParamAsLong(param, -1);
+	}
+	
+	public static float getParamAsFloat(String param, float dflt)
+	{
+		Object ob = params.get(param);
+		if ( ob == null )
+		{
+			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			return dflt;
+		}
+		else
+		{
+			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
 			return Float.parseFloat((String) ob);
 		}
 	}
 
-	public double getParamAsDouble(String param)
+	public static float getParamAsFloat(String param)
+	{
+		return getParamAsFloat(param, -1.0f);
+	}
+	
+	public static double getParamAsDouble(String param, double dflt)
 	{
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			return -1.0;
+			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			return dflt;
 		}
 		else
 		{
+			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
 			return Double.parseDouble((String) ob);
 		}
 	}
+
+	public static double getParamAsDouble(String param)
+	{
+		return getParamAsDouble(param, -1.0);
+	}
 	
-	public String getParamAsString(String param)
+	public static String getParamAsString(String param, String dflt)
 	{
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			return null;
+			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			return dflt;
 		}
 		else
 		{
+			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
 			return ((String) ob);
 		}
+	}
+	
+	public static String getParamAsString(String param)
+	{
+		return getParamAsString(param, null);
 	}
 }
