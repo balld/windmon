@@ -1,4 +1,7 @@
 package windmon;
+
+import java.util.Vector;
+
 /*
  * Created on Sep 3, 2005
  *
@@ -14,5 +17,5 @@ package windmon;
  */
 public interface WindDataStore {
 	public void storeWindDataRecord(WindDataRecord record);
-	public WindDataRecord[] getWindDataRecords(long start, long end);
+	public Vector getWindDataRecords(long start, long end);
 }

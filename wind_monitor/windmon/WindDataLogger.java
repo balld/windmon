@@ -8,11 +8,20 @@ package windmon;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.util.Date;
 import java.util.Vector;
+
+import javax.imageio.ImageIO;
+
+import org.jfree.chart.ChartUtilities;
 
 /**
  * @author David
@@ -31,15 +40,55 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     
     private Vector dataRecords;
     private WindDataPlotter plotter;
+    
+    private WindDataStore store;
+    private WindDial dial = new WindDial();
+
+    // Config parameters
+    private String imageDir;
+    private int imageWidth;
+    private int imageHeight;
+    
 	
 	public WindDataLogger (WindDataPlotter plotter)
 	{
-		dataRecords = new Vector();
+		readConfig();
 		this.plotter = plotter;
-		recordInterval=Config.getParamAsLong("WindLogRecordIntervalSec", 10)*1000;
-		analysisInterval=Config.getParamAsLong("WindLogHistorySec", 3600)*1000;
+
+		store = new FileWindDataStore();
+		long now = System.currentTimeMillis();
+		Vector archData = store.getWindDataRecords(now - analysisInterval, now);
+		if ( archData != null )
+		{
+			dataRecords = archData;
+		}
+		else
+		{
+			dataRecords = new Vector();
+		}
 	}
 
+	public void readConfig()
+	{
+		recordInterval=Config.getParamAsLong("WindLogRecordIntervalSec", 10)*1000;
+		analysisInterval=Config.getParamAsLong("WindLogHistorySec", 3600)*1000;
+		imageDir = Config.getParamAsString("WindLogDataDirectory", "/tmp/");
+		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
+		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
+
+		// If timer exists, reset it
+		if ( timer != null )
+		{
+			timer.cancel();
+			timer = new Timer();
+			timer.schedule(this, new Date(0), recordInterval);
+		}
+		
+		// Reset the dial size
+		dial.setSize(new Dimension(imageWidth, imageHeight));
+	}
+	
+	
 	/* (non-Javadoc)
 	 * @see windmon.WindDataListener#windDataEventReceived(windmon.WindDataEvent)
 	 */
@@ -66,30 +115,60 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 	
 	public void run()
 	{
-		synchronized(currentSet)
+		if ( currentSet != null )
 		{
-			currentSet.setEndPeriod(System.currentTimeMillis());
-			lastSet = (WindDataLoggerSet) currentSet.clone();
-			currentSet.reset(lastSet.getEndPeriod()+1);
-		}
+			synchronized(currentSet)
+			{
+				currentSet.setEndPeriod(System.currentTimeMillis());
+				lastSet = (WindDataLoggerSet) currentSet.clone();
+				currentSet.reset(lastSet.getEndPeriod()+1);
+			}
+			
+			// Add the new record to memory
+			WindDataRecord rec = lastSet.generateWindDataRecord();
+			dataRecords.add(rec);
+			store.storeWindDataRecord(rec);
+			EventLog.log(EventLog.SEV_DEBUG, "Saved : " + rec);
+			
+			// Only store data records going back for the configured period.
+			long minTime = lastSet.getEndPeriod() - analysisInterval;
+			while ( dataRecords.size() > 0 && ((WindDataRecord)dataRecords.get(0)).getEndTime() < minTime)
+			{
+				Object ob = dataRecords.remove(0);
+				EventLog.log(EventLog.SEV_DEBUG, "Removed : " + ob);
+			}
+			
+			WindDataRecord data[] = (WindDataRecord[]) Array.newInstance(WindDataRecord.class,
+					dataRecords.size());
+			dataRecords.copyInto(data);
 
-		// Add the new record to memory
-		WindDataRecord rec = lastSet.generateWindDataRecord();
-		dataRecords.add(rec);
-		EventLog.log(EventLog.SEV_DEBUG, "Saved : " + rec);
-		
-		// Only store data records going back for the configured period.
-		long minTime = lastSet.getEndPeriod() - analysisInterval;
-		while ( dataRecords.size() > 0 && ((WindDataRecord)dataRecords.get(0)).getEndTime() < minTime)
-		{
-			Object ob = dataRecords.remove(0);
-			EventLog.log(EventLog.SEV_DEBUG, "Removed : " + ob);
+			plotter.plotData( data );
+			plotter.writeSpeedPlotPNG(imageDir + "speed.png", imageWidth, imageHeight);
+			plotter.writeAnglePlotPNG(imageDir + "angle.png", imageWidth, imageHeight);
+			
+			dial.setWindAngle(rec.getAveAngle());
+			dial.setSpeed(rec.getAveSpeed());
+			dial.setWindSpeedHigh(rec.getMaxSpeed());
+			dial.setWindSpeedLow(rec.getMinSpeed());
+			BufferedImage bdimg = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+			Graphics2D bdg = bdimg.createGraphics();
+			dial.justPaint(bdg);
+			String fname = imageDir + "dial.png";
+			File tmpDialFile = new File(fname + ".tmp");
+			try
+			{
+				FileOutputStream os = new FileOutputStream(tmpDialFile, false);
+				ChartUtilities.writeBufferedImageAsPNG(os, bdimg);
+				os.close();
+				File dialFile = new File(fname);
+				tmpDialFile.renameTo(dialFile);
+				
+			}
+			catch (Exception e)
+			{
+				EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + fname + "'");
+			}
 		}
-
-		WindDataRecord data[] = (WindDataRecord[]) Array.newInstance(WindDataRecord.class,
-				                                                     dataRecords.size());
-		dataRecords.copyInto(data);
-		plotter.plotData( data );
 	}
 	/**
 	 * @return Returns the plotter.

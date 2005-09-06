@@ -14,6 +14,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Paint;
+import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -21,6 +24,7 @@ import javax.swing.JPanel;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
@@ -237,5 +241,46 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		angleBearingAxis.setAxisLinePaint(Color.WHITE);
 		angleBearingAxis.setTickLabelPaint(Color.WHITE);
 		angleBearingAxis.setTickUnit(new JFreeCompassTickUnit(45.0));
+	}
+
+	public void writeSpeedPlotPNG(String fname, int width, int height)
+	{
+		File tmpfile = new File(fname + ".tmp");
+		try
+		{
+			ChartUtilities.saveChartAsPNG(tmpfile, speedChart, width, height);
+		}
+		catch (Exception e)
+		{
+			EventLog.log(EventLog.SEV_ERROR, "Could not create image file '" + fname + "'");
+			e.printStackTrace();
+		}
+
+		File file = new File(fname);
+		if ( tmpfile.renameTo(file) != true )
+		{
+			EventLog.log(EventLog.SEV_ERROR, "Could not rename image to '" + fname + "'");
+		}
+	}
+	
+
+	public void writeAnglePlotPNG(String fname, int width, int height)
+	{
+		File tmpfile = new File(fname + ".tmp");
+		try
+		{
+			ChartUtilities.saveChartAsPNG(tmpfile, angleChart, width, height);
+		}
+		catch (Exception e)
+		{
+			EventLog.log(EventLog.SEV_ERROR, "Could not create image file '" + fname + "'");
+			e.printStackTrace();
+		}
+
+		File file = new File(fname);
+		if ( tmpfile.renameTo(file) != true )
+		{
+			EventLog.log(EventLog.SEV_ERROR, "Could not rename image to '" + fname + "'");
+		}
 	}
 }

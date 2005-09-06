@@ -67,6 +67,7 @@ public class WindDial extends JPanel {
     private static Color rose_col_high = arrow_col_high;
     private static Color rose_col_low  = arrow_col_low;
     private static Color rose_char_col = Color.WHITE;
+	private static Color needle_faint_col = Color.lightGray;
     
     /*
      * Wind speed dial layout settings
@@ -104,7 +105,7 @@ public class WindDial extends JPanel {
 
     
     // instance variables
-    private Toolkit toolkit = null;
+//    private Toolkit toolkit = null;
     private Image     s_dial = null;
     private Graphics2D  s_dial_g = null;
     private Image     d_dial = null;
@@ -117,7 +118,7 @@ public class WindDial extends JPanel {
     private int       s_diameter = 0;
     private int       s_radius   = 0;
     private int       s_needle_len = 0;
-    private static int d_needle_len = 0;
+    private int       d_needle_len = 0;
 
     private Dimension panel_size = null;
     
@@ -127,11 +128,14 @@ public class WindDial extends JPanel {
     private double max_speed = 67.0;
     private double wind_speed = 0.0;
     private double wind_angle = 90.0;
+    private double wind_speed_high = -1.0;
+    private double wind_speed_low = -1.0;
+    
     
     WindDial()
     {
         setDoubleBuffered(true);
-        toolkit = getToolkit();
+//        toolkit = getToolkit();
         setBackground(Color.BLACK);
     }
 
@@ -159,7 +163,12 @@ public class WindDial extends JPanel {
     {
         // Run super class paint method
         super.paint(g);
+        justPaint(g);
+    }
+    
 
+    public void justPaint(Graphics g)
+        {
         AffineTransform at = new AffineTransform();
         
         // Create Graphics2D object for advanced rendering.
@@ -210,6 +219,45 @@ public class WindDial extends JPanel {
         
         // Draw the wind speed dial background
         g2.drawImage(s_dial, 0, 0, this);
+
+        // Coordinates for needle
+        int ys_points[] = { 0,
+                0,
+                s_needle_len};
+        int xs_points[] = { s_spindle_diam/2,
+                -s_spindle_diam/2,
+                0 };
+
+        // High and low speed needles
+        if ( wind_speed_high >= 0.0 )
+        {
+            // Draw the wind speed needle
+            g2.setColor(needle_faint_col);
+            g2.drawOval(centre.x - s_spindle_diam/2,
+                        centre.y - s_spindle_diam/2,
+                         s_spindle_diam, s_spindle_diam);
+
+            at.setToTranslation(centre.x, centre.y);
+            at.rotate(Math.toRadians(s_zero_angle +
+                                       (360.0 - 2*s_zero_angle)
+                                      *(wind_speed_high/max_speed)));
+            g2.draw(at.createTransformedShape(new Polygon(xs_points, ys_points, 3)));
+        }
+        if ( wind_speed_low >= 0.0 )
+        {
+            // Draw the wind speed needle
+            g2.setColor(needle_faint_col);
+            g2.drawOval(centre.x - s_spindle_diam/2,
+                        centre.y - s_spindle_diam/2,
+                         s_spindle_diam, s_spindle_diam);
+
+            at.setToTranslation(centre.x, centre.y);
+            at.rotate(Math.toRadians(s_zero_angle +
+                                       (360.0 - 2*s_zero_angle)
+                                      *(wind_speed_low/max_speed)));
+            g2.draw(at.createTransformedShape(new Polygon(xs_points, ys_points, 3)));
+        }
+
         
         // Draw the wind speed needle
         g2.setColor(needle_fill_col);
@@ -217,12 +265,6 @@ public class WindDial extends JPanel {
                     centre.y - s_spindle_diam/2,
                      s_spindle_diam, s_spindle_diam);
 
-        int ys_points[] = { 0,
-                           0,
-                           s_needle_len};
-        int xs_points[] = { s_spindle_diam/2,
-                           -s_spindle_diam/2,
-                           0 };
         
         at.setToTranslation(centre.x, centre.y);
         at.rotate(Math.toRadians(s_zero_angle +
@@ -527,4 +569,28 @@ public class WindDial extends JPanel {
     {
         return ps;
     }
+	/**
+	 * @return Returns the wind_speed_high.
+	 */
+	public double getWindSpeedHigh() {
+		return wind_speed_high;
+	}
+	/**
+	 * @param wind_speed_high The wind_speed_high to set.
+	 */
+	public void setWindSpeedHigh(double wind_speed_high) {
+		this.wind_speed_high = wind_speed_high;
+	}
+	/**
+	 * @return Returns the wind_speed_low.
+	 */
+	public double getWindSpeedLow() {
+		return wind_speed_low;
+	}
+	/**
+	 * @param wind_speed_low The wind_speed_low to set.
+	 */
+	public void setWindSpeedLow(double wind_speed_low) {
+		this.wind_speed_low = wind_speed_low;
+	}
 }

@@ -6,6 +6,8 @@
  */
 package windmon;
 
+import java.awt.image.BufferedImage;
+
 /**
  * @author david
  *
@@ -14,4 +16,6 @@ package windmon;
  */
 public interface WindDataPlotter {
 	public abstract void plotData(WindDataRecord records[]);
+	public void writeSpeedPlotPNG(String fname, int width, int height);
+	public void writeAnglePlotPNG(String fname, int width, int height);
 }

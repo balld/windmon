@@ -7,11 +7,14 @@
 package windmon;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Vector;
 
 /**
  * @author david
@@ -21,8 +24,8 @@ import java.util.Date;
  */
 public class FileWindDataStore implements WindDataStore {
 	// These settins affect the number of files created. Currently every hour.
-	private static final String DATE_FMT = "yyyyMMddHH";
-	private static final long   DATE_INT = 3600000;
+	private static final String DATE_FMT = "yyyyMMddHHz";
+	private static final long   FILE_INTERVAL = 3600000; // 1 hour
 	
 	DateFormat fnameFormat = new SimpleDateFormat("'windlog_'"
 			                                      + DATE_FMT + "'.dat'");
@@ -55,16 +58,25 @@ public class FileWindDataStore implements WindDataStore {
 	/* (non-Javadoc)
 	 * @see windmon.WindDataStore#getWindDataRecords(long, long)
 	 */
-	public WindDataRecord[] getWindDataRecords(long start, long end) {
+	public Vector getWindDataRecords(long start, long end) {
 		// TODO Auto-generated method stub
 		Vector records = new Vector();
 		long curr = start;
 		
 		while (curr <= end)
 		{
-			String fn = fnameFormat.format(new Date(curr));
-			long fileStart = fnameFormat.parse(fn).getTime();
-			long fileEnd = fileStart + DATE_INT;
+				String fn = fnameFormat.format(new Date(curr));
+				long fileStart = 0;
+				try
+				{
+					fileStart = fnameFormat.parse(fn).getTime();
+				}
+				catch (Exception e)
+				{
+					EventLog.log(EventLog.SEV_ERROR, "Could not build filename");
+					return null;
+				}
+				long fileEnd = fileStart + FILE_INTERVAL;
 			try
 			{
 				BufferedReader br = new BufferedReader(new FileReader(path + fn));
@@ -79,20 +91,25 @@ public class FileWindDataStore implements WindDataStore {
 						{
 							break;
 						}
+						else if ( curr < start )
+						{
+							continue;
+						}
 						else
 						{
 							records.add(rec);
 						}
 					}
 				}
-				// file finished, set current time to end time of file.
 			}
 			catch (Exception e)
 			{
 				EventLog.log(EventLog.SEV_WARN, "Could not read log file '" + path + fn + "'");
 			}
+			// file finished, set current time to end time of file.
 			curr = fileEnd;
 		}
-		return null;
+		
+		return records;
 	}
 }
