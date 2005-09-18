@@ -2,7 +2,7 @@ AppLogDirectory=/tmp/
 AppBannerImage=images/MSCLogoText.gif
 AppIcon=images/MSCLogo.gif
 
-NMEADefaultServerHost=msc001
+NMEADefaultServerHost=drb-pc3
 NMEADefaultServerPort=2689
 NMEALinkRetryIntervalSec=60
 

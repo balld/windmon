@@ -7,7 +7,7 @@ import java.net.URL;
 import java.net.URI;
 import java.net.URLClassLoader;
 
-import javax.comm.*;
+/* import javax.comm.*; */
 
 
 /**
@@ -311,7 +311,7 @@ public class Utils {
         }
     }
     
-
+/*
     public static SerialPort openDefaultSerialPort(String name)
     {
         SerialPort sPort = null;
@@ -351,6 +351,7 @@ public class Utils {
     	}
         return sPort;
     }
+    */
     
     public static java.util.Properties getEnv()
     {
