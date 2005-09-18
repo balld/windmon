@@ -4,7 +4,7 @@ AppIcon=images/MSCLogo.gif
 
 NMEADefaultServerHost=drb-pc3
 NMEADefaultServerPort=2689
-NMEALinkRetryIntervalSec=60
+NMEALinkRetryIntervalSec=10
 
 DisplayHistoryDurationSec=7200
 DisplayDigitalUpdateIntervalMilliSec=500

@@ -20,8 +20,7 @@ public class NMEAController implements Runnable {
 	private final double MAX_NMEA_PERIOD = 2.0;
     private Thread thread = null;
     private NMEALink link = null;
-    
-    private long sleepAmount = 0;
+    private long retryInterval = 0;
     
     private Vector listeners = new Vector();
     
@@ -29,8 +28,13 @@ public class NMEAController implements Runnable {
     {
         this.link = link;
         instance = this;
+        this.configure();
     }
     
+    private void configure()
+    {
+    	retryInterval = Config.getParamAsLong("NMEALinkRetryIntervalSec", 10) * 1000l;
+    }
     public static NMEAController getInstance()
     {
     	return instance;
@@ -48,14 +52,6 @@ public class NMEAController implements Runnable {
     
     public void start() {
         if (thread == null) {
-            if ( !link.isOpen())
-            {
-            	if ( !link.open() )
-            	{
-                    System.err.println("Link not opened. No input available.");
-                    return;
-            	}
-            }
         	thread = new Thread(this);
             thread.setPriority(Thread.MIN_PRIORITY);
             thread.start();
@@ -75,25 +71,36 @@ public class NMEAController implements Runnable {
         Thread me = Thread.currentThread();
         WindDataEvent wde = new WindDataEvent();
 
-        while (thread == me && link != null) {
-            msg = link.getNMEAMessage();
+        while (thread == me && link != null)
+        {
+        	EventLog.log(EventLog.SEV_INFO, "Checking for connection...");
+        	while (!link.isOpen())
+        	{
+        		if ( !link.open() )
+        		{
+                	EventLog.log(EventLog.SEV_INFO, "Link not opened. Will retry...");
+        			Utils.justSleep(retryInterval);
+        		}
+        	}
 
-            if ( msg != null
-                 && msg.isValid()
-                 && !msg.isProprietary()
-                 && msg.getTalkerIDString().equals("WI")
-                 && msg.getSentenceIDString().equals("MWV"))
-            {
-            	wde.setWindAngle(Float.parseFloat(msg.getField(0)));
-            	wde.setWindSpeed(Float.parseFloat(msg.getField(2)));
-            	for (int i = 0; i < listeners.size(); i++)
-            	{
-            		((WindDataListener)listeners.get(i)).windDataEventReceived(wde);
-            	}
-            }
-            try {
-                Thread.sleep(sleepAmount);
-            } catch (InterruptedException e) { }
+        	do
+        	{
+        		msg = link.getNMEAMessage();
+        		
+        		if ( msg != null
+        				&& msg.isValid()
+						&& !msg.isProprietary()
+						&& msg.getTalkerIDString().equals("WI")
+						&& msg.getSentenceIDString().equals("MWV"))
+        		{
+        			wde.setWindAngle(Float.parseFloat(msg.getField(0)));
+        			wde.setWindSpeed(Float.parseFloat(msg.getField(2)));
+        			for (int i = 0; i < listeners.size(); i++)
+        			{
+        				((WindDataListener)listeners.get(i)).windDataEventReceived(wde);
+        			}
+        		}
+        	} while (msg != null );
         }
         thread = null;
     }
