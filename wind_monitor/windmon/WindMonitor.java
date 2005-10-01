@@ -93,7 +93,7 @@ public class WindMonitor extends JFrame
 
         // setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         
-        NMEALink link = new SocketNMEALink(
+        NMEALink link = new NMEALinkSocket(
         		Config.getParamAsString("NMEADefaultServerHost", "localhost"),
         		Config.getParamAsInt("NMEADefaultServerPort", 2468));
         NMEAController nmea = NMEAController.getCreateInstance(link);

@@ -142,7 +142,7 @@ public class NMEALinkSocket implements NMEALink, Runnable
         }
         catch (Exception e)
         {
-            System.err.println("Exception reading NMEA message: " +
+            EventLog.log(EventLog.SEV_ERROR ,"Exception reading NMEA message: " +
                                e.getMessage());
             // Primitive stuff, but if read fails we assume socket lost.
             this.close();

@@ -55,11 +55,15 @@ public class FileWindDataStore implements WindDataStore {
 		}
 	}
 
+	public Vector getWindDataRecords(long start, long end)
+	{
+		return getWindDataRecords(start, end, true);
+	}
+
 	/* (non-Javadoc)
 	 * @see windmon.WindDataStore#getWindDataRecords(long, long)
 	 */
-	public Vector getWindDataRecords(long start, long end) {
-		// TODO Auto-generated method stub
+	public Vector getWindDataRecords(long start, long end, boolean includeNull) {
 		Vector records = new Vector();
 		long curr = start;
 		
@@ -92,6 +96,10 @@ public class FileWindDataStore implements WindDataStore {
 							break;
 						}
 						else if ( curr < start )
+						{
+							continue;
+						}
+						else if ( includeNull == false && rec.getNumReadings() == 0 )
 						{
 							continue;
 						}

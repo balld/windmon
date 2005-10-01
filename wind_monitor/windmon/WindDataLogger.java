@@ -57,7 +57,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 
 		store = new FileWindDataStore();
 		long now = System.currentTimeMillis();
-		Vector archData = store.getWindDataRecords(now - analysisInterval, now);
+		Vector archData = store.getWindDataRecords(now - analysisInterval, now, false);
 		if ( archData != null )
 		{
 			dataRecords = archData;
@@ -126,7 +126,12 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 			
 			// Add the new record to memory
 			WindDataRecord rec = lastSet.generateWindDataRecord();
-			dataRecords.add(rec);
+
+			// Only add data to display data if at least one reading was received.
+			if ( rec.getNumReadings() > 0 )
+			{
+				dataRecords.add(rec);
+			}
 			store.storeWindDataRecord(rec);
 			EventLog.log(EventLog.SEV_DEBUG, "Saved : " + rec);
 			

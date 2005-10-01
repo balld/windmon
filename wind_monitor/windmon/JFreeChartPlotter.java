@@ -117,38 +117,49 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 	private void updateDatasets(WindDataRecord[] records)
 	{
 		double maxSpeed = speedDefaultMax;
-
-		for (int i = 0; i<records.length; i++)
+		
+		// If records is empty, then clean out the graphs
+		if ( records.length == 0 )
 		{
-			Second t = new Second(new Date(records[i].getEndTime()));
-			// Assume if a time is in one chart, its in all
-			if ( min.getDataItem(t) == null )
+			min.clear();
+			ave.clear();
+			max.clear();
+			angle.clear();
+		}
+		else
+		{
+			// Add new data points to graph
+			for (int i = 0; i<records.length; i++)
 			{
-				min.add(t, records[i].getMinSpeed());
-				ave.add(t, records[i].getAveSpeed());
-				max.add(t, records[i].getMaxSpeed());
-				angle.add(t, records[i].getAveAngle());
+				Second t = new Second(new Date(records[i].getEndTime()));
+				// Assume if a time is in one chart, its in all
+				if ( min.getDataItem(t) == null )
+				{
+					min.add(t, records[i].getMinSpeed());
+					ave.add(t, records[i].getAveSpeed());
+					max.add(t, records[i].getMaxSpeed());
+					angle.add(t, records[i].getAveAngle());
+				}
+				if ( records[i].getMaxSpeed() > maxSpeed )
+					maxSpeed = records[i].getMaxSpeed();
 			}
-			if ( records[i].getMaxSpeed() > maxSpeed )
-				maxSpeed = records[i].getMaxSpeed();
+			
+			// Delete obsolete data points from graph (no longer in records).
+			Second s = new Second(new Date(records[0].getEndTime()));
+			int iend = 0;
+			while ( iend < min.getItemCount() && min.getDataItem(iend).getPeriod().compareTo(s) < 0 )
+			{
+				iend++;
+			}
+			
+			if ( iend > 0 )
+			{
+				min.delete(0, iend-1);
+				ave.delete(0, iend-1);
+				max.delete(0, iend-1);
+				angle.delete(0, iend-1);
+			}
 		}
-
-		// Delete data points which preceed the first log record.
-		Second s = new Second(new Date(records[0].getEndTime()));
-		int iend = 0;
-		while ( iend < min.getItemCount() && min.getDataItem(iend).getPeriod().compareTo(s) < 0 )
-		{
-			iend++;
-		}
-		
-		if ( iend > 0 )
-		{
-			min.delete(0, iend-1);
-			ave.delete(0, iend-1);
-			max.delete(0, iend-1);
-			angle.delete(0, iend-1);
-		}
-		
 		speedKnotsAxis.setUpperBound(maxSpeed * 1.10);
 	}
 	

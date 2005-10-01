@@ -18,4 +18,5 @@ import java.util.Vector;
 public interface WindDataStore {
 	public void storeWindDataRecord(WindDataRecord record);
 	public Vector getWindDataRecords(long start, long end);
+	public Vector getWindDataRecords(long start, long end, boolean includeNull);
 }
