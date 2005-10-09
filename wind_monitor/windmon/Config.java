@@ -17,7 +17,7 @@ import java.io.BufferedReader;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Config {
-	private static String filename = "config/windmon.txt";
+	private static String filename = "windmon.cfg";
 	private static Config config = null;
 	
 	private static Hashtable params;
@@ -30,12 +30,16 @@ public class Config {
 	{
 		BufferedReader br;
 		params = new Hashtable();
+        String homeDir = System.getProperties().getProperty("user.home", "/");
+        String path = homeDir + "/" + filename;
+        EventLog.log(EventLog.SEV_DEBUG, "Config file is '" + path + "'");
 		try
 		{
-			br = new BufferedReader(new FileReader(filename));
+			br = new BufferedReader(new FileReader(path));
 		}
 		catch (Exception e)
 		{
+            EventLog.log(EventLog.SEV_FATAL, "Unable to open config file " + path);
 			e.printStackTrace();
 			return;
 		}

@@ -6,21 +6,16 @@
  */
 package windmon;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Paint;
-import java.awt.image.BufferedImage;
-import java.awt.print.PageFormat;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.border.BevelBorder;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -31,12 +26,12 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.time.Minute;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleInsets;
+
+
 
 /**
  * @author david
@@ -72,8 +67,7 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 	{
 		super();
 		setBackground(Color.red);
-		setPreferredSize(new Dimension(600, 200));
-
+		setPreferredSize(new Dimension(600, 300));
 		speedDataset = new TimeSeriesCollection();
         speedDataset.setDomainIsPointsInTime(true);
         angleDataset = new TimeSeriesCollection();

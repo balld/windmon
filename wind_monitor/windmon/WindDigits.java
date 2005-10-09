@@ -79,7 +79,7 @@ public class WindDigits extends JPanel implements Runnable {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
         
-        g2.setColor(Color.GREEN);
+        g2.setColor(Color.white);
 
         String speed_str = "" + (int) wind_speed;
         String angle_str   = "" + (int) wind_angle;

@@ -63,15 +63,14 @@ public class WindDisplay extends JPanel implements Runnable, WindDataListener
         wd = new WindDigits();
         wd.setWindSpeed(windSpeed);
         wd.setWindAngle(windAngle);
-        
-        dc = new DigitalClock();
-//        dc.start();
-        
-        JPanel jp1 = new JPanel();
-        jp1.setLayout(new BorderLayout());
-        jp1.setBackground(Color.white);
-        jp1.add(bn, BorderLayout.WEST);
-        jp1.add(dc, BorderLayout.CENTER);
+
+        // Create digital clock and image
+//        dc = new DigitalClock();
+//        JPanel jp1 = new JPanel();
+//        jp1.setLayout(new BorderLayout());
+//        jp1.setBackground(Color.white);
+//        jp1.add(bn, BorderLayout.WEST);
+//        jp1.add(dc, BorderLayout.CENTER);
         
         
 //        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, wg, wd);
@@ -83,7 +82,9 @@ public class WindDisplay extends JPanel implements Runnable, WindDataListener
 //        add(new Border3D(jp1), BorderLayout.NORTH);
 //        add(new Border3D(wg), BorderLayout.CENTER);
 //        add(new Border3D(wd), BorderLayout.EAST);
-        add(jp1, BorderLayout.NORTH);
+
+        // Add digital clock and image
+//        add(jp1, BorderLayout.NORTH);
         add(wg, BorderLayout.CENTER);
         add(wd, BorderLayout.EAST);
 //        add(new Border3D(dc), BorderLayout.SOUTH);
@@ -99,7 +100,8 @@ public class WindDisplay extends JPanel implements Runnable, WindDataListener
             thread.setPriority(Thread.MIN_PRIORITY);
             thread.start();
         }
-        dc.start();
+        // Start digital clock
+//        dc.start();
     }
 
 

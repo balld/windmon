@@ -34,6 +34,13 @@ public class EventLog {
 			StringBuffer bf = new StringBuffer();
 			fmt.format(new Date(System.currentTimeMillis()), bf, new FieldPosition(0));
 			System.err.println(bf + " " + sevToString(sev) + " " + msg );
+            
+            if (sev == SEV_FATAL )
+            {
+                Exception e = new Exception();
+                e.printStackTrace();
+                System.exit(1);
+            }
 		}
 	}
 	

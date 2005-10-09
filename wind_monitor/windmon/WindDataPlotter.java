@@ -6,8 +6,6 @@
  */
 package windmon;
 
-import java.awt.image.BufferedImage;
-
 /**
  * @author david
  *
