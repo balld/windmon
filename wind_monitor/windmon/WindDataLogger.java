@@ -6,7 +6,6 @@
  */
 package windmon;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.Timer;
@@ -17,13 +16,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.util.Date;
 import java.util.Vector;
-
-import javax.imageio.ImageIO;
 
 import org.jfree.chart.ChartUtilities;
 
@@ -149,7 +145,13 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 	 * @see windmon.WindDataListener#windDataEventReceived(windmon.WindDataEvent)
 	 */
 	public void windDataEventReceived(WindDataEvent e) {
-		if ( currentSet == null)
+	    // Ignore negative readings. They indicate no signal
+        if ( e.getWindAngle() < 0 || e.getWindSpeed() < 0)
+        {
+            return;
+        }
+        
+        if ( currentSet == null)
 		{
 			currentSet = new WindDataLoggerSet();
 			currentSet.reset(System.currentTimeMillis());

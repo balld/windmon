@@ -80,9 +80,29 @@ public class WindDigits extends JPanel implements Runnable {
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
         
         g2.setColor(Color.white);
-
-        String speed_str = "" + (int) wind_speed;
-        String angle_str   = "" + (int) wind_angle;
+        String speed_str;
+        String angle_str;
+        if ( wind_speed < 0 )
+        {
+            speed_str = "xxx";
+        }
+        else if ( wind_speed < 10 )
+        {
+            speed_str = ("" + wind_speed).substring(0, 3);
+        }
+        else
+        {
+            speed_str = "" + (int) wind_speed;
+        }
+        
+        if ( wind_angle < 0 )
+        {
+            angle_str = "xxx";
+        }
+        else
+        {
+            angle_str   = "" + (int) wind_angle;
+        }
         String kts = "kts";
         String deg = "o";
         

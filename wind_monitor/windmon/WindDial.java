@@ -192,29 +192,31 @@ public class WindDial extends JPanel {
         g2.drawImage(d_dial, 0, 0, this);
 
         d_needle_diam = radius - s_radius;
-        // Draw the wind direction needle
-        int yd_points[] = { 0,
-                            -d_needle_len + d_needle_diam/2,
-                            -d_needle_len + d_needle_diam/2,
-                            -d_needle_len,
-                            -d_needle_len + d_needle_diam/2,
-                            -d_needle_len + d_needle_diam/2,
-                            0};
-        int xd_points[] = {-d_needle_diam/4,
-                           -d_needle_diam/4,
-                           -d_needle_diam/2,
-                            0,
-                            d_needle_diam/2,
-                            d_needle_diam/4,
-                            d_needle_diam/4 };
-        at.setToTranslation(centre.x, centre.y);
-        at.rotate(Math.toRadians(wind_angle));
-        Shape dir_needle = at.createTransformedShape(new Polygon(xd_points, yd_points, 7));
-		g2.setColor(needle_fill_col);     
-        g2.fill(dir_needle);
-		g2.setColor(needle_line_col);     
-		g2.draw(dir_needle);
-        
+        // Draw the wind direction needle if wind_angle > zero
+        if ( wind_angle > 0.0 )
+        {
+            int yd_points[] = { 0,
+                    -d_needle_len + d_needle_diam/2,
+                    -d_needle_len + d_needle_diam/2,
+                    -d_needle_len,
+                    -d_needle_len + d_needle_diam/2,
+                    -d_needle_len + d_needle_diam/2,
+                    0};
+            int xd_points[] = {-d_needle_diam/4,
+                    -d_needle_diam/4,
+                    -d_needle_diam/2,
+                    0,
+                    d_needle_diam/2,
+                    d_needle_diam/4,
+                    d_needle_diam/4 };
+            at.setToTranslation(centre.x, centre.y);
+            at.rotate(Math.toRadians(wind_angle));
+            Shape dir_needle = at.createTransformedShape(new Polygon(xd_points, yd_points, 7));
+            g2.setColor(needle_fill_col);     
+            g2.fill(dir_needle);
+            g2.setColor(needle_line_col);     
+            g2.draw(dir_needle);
+        }        
         
         
         // Draw the wind speed dial background
@@ -259,18 +261,21 @@ public class WindDial extends JPanel {
         }
 
         
-        // Draw the wind speed needle
-        g2.setColor(needle_fill_col);
-        g2.fillOval(centre.x - s_spindle_diam/2,
+        // Draw the wind speed needle (if wind_speed non-negative
+        if (wind_speed > 0.0)
+        {
+            g2.setColor(needle_fill_col);
+            g2.fillOval(centre.x - s_spindle_diam/2,
                     centre.y - s_spindle_diam/2,
-                     s_spindle_diam, s_spindle_diam);
-
-        
-        at.setToTranslation(centre.x, centre.y);
-        at.rotate(Math.toRadians(s_zero_angle +
-                                   (360.0 - 2*s_zero_angle)
-                                  *(wind_speed/max_speed)));
-        g2.fill(at.createTransformedShape(new Polygon(xs_points, ys_points, 3)));
+                    s_spindle_diam, s_spindle_diam);
+            
+            
+            at.setToTranslation(centre.x, centre.y);
+            at.rotate(Math.toRadians(s_zero_angle +
+                    (360.0 - 2*s_zero_angle)
+                    *(wind_speed/max_speed)));
+            g2.fill(at.createTransformedShape(new Polygon(xs_points, ys_points, 3)));
+        }
     }
 
     private void prepareDial(Graphics2D g2)

@@ -183,9 +183,9 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		XYItemRenderer r = plot.getRenderer();
 		if (r instanceof XYLineAndShapeRenderer) {
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
-			renderer.setDefaultShapesVisible(true);
-			renderer.setDefaultShapesFilled(true);
-			renderer.setDefaultLinesVisible(false);
+			renderer.setDefaultShapesVisible(false);
+			renderer.setDefaultShapesFilled(false);
+			renderer.setDefaultLinesVisible(true);
 		}
  
 		speedTimeAxis = (DateAxis) plot.getDomainAxis();
@@ -228,9 +228,9 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		XYItemRenderer ar = a_plot.getRenderer();
 		if (ar instanceof XYLineAndShapeRenderer) {
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) ar;
-			renderer.setDefaultShapesVisible(true);
-			renderer.setDefaultShapesFilled(true);
-			renderer.setDefaultLinesVisible(false);
+			renderer.setDefaultShapesVisible(false);
+			renderer.setDefaultShapesFilled(false);
+			renderer.setDefaultLinesVisible(true);
 		}
  
 		angleTimeAxis = (DateAxis) a_plot.getDomainAxis();

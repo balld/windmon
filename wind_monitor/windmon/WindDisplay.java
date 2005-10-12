@@ -137,8 +137,9 @@ public class WindDisplay extends JPanel implements Runnable, WindDataListener
                 }
                 wg.setSpeed(windSpeed);
                 wg.setWindAngle(windAngle);
-                if ( ( System.currentTimeMillis() - last_display_update )
-                        > display_update_interval)
+                if ( windSpeed < 0 || windAngle < 0 
+                        || ( System.currentTimeMillis() - last_display_update )
+                            > display_update_interval)
                 {
                 	wd.setWindSpeed(windSpeed);
                 	wd.setWindAngle(windAngle);

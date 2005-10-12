@@ -69,7 +69,7 @@ public class NMEAController implements Runnable {
     public void run() {
         NMEAMessage msg = null;
         Thread me = Thread.currentThread();
-        WindDataEvent wde = new WindDataEvent();
+        boolean display_cleared = false;
 
         while (thread == me && link != null)
         {
@@ -78,10 +78,16 @@ public class NMEAController implements Runnable {
         	{
         		if ( !link.open() )
         		{
+        		    if ( !display_cleared )
+                    {
+        		        dispatchWindDataEvent(-1.0f, -1.0f);
+                        display_cleared = true;
+                    }
                 	EventLog.log(EventLog.SEV_INFO, "Link not opened. Will retry...");
         			Utils.justSleep(retryInterval);
         		}
         	}
+            display_cleared = false;
 
         	do
         	{
@@ -93,12 +99,8 @@ public class NMEAController implements Runnable {
 						&& msg.getTalkerIDString().equals("WI")
 						&& msg.getSentenceIDString().equals("MWV"))
         		{
-        			wde.setWindAngle(Float.parseFloat(msg.getField(0)));
-        			wde.setWindSpeed(Float.parseFloat(msg.getField(2)));
-        			for (int i = 0; i < listeners.size(); i++)
-        			{
-        				((WindDataListener)listeners.get(i)).windDataEventReceived(wde);
-        			}
+        		    dispatchWindDataEvent(Float.parseFloat(msg.getField(0)),
+        		                          Float.parseFloat(msg.getField(2)));
         		}
         	} while (msg != null );
         }
@@ -201,5 +203,16 @@ public class NMEAController implements Runnable {
     public void removeWindDataListener (WindDataListener l)
     {
     	listeners.remove(l);
+    }
+    
+    protected void dispatchWindDataEvent(float angle, float speed)
+    {
+        WindDataEvent wde = new WindDataEvent();
+        wde.setWindAngle(angle);
+        wde.setWindSpeed(speed);
+        for (int i = 0; i < listeners.size(); i++)
+        {
+            ((WindDataListener)listeners.get(i)).windDataEventReceived(wde);
+        }
     }
 }
