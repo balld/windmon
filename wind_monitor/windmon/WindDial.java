@@ -193,7 +193,7 @@ public class WindDial extends JPanel {
 
         d_needle_diam = radius - s_radius;
         // Draw the wind direction needle if wind_angle > zero
-        if ( wind_angle > 0.0 )
+        if ( wind_angle >= 0.0 )
         {
             int yd_points[] = { 0,
                     -d_needle_len + d_needle_diam/2,
@@ -262,7 +262,7 @@ public class WindDial extends JPanel {
 
         
         // Draw the wind speed needle (if wind_speed non-negative
-        if (wind_speed > 0.0)
+        if (wind_speed >= 0.0)
         {
             g2.setColor(needle_fill_col);
             g2.fillOval(centre.x - s_spindle_diam/2,

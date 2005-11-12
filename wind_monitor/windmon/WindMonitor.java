@@ -112,10 +112,24 @@ public class WindMonitor extends JWindow
 
       setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 
-        
-        NMEALink link = new NMEALinkSocket(
-        		Config.getParamAsString("NMEADefaultServerHost", "localhost"),
-        		Config.getParamAsInt("NMEADefaultServerPort", 2468));
+        String connectionType = Config.getParamAsString("ConnectionType",
+        		                                        "serial");
+        NMEALink link = null;
+        if ( connectionType.compareToIgnoreCase("socket") == 0 )
+        {
+        	link = new NMEALinkSocket(
+        			Config.getParamAsString("NMEADefaultServerHost", "localhost"),
+					Config.getParamAsInt("NMEADefaultServerPort", 2468));
+        }
+        else if ( connectionType.compareToIgnoreCase("serial") == 0 )
+        {
+        	link = new NMEALinkSerial();
+        }
+        else
+        {
+        	EventLog.log(EventLog.SEV_FATAL, "Unrecognised connection type '" +
+        			                          connectionType + "'");
+        }
         NMEAController nmea = NMEAController.getCreateInstance(link);
         nmea.addWindDataListener(wv);
         WindDataLogger logger = new WindDataLogger(plotter);
