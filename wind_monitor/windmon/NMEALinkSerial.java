@@ -75,12 +75,16 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
 	public NMEAMessage getNMEAMessage() {
     	try
 		{
-            String cmd = br.readLine();
-            if ( cmd == null )
+            String cmd;
+            do
             {
-            	throw new IOException("Null string read");
-            }
-//            EventLog.log(EventLog.SEV_DEBUG, "Read " + cmd);
+                cmd = br.readLine();
+                if ( cmd == null )
+                {
+                    throw new IOException("Null string read");
+                }
+//                EventLog.log(EventLog.SEV_DEBUG, "Read '" + cmd + "' (" + cmd.length() + " characters)");
+            } while ( cmd.length() <= 0 );
             return new NMEAMessage(cmd);
         }
         catch (Exception e)
