@@ -6,6 +6,8 @@
  */
 package windmon;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.Timer;
@@ -41,8 +43,8 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 	long nextMidnight;
     
     private GregorianCalendar calendar = null;
-    private SimpleDateFormat fnameDateFormat = new SimpleDateFormat("yyyyMMddHHss");
-    private SimpleDateFormat labelDateFormat = new SimpleDateFormat("yyyy.MM.dd 'at' HH:mm:ss z");
+    private SimpleDateFormat fnameDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+    private SimpleDateFormat labelDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z");
     private SimpleDateFormat maxWindDateFormat = new SimpleDateFormat("HH:mm:ss z");
     
     private WindDataRecord dayMax = null;
@@ -267,29 +269,18 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 				EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + dialfname + "'");
 			}
 			
-			// And now the supporting text
-            try
-            {
-			    PrintWriter pw = new PrintWriter(
-                                 new FileWriter(txtfname, false));
-                pw.println("Data recorded at " + labelDate + "\n");
-                pw.println("Todays peak windspeed" + dayMax.getMaxSpeed()
-                           + "knots recorded at " + maxWindDate );
-            }
-            catch (Exception e)
-            {
-                EventLog.log(EventLog.SEV_ERROR,
-                             "Could not write file '" + txtfname + "'");
-            }
-
             // And now the supporting text
             try
             {
                 PrintWriter pw = new PrintWriter(
                                  new FileWriter(txtfname, false));
-                pw.println("Data recorded at " + labelDate + "\n");
-                pw.println("Todays peak windspeed" + dayMax.getMaxSpeed()
-                           + "knots recorded at " + maxWindDate );
+                pw.println("Data for " + recordInterval/1000 + " seconds to " + labelDate);
+                pw.println("Min/Max/Ave Wind Speed: "
+                        + rec.getMinSpeed() + " / "
+                        + rec.getAveSpeed() + " / "
+                        + rec.getMaxSpeed() + " knots");
+                pw.println("Todays peak windspeed " + dayMax.getMaxSpeed()
+                           + " knots recorded at " + maxWindDate );
                 pw.close();
             }
             catch (Exception e)
