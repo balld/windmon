@@ -9,6 +9,7 @@ package windmon;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -189,7 +190,7 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		}
  
 		speedTimeAxis = (DateAxis) plot.getDomainAxis();
-		speedTimeAxis.setDateFormatOverride(new SimpleDateFormat("hh:mm:ss"));
+		speedTimeAxis.setDateFormatOverride(new SimpleDateFormat("HH:mm:ss"));
 		speedTimeAxis.setLabelPaint(Color.WHITE);
 		speedTimeAxis.setAxisLinePaint(Color.WHITE);
 		speedTimeAxis.setTickLabelPaint(Color.WHITE);
@@ -228,13 +229,14 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		XYItemRenderer ar = a_plot.getRenderer();
 		if (ar instanceof XYLineAndShapeRenderer) {
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) ar;
-			renderer.setDefaultShapesVisible(false);
+			renderer.setDefaultShapesVisible(true);
 			renderer.setDefaultShapesFilled(false);
-			renderer.setDefaultLinesVisible(true);
+			renderer.setDefaultLinesVisible(false);
+            renderer.setSeriesShape(0, new Rectangle(-1, -1, 2, 2), false);
 		}
  
 		angleTimeAxis = (DateAxis) a_plot.getDomainAxis();
-		angleTimeAxis.setDateFormatOverride(new SimpleDateFormat("hh:mm:ss"));
+		angleTimeAxis.setDateFormatOverride(new SimpleDateFormat("HH:mm:ss"));
 		angleTimeAxis.setLabelPaint(Color.WHITE);
 		angleTimeAxis.setAxisLinePaint(Color.WHITE);
 		angleTimeAxis.setTickLabelPaint(Color.WHITE);
