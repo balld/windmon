@@ -23,12 +23,12 @@ import java.util.*;
  */
 public class WindDigits extends JPanel implements Runnable {
 
-    private static final Dimension ps = new Dimension(400,400);
-    private static int l_font_size = 160;
-    private static int s_font_size = 56;
+    private static final Dimension ps = new Dimension(300,300);
+    private static int l_font_size = 120;
+    private static int s_font_size = 40;
     
-    private static int line_spacing = 56;
-    private static int alignment = 300;
+    private static int line_spacing = 20;
+    private static int alignment = 250;
 
     private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
     private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;

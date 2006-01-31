@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
+import java.awt.TextArea;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,6 +31,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.text.TextBox;
 import org.jfree.ui.RectangleInsets;
 
 
@@ -68,7 +70,7 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 	{
 		super();
 		setBackground(Color.red);
-		setPreferredSize(new Dimension(600, 300));
+		setPreferredSize(new Dimension(500, 300));
 		speedDataset = new TimeSeriesCollection();
         speedDataset.setDomainIsPointsInTime(true);
         angleDataset = new TimeSeriesCollection();
@@ -94,10 +96,11 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		angleChartPanel.setMouseZoomable(false, false);
 //		angleChartPanel.setSize(this.getSize());
 
-        GridLayout gl = new GridLayout(1,2);
+        GridLayout gl = new GridLayout(3,1);
         setLayout(gl);
         add(speedChartPanel);
         add(angleChartPanel);
+        add(new TextArea());
 	}
 
 	/* (non-Javadoc)
@@ -233,6 +236,7 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 			renderer.setDefaultShapesFilled(false);
 			renderer.setDefaultLinesVisible(false);
             renderer.setSeriesShape(0, new Rectangle(-1, -1, 2, 2), false);
+            renderer.setSeriesVisibleInLegend(new Boolean(false), false);
 		}
  
 		angleTimeAxis = (DateAxis) a_plot.getDomainAxis();

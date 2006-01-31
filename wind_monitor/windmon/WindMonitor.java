@@ -86,7 +86,7 @@ public class WindMonitor extends JWindow
         plotter.setBorder(border);
 
 
-        jp.add(plotter, BorderLayout.SOUTH);
+        jp.add(plotter, BorderLayout.EAST);
 
         // JFrame : Create menu bar
 //        JMenuBar mbar = new JMenuBar();
