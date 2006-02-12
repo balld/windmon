@@ -45,10 +45,8 @@ public class WindMonitor extends JWindow
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {System.exit(0);}
             public void windowDeiconified(WindowEvent e) { 
-                if (wv != null) { wv.start(); }
             }
             public void windowIconified(WindowEvent e) { 
-                if (wv != null) { wv.stop(); }
             }
         });
         
@@ -142,7 +140,6 @@ public class WindMonitor extends JWindow
         // JFrame : Set extended state
 //        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
         repaint();
-        wv.start();
         nmea.start();
     }
     

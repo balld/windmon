@@ -8,7 +8,9 @@ package windmon;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.TextArea;
 import java.io.File;
@@ -17,7 +19,11 @@ import java.util.Date;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
 import javax.swing.border.BevelBorder;
+import javax.swing.text.StringContent;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.StyleSheet;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -65,13 +71,20 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 	private NumberAxis speedKnotsAxis;
 	private DateAxis angleTimeAxis;
 	private NumberAxis angleBearingAxis;
+    
+    private JTextPane ta;
+    private Font b_font = null;
+    private Font ta_font = null;
+    private static int ta_font_size = 18;
+
 	
 	public JFreeChartPlotter()
 	{
 		super();
-		setBackground(Color.red);
+		setBackground(Color.BLACK);
 		setPreferredSize(new Dimension(500, 300));
-		speedDataset = new TimeSeriesCollection();
+
+        speedDataset = new TimeSeriesCollection();
         speedDataset.setDomainIsPointsInTime(true);
         angleDataset = new TimeSeriesCollection();
         angleDataset.setDomainIsPointsInTime(true);
@@ -88,19 +101,44 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		
 		createCharts();
 
-		
 		speedChartPanel = new ChartPanel(speedChart);
 		speedChartPanel.setMouseZoomable(false, false);
+        speedChartPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED,
+                new Color(100, 100, 255),
+                new Color(50, 50, 128)));
 //		speedChartPanel.setSize(this.getSize());
         angleChartPanel = new ChartPanel(angleChart);
 		angleChartPanel.setMouseZoomable(false, false);
+        angleChartPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED,
+                new Color(100, 100, 255),
+                new Color(50, 50, 128)));
 //		angleChartPanel.setSize(this.getSize());
 
         GridLayout gl = new GridLayout(3,1);
+        //gl.setHgap(5);
+        //gl.setVgap(5);
         setLayout(gl);
         add(speedChartPanel);
         add(angleChartPanel);
-        add(new TextArea());
+
+        JPanel jp2 = new JPanel();
+        jp2.setLayout(new GridLayout(2,1));
+        
+        ta = new JTextPane();
+        ta.setContentType("text/html");
+//      b_font = Utils.getFont("LCD-N___.TTF");
+//      b_font = Font.getFont("Arial");
+//      ta_font = b_font.deriveFont(Font.PLAIN, ta_font_size);
+//      Utils.setJTextPaneFont(ta, ta_font, Color.BLACK);
+        jp2.add(ta);
+
+//        DigitalClock dc = new DigitalClock();
+//        dc.setBackground(Color.BLACK);
+//        dc.setForeground(Color.WHITE);
+//        jp2.add(dc);
+//        dc.start();
+        
+        add(jp2);
 	}
 
 	/* (non-Javadoc)
@@ -111,7 +149,14 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		updateDatasets(records);
         this.repaint();
 	}
-	
+
+    public void setDisplayText(String buffer)
+    {
+        ta.setText(buffer);
+//        Utils.setJTextPaneFont(ta, ta_font, Color.BLACK);
+        ta.repaint();
+    }
+    
 	private void updateDatasets(WindDataRecord[] records)
 	{
 		double maxSpeed = speedDefaultMax;

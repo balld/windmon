@@ -28,7 +28,7 @@ import javax.swing.border.*;
  * @version @(#)WeatherView.java	0.1 26/01/2005
  * @author David Ball
  */
-public class WindDisplay extends JPanel implements Runnable, WindDataListener
+public class WindDisplay extends JPanel implements WindDataListener
 {
     private Banner bn = null;
     private WindDial wg = null;
@@ -39,7 +39,7 @@ public class WindDisplay extends JPanel implements Runnable, WindDataListener
     private double maxWindSpeed = 80.0;
     private double windAngle = 0.0;
     
-    private long display_update_interval = 500;
+    private long display_update_interval = 2000;
     
     private boolean update = true;
     
@@ -89,99 +89,16 @@ public class WindDisplay extends JPanel implements Runnable, WindDataListener
         add(wd, BorderLayout.SOUTH);
 //        add(new Border3D(dc), BorderLayout.SOUTH);
 //        add(dc, BorderLayout.CENTER);
+        // Start digital clock
+        //      dc.start();
 
 //        op = new OptionsPanel(nmea);
 //        add(new Border3D(op), BorderLayout.SOUTH);
     }
     
-    public void start() {
-        if (thread == null) {
-            thread = new Thread(this);
-            thread.setPriority(Thread.MIN_PRIORITY);
-            thread.start();
-        }
-        // Start digital clock
-//        dc.start();
-    }
-
-
-    public synchronized void stop() {
-        if (thread != null) {
-            thread.interrupt();
-        }
-        thread = null;
-        notifyAll();
-        dc.stop();
-    }
-
-    public void run() {
-        long last_display_update = 0;
-        boolean doDigitalUpdate = false;
-        NMEAMessage msg = null;
-
-        Thread me = Thread.currentThread();
-
-        while (thread == me) {
-            synchronized (this)
-            {
-                while ( update == false )
-                {
-                    try
-                    {
-                        wait();
-                    }
-                    catch (Exception e)
-                    {
-//                        No action required.
-                    }
-                }
-                wg.setSpeed(windSpeed);
-                wg.setWindAngle(windAngle);
-                if ( windSpeed < 0 || windAngle < 0 
-                        || ( System.currentTimeMillis() - last_display_update )
-                            > display_update_interval)
-                {
-                	wd.setWindSpeed(windSpeed);
-                	wd.setWindAngle(windAngle);
-                	last_display_update = System.currentTimeMillis();
-                	doDigitalUpdate = true;
-                }
-                update=false;
-            } // Updated values captured. Paint asynchronously 
-            wg.repaint();
-            if ( doDigitalUpdate )
-            {
-                wd.repaint();
-                doDigitalUpdate = false;
-            }
-        }
-        thread = null;
-    }
-
-    
-    /**
-     * @return Returns the maxWindSpeed.
-     */
-    public double getMaxWindSpeed() {
-        return maxWindSpeed;
-    }
-    /**
-     * @param maxWindSpeed The maxWindSpeed to set.
-     */
-    public synchronized void setMaxWindSpeed(double maxWindSpeed) {
-        this.maxWindSpeed = maxWindSpeed;
-        wg.setMaxSpeed(maxWindSpeed);
-        // Trigger re-draw
-        update=true;
-        notifyAll();
-    }
-
     public synchronized void windDataEventReceived(WindDataEvent e)
     {
-        this.windSpeed = e.getWindSpeed();
-        this.windAngle = e.getWindAngle();
-        // Trigger re-draw
-        update=true;
-        notifyAll();
+        wg.windDataEventReceived(e);
+        wd.windDataEventReceived(e);
     }
 }

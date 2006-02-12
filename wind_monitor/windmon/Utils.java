@@ -7,6 +7,11 @@ import java.net.URL;
 import java.net.URI;
 import java.net.URLClassLoader;
 
+import javax.swing.JTextPane;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
+
 /* import javax.comm.*; */
 
 
@@ -18,6 +23,22 @@ import java.net.URLClassLoader;
  */
 
 public class Utils {
+
+    private static final int beaufort[] = {
+            0,  // F0
+            3,  // F1
+            6,  // F2
+            10, // F3
+            16, // F4
+            21, // F5
+            27, // F6
+            33, // F7
+            40, // F8
+            47, // F9
+            55, // F10
+            63, // F11
+            Integer.MAX_VALUE // F12
+            };
     
     /**
      * Loads an image. Creates media tracker to wait for image to be loaded.
@@ -384,5 +405,48 @@ public class Utils {
         
         envVars.list( System.out );
         return envVars;
+    }
+    
+    /**
+     * Utility method for setting the font and color of a JTextPane. The
+     * result is roughly equivalent to calling setFont(...) and 
+     * setForeground(...) on an AWT TextArea.
+     */
+    public static void setJTextPaneFont(JTextPane jtp, Font font, Color c) {
+        // Start with the current input attributes for the JTextPane. This
+        // should ensure that we do not wipe out any existing attributes
+        // (such as alignment or other paragraph attributes) currently
+        // set on the text area.
+        MutableAttributeSet attrs = jtp.getInputAttributes();
+
+        // Set the font family, size, and style, based on properties of
+        // the Font object. Note that JTextPane supports a number of
+        // character attributes beyond those supported by the Font class.
+        // For example, underline, strike-through, super- and sub-script.
+        StyleConstants.setFontFamily(attrs, font.getFamily());
+        StyleConstants.setFontSize(attrs, font.getSize());
+        StyleConstants.setItalic(attrs, (font.getStyle() & Font.ITALIC) != 0);
+        StyleConstants.setBold(attrs, (font.getStyle() & Font.BOLD) != 0);
+
+        // Set the font color
+        StyleConstants.setForeground(attrs, c);
+
+        // Retrieve the pane's document object
+        StyledDocument doc = jtp.getStyledDocument();
+
+        // Replace the style for the entire document. We exceed the length
+        // of the document by 1 so that text entered at the end of the
+        // document uses the attributes.
+        doc.setCharacterAttributes(0, doc.getLength() + 1, attrs, false);
+    }
+    
+    public static String speedToBeaufort(double speed)
+    {
+        int f = 0;
+        while ( speed > (double) beaufort[f] )
+        {
+            f++;
+        }
+        return ("" + f);
     }
 }

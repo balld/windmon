@@ -20,7 +20,7 @@ import java.awt.geom.AffineTransform;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class WindDial extends JPanel {
+public class WindDial extends JPanel implements WindDataListener {
 
     private static final Dimension ps = new Dimension ( 400, 400 );
     /*
@@ -130,7 +130,9 @@ public class WindDial extends JPanel {
     private double wind_angle = 90.0;
     private double wind_speed_high = -1.0;
     private double wind_speed_low = -1.0;
-    
+
+    // To indicate re-draw
+    private boolean toggle = false;
     
     WindDial()
     {
@@ -139,6 +141,14 @@ public class WindDial extends JPanel {
         setBackground(Color.BLACK);
     }
 
+    public synchronized void windDataEventReceived(WindDataEvent e)
+    {
+        this.setSpeed(e.getWindSpeed());
+        this.setWindAngle(e.getWindAngle());
+        // always request repaint immediately
+        repaint();
+    }   
+        
     public void setSpeed ( double d )
     {
         wind_speed = d;
@@ -174,6 +184,14 @@ public class WindDial extends JPanel {
         // Create Graphics2D object for advanced rendering.
         Graphics2D g2 = (Graphics2D) g;
 
+        // Indicates frmae re-draw
+        g2.setColor(Color.GREEN);
+        if ( toggle )
+        {
+            g2.fillRect(0,0,20,20);
+        }
+        toggle = !toggle;
+        
         // Obtain the current size of this component
         Dimension size = getSize();
         

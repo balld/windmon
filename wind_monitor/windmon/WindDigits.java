@@ -21,7 +21,7 @@ import java.util.*;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class WindDigits extends JPanel implements Runnable {
+public class WindDigits extends JPanel implements Runnable, WindDataListener {
 
     private static final Dimension ps = new Dimension(300,300);
     private static int l_font_size = 120;
@@ -29,6 +29,10 @@ public class WindDigits extends JPanel implements Runnable {
     
     private static int line_spacing = 20;
     private static int alignment = 250;
+    
+    // Repaint on every n wind data events
+    private static final int sample_interval = 10;
+    private int sample_count = sample_interval;
 
     private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
     private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
@@ -44,6 +48,10 @@ public class WindDigits extends JPanel implements Runnable {
      */
     private double wind_speed = 0.0;
     private double wind_angle = 90.0;
+
+
+    // To indicate re-draw
+    private boolean toggle = false;
 
     
     public WindDigits()
@@ -70,10 +78,24 @@ public class WindDigits extends JPanel implements Runnable {
         // Run stuff
     }
 
+    public void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+    }
+    
     public void paint ( Graphics g )
     {
         super.paint(g);
         Graphics2D g2 = (Graphics2D) g;
+
+        // Indicates frmae re-draw
+        g2.setColor(Color.GREEN);
+        if ( toggle )
+        {
+            g2.fillRect(0,0,20,20);
+        }
+        toggle = !toggle;
+        
         Dimension size = getSize();
         
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
@@ -82,26 +104,36 @@ public class WindDigits extends JPanel implements Runnable {
         g2.setColor(Color.white);
         String speed_str;
         String angle_str;
+        String beauf_str;
+        String comp_str;
+        
         if ( wind_speed < 0 )
         {
             speed_str = "xxx";
-        }
-        else if ( wind_speed < 10 )
-        {
-            speed_str = ("" + wind_speed).substring(0, 3);
+            beauf_str = "Fx";
         }
         else
         {
-            speed_str = "" + (int) wind_speed;
+            if ( wind_speed < 10 )
+            {
+                speed_str = ("" + wind_speed).substring(0, 3);
+            }
+            else
+            {
+                speed_str = "" + (int) wind_speed;
+            }
+            beauf_str = "F" + Utils.speedToBeaufort(wind_speed);
         }
-        
+       
         if ( wind_angle < 0 )
         {
             angle_str = "xxx";
+            comp_str = "xxx";
         }
         else
         {
             angle_str   = "" + (int) wind_angle;
+            comp_str = "N  ";
         }
         String kts = "kts";
         String deg = "o";
@@ -129,6 +161,10 @@ public class WindDigits extends JPanel implements Runnable {
                                           g2.getFontRenderContext());
         TextLayout tldeg = new TextLayout(deg, deg_font,
                                           g2.getFontRenderContext());
+        TextLayout tlb = new TextLayout(beauf_str, l_font,
+                g2.getFontRenderContext());
+        TextLayout tlc = new TextLayout(comp_str, l_font,
+                g2.getFontRenderContext());
          
 //        tl.draw(g2,
 //                -(float) tl.getBounds().getCenterX(),
@@ -137,17 +173,24 @@ public class WindDigits extends JPanel implements Runnable {
 //        int w = (int) tls.getBounds().getWidth();
         int w = (int) tls.getAdvance();
         int y = size.height/2 - line_spacing/2;
-        int x = alignment;
-        tls.draw(g2, (float) x - w, (float) y );
-        tlkts.draw(g2, (float) x, (float) y);
+        int x = 0;
+        tlb.draw(g2, (float) x, (float) y );
+
+        x = size.width/2;
+        tls.draw(g2, (float) x, (float) y );
+        tlkts.draw(g2, (float) x + w, (float) y);
 
         y = size.height/2 + line_spacing/2 + (int) tld.getBounds().getHeight();
         int y2 = size.height/2 + line_spacing/2
                                + (int) tldeg.getBounds().getHeight();
 //        w = (int) tld.getBounds().getWidth();
         w = (int) tld.getAdvance();
-        tld.draw(g2, (float) x - w, (float) y);
-        tldeg.draw(g2, (float) x, (float) y2);
+        x = 0;
+        tlc.draw(g2, (float) x, (float) y );
+
+        x = size.width/2;
+        tld.draw(g2, (float) x, (float) y);
+        tldeg.draw(g2, (float) x + w, (float) y2);
 //        int y = g2.getFontMetrics(l_font).getAscent();
 //        g2.drawString(time_str, l_font_size/2,y);
     }
@@ -157,6 +200,26 @@ public class WindDigits extends JPanel implements Runnable {
     {
         return ps;
     }
+
+    
+    public synchronized void windDataEventReceived(WindDataEvent e)
+    {
+        if ( sample_count >= sample_interval || 
+                e.getWindSpeed() > this.getWindSpeed() )
+        {
+            this.setWindSpeed(e.getWindSpeed());
+            this.setWindAngle(e.getWindAngle());
+            // always request repaint immediately
+            repaint();
+            sample_count = 0;
+        }
+        else
+        {
+            sample_count++;
+        }
+    }   
+
+    
     /**
      * @return Returns the wind_angle.
      */

@@ -60,6 +60,8 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     private int imageWidth;
     private int imageHeight;
     
+    DecimalFormat df = new DecimalFormat("0.00");
+    
 	
 	public WindDataLogger (WindDataPlotter plotter)
 	{
@@ -270,17 +272,18 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 			}
 			
             // And now the supporting text
+            String supptext = "<b>" + labelDate + "</b> (" + recordInterval/1000 + " second sample)<br>" +
+                              "    Min: " + df.format(rec.getMinSpeed()) + " knots<br>" +
+                              "    Ave: " + df.format(rec.getAveSpeed()) + " knots<br>" +
+                              "    Max: " + df.format(rec.getMaxSpeed()) + " knots<br>" +
+                              "Todays peak windspeed " + dayMax.getMaxSpeed()
+                              + " knots recorded at " + maxWindDate;
+            plotter.setDisplayText(supptext);
             try
             {
                 PrintWriter pw = new PrintWriter(
                                  new FileWriter(txtfname, false));
-                pw.println("Data for " + recordInterval/1000 + " seconds to " + labelDate);
-                pw.println("Min/Max/Ave Wind Speed: "
-                        + rec.getMinSpeed() + " / "
-                        + rec.getAveSpeed() + " / "
-                        + rec.getMaxSpeed() + " knots");
-                pw.println("Todays peak windspeed " + dayMax.getMaxSpeed()
-                           + " knots recorded at " + maxWindDate );
+                pw.println(supptext);
                 pw.close();
             }
             catch (Exception e)

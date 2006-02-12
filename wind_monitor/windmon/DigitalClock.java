@@ -61,7 +61,6 @@ public class DigitalClock extends JPanel implements Runnable {
     public DigitalClock()
     {
         setDoubleBuffered(true);
-        setBackground(Color.white);
         b_font = Utils.getFont("LCD-N___.TTF");
         l_font = b_font.deriveFont(Font.PLAIN, l_font_size);
         s_font = b_font.deriveFont(Font.PLAIN, s_font_size);
@@ -135,7 +134,7 @@ public class DigitalClock extends JPanel implements Runnable {
         
         String time_str = buildTime();
         
-        g2.setColor(Color.black);
+        g2.setColor(getForeground());
         g2.setFont(l_font);
         TextLayout tl = new TextLayout(time_str,
                                        l_font,
