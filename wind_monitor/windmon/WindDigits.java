@@ -28,7 +28,7 @@ public class WindDigits extends JPanel implements Runnable, WindDataListener {
     private static int s_font_size = 40;
     
     private static int line_spacing = 20;
-    private static int alignment = 250;
+    private static int alignment = 25;
     
     // Repaint on every n wind data events
     private static final int sample_interval = 10;
@@ -78,13 +78,10 @@ public class WindDigits extends JPanel implements Runnable, WindDataListener {
         // Run stuff
     }
 
-    public void paintComponent(Graphics g)
-    {
-        super.paintComponent(g);
-    }
-    
     public void paint ( Graphics g )
     {
+        int x,y, c1, c2;
+        
         super.paint(g);
         Graphics2D g2 = (Graphics2D) g;
 
@@ -133,7 +130,7 @@ public class WindDigits extends JPanel implements Runnable, WindDataListener {
         else
         {
             angle_str   = "" + (int) wind_angle;
-            comp_str = "N  ";
+            comp_str = Utils.angleToCompass(wind_angle);
         }
         String kts = "kts";
         String deg = "o";
@@ -172,25 +169,28 @@ public class WindDigits extends JPanel implements Runnable, WindDataListener {
         int h = (int) tls.getBounds().getHeight();
 //        int w = (int) tls.getBounds().getWidth();
         int w = (int) tls.getAdvance();
-        int y = size.height/2 - line_spacing/2;
-        int x = 0;
+        y = size.height/2 - line_spacing/2;
+        c1 = alignment;
+        c2 = size.width - alignment 
+                        - (int) tlkts.getBounds().getWidth();
+        x = c1;
         tlb.draw(g2, (float) x, (float) y );
 
-        x = size.width/2;
-        tls.draw(g2, (float) x, (float) y );
-        tlkts.draw(g2, (float) x + w, (float) y);
+        x = c2;
+        tls.draw(g2, (float) x - w, (float) y );
+        tlkts.draw(g2, (float) x, (float) y);
 
         y = size.height/2 + line_spacing/2 + (int) tld.getBounds().getHeight();
         int y2 = size.height/2 + line_spacing/2
                                + (int) tldeg.getBounds().getHeight();
 //        w = (int) tld.getBounds().getWidth();
         w = (int) tld.getAdvance();
-        x = 0;
+        x = c1;
         tlc.draw(g2, (float) x, (float) y );
 
-        x = size.width/2;
-        tld.draw(g2, (float) x, (float) y);
-        tldeg.draw(g2, (float) x + w, (float) y2);
+        x = c2;
+        tld.draw(g2, (float) x - w, (float) y);
+        tldeg.draw(g2, (float) x, (float) y2);
 //        int y = g2.getFontMetrics(l_font).getAscent();
 //        g2.drawString(time_str, l_font_size/2,y);
     }

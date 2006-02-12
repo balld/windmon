@@ -136,6 +136,7 @@ public class WindMonitor extends JWindow
         setBackground(Color.pink);
        	setVisible(true);
         validate();
+        this.requestFocus();
         
         // JFrame : Set extended state
 //        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);

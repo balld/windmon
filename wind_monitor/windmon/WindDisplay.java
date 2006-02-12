@@ -32,7 +32,7 @@ public class WindDisplay extends JPanel implements WindDataListener
 {
     private Banner bn = null;
     private WindDial wg = null;
-    private WindDigits wd = null;
+    private WindDigits2 wd = null;
     private DigitalClock dc = null;
     
     private double windSpeed = 0.0;
@@ -59,10 +59,16 @@ public class WindDisplay extends JPanel implements WindDataListener
         wg.setMaxSpeed(maxWindSpeed);
         wg.setSpeed(windSpeed);
         wg.setWindAngle(windAngle);
+        wg.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED,
+                new Color(100, 100, 255),
+                new Color(50, 50, 128)));
 
-        wd = new WindDigits();
+        wd = new WindDigits2();
         wd.setWindSpeed(windSpeed);
         wd.setWindAngle(windAngle);
+        wd.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED,
+                new Color(100, 100, 255),
+                new Color(50, 50, 128)));
 
         // Create digital clock and image
 //        dc = new DigitalClock();

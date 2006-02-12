@@ -122,6 +122,11 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
                 i++;
             }
 		}
+        WindDataRecord data[] = (WindDataRecord[]) Array.newInstance(WindDataRecord.class,
+                dataRecords.size());
+        dataRecords.copyInto(data);
+
+        plotter.plotData( data );
 	}
 
 	public void readConfig()
@@ -137,7 +142,9 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 		{
 			timer.cancel();
 			timer = new Timer();
-			timer.schedule(this, new Date(0), recordInterval);
+            timer.schedule(this,
+                           new Date(System.currentTimeMillis() + recordInterval),
+                           recordInterval);
 		}
 		
 		// Reset the dial size
@@ -165,7 +172,9 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 		if ( timer == null )
 		{
 			timer = new Timer();
-			timer.schedule(this, new Date(0), recordInterval);
+            timer.schedule(this,
+                    new Date(System.currentTimeMillis() + recordInterval),
+                    recordInterval);
 		}
 
 		synchronized(currentSet)
@@ -179,6 +188,9 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 	{
 		if ( currentSet != null )
 		{
+            // Minimum synchronised block on currentSet. We copy data,
+            // reset and then release it so that we can continue to log
+            // incoming readings whilst we processing data.
 			synchronized(currentSet)
 			{
 				currentSet.setEndPeriod(System.currentTimeMillis());
@@ -328,5 +340,10 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 	 */
 	public void setPlotter(WindDataPlotter plotter) {
 		this.plotter = plotter;
+        WindDataRecord data[] = (WindDataRecord[]) Array.newInstance(WindDataRecord.class,
+                dataRecords.size());
+        dataRecords.copyInto(data);
+
+        plotter.plotData( data );
 	}
 }
