@@ -114,31 +114,30 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
                 new Color(50, 50, 128)));
 //		angleChartPanel.setSize(this.getSize());
 
-        GridLayout gl = new GridLayout(3,1);
+        GridLayout gl = new GridLayout(2,1);
         //gl.setHgap(5);
         //gl.setVgap(5);
         setLayout(gl);
         add(speedChartPanel);
         add(angleChartPanel);
 
-        JPanel jp2 = new JPanel();
-        jp2.setLayout(new GridLayout(2,1));
-        
-        ta = new JTextPane();
-        ta.setContentType("text/html");
-//      b_font = Utils.getFont("LCD-N___.TTF");
-//      b_font = Font.getFont("Arial");
-//      ta_font = b_font.deriveFont(Font.PLAIN, ta_font_size);
-//      Utils.setJTextPaneFont(ta, ta_font, Color.BLACK);
-        jp2.add(ta);
+//        JPanel jp2 = new JPanel();
+//        jp2.setLayout(new GridLayout(2,1));
+//        ta = new JTextPane();
+//        ta.setContentType("text/html");
+//        b_font = Utils.getFont("LCD-N___.TTF");
+//        b_font = Font.getFont("Arial");
+//        ta_font = b_font.deriveFont(Font.PLAIN, ta_font_size);
+//        Utils.setJTextPaneFont(ta, ta_font, Color.BLACK);
+//        jp2.add(ta);
 
 //        DigitalClock dc = new DigitalClock();
 //        dc.setBackground(Color.BLACK);
 //        dc.setForeground(Color.WHITE);
 //        jp2.add(dc);
 //        dc.start();
-        
-        add(jp2);
+//        
+//        add(jp2);
 	}
 
 	/* (non-Javadoc)
@@ -152,9 +151,9 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 
     public void setDisplayText(String buffer)
     {
-        ta.setText(buffer);
+//        ta.setText(buffer);
 //        Utils.setJTextPaneFont(ta, ta_font, Color.BLACK);
-        ta.repaint();
+//        ta.repaint();
     }
     
 	private void updateDatasets(WindDataRecord[] records)

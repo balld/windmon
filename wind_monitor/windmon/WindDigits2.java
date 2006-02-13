@@ -28,7 +28,7 @@ import java.util.*;
  */
 public class WindDigits2 extends JPanel implements WindDataListener {
 
-    private static final Dimension ps = new Dimension(300,300);
+//    private static final Dimension ps = new Dimension(300,300);
     private static int l_font_size = 120;
     private static int s_font_size = 20;
     
@@ -77,17 +77,21 @@ public class WindDigits2 extends JPanel implements WindDataListener {
         label_beauf.setFont(l_font);
         label_comp.setFont(l_font);
 
-        label_kts.setBackground(Color.GRAY);
-        label_deg.setBackground(Color.GRAY);
-        label_beauf.setBackground(Color.GRAY);
-        label_comp.setBackground(Color.GRAY);
+        label_kts.setBackground(Color.BLACK);
+        label_deg.setBackground(Color.BLACK);
+        label_beauf.setBackground(Color.BLACK);
+        label_comp.setBackground(Color.BLACK);
+        label_kts.setForeground(Color.WHITE);
+        label_deg.setForeground(Color.WHITE);
+        label_beauf.setForeground(Color.WHITE);
+        label_comp.setForeground(Color.WHITE);
 
         label_kts.setOpaque(true);
         label_deg.setOpaque(true);
         label_beauf.setOpaque(true);
         label_comp.setOpaque(true);
         
-        GridLayout gl = new GridLayout(2,2);
+        GridLayout gl = new GridLayout(1,4);
 //        gl.setHgap(5);
 //        gl.setVgap(5);
         this.setLayout(gl);
@@ -141,10 +145,10 @@ public class WindDigits2 extends JPanel implements WindDataListener {
     }
 
     
-    public Dimension getPreferredSize()
-    {
-        return ps;
-    }
+//    public Dimension getPreferredSize()
+//    {
+//        return ps;
+//    }
 
     
     public synchronized void windDataEventReceived(WindDataEvent e)

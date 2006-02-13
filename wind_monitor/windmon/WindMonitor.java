@@ -32,6 +32,8 @@ public class WindMonitor extends JWindow
 {
     private static int WIDTH = 850, HEIGHT = 600;
     private static WindDisplay wv = null;
+    private static WindDial wdl = null;
+    private static WindDigits2 wdt = null;
     
     public WindMonitor()
     {
@@ -73,18 +75,40 @@ public class WindMonitor extends JWindow
                 new Color(50, 50, 128));
         Insets insets = new Insets(5,5,5,5);
 
-        wv = new WindDisplay();
-        wv.setBorder(border);
-        jp.add(wv, BorderLayout.CENTER);
 
+//        Create digital clock and image
+        Banner2 bn = new Banner2();
+        DigitalClock dc = new DigitalClock();
+        dc.setBackground(Color.BLACK);
+        dc.setForeground(Color.WHITE);
+        JPanel jp1 = new JPanel();
+        jp1.setLayout(new BorderLayout());
+        jp1.setBackground(Color.white);
+        jp1.add(bn, BorderLayout.WEST);
+        jp1.add(dc, BorderLayout.CENTER);
+        jp.add(jp1, BorderLayout.NORTH);
+        dc.start();
 
-//        Graph graph = new TestGraph();
-//        getContentPane().add(graph, BorderLayout.SOUTH);
+        
+//      wv = new WindDisplay();
+//      wv.setBorder(border);
+//      jp.add(wv, BorderLayout.CENTER);
+
+        
+        JPanel jp2 = new JPanel();
+        jp2.setLayout(new GridLayout(1,2));
+        
+        wdl = new WindDial();
+        wdl.setBorder(border);
+        jp2.add(wdl);
+        
         JFreeChartPlotter plotter = new JFreeChartPlotter();
         plotter.setBorder(border);
+        jp2.add(plotter);
+        jp.add(jp2, BorderLayout.CENTER);
 
-
-        jp.add(plotter, BorderLayout.EAST);
+        wdt = new WindDigits2();
+        jp.add(wdt, BorderLayout.SOUTH);
 
         // JFrame : Create menu bar
 //        JMenuBar mbar = new JMenuBar();
@@ -129,7 +153,9 @@ public class WindMonitor extends JWindow
         			                          connectionType + "'");
         }
         NMEAController nmea = NMEAController.getCreateInstance(link);
-        nmea.addWindDataListener(wv);
+//        nmea.addWindDataListener(wv);
+        nmea.addWindDataListener(wdl);
+        nmea.addWindDataListener(wdt);
         WindDataLogger logger = new WindDataLogger(plotter);
         nmea.addWindDataListener(logger);
         

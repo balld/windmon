@@ -54,7 +54,6 @@ public class WindDisplay extends JPanel implements WindDataListener
 //        setLayout(new BorderLayout(5,5));
         setLayout(new BorderLayout(0,0));
 
-        bn = new Banner();
         wg = new WindDial();
         wg.setMaxSpeed(maxWindSpeed);
         wg.setSpeed(windSpeed);
@@ -70,7 +69,8 @@ public class WindDisplay extends JPanel implements WindDataListener
                 new Color(100, 100, 255),
                 new Color(50, 50, 128)));
 
-        // Create digital clock and image
+//         Create digital clock and image
+//        bn = new Banner();
 //        dc = new DigitalClock();
 //        JPanel jp1 = new JPanel();
 //        jp1.setLayout(new BorderLayout());
