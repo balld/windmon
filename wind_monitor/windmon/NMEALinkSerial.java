@@ -136,7 +136,11 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
         try {
             sPort = (SerialPort)portId.open("WeatherView", 30000);
         } catch (PortInUseException e) {
-        	EventLog.log(EventLog.SEV_ERROR, "Could not open port " + portName);
+        	EventLog.log(EventLog.SEV_ERROR, "Could not open port [in use] " + portName);
+            sPort = null;
+            return false;
+        } catch (Exception e) {
+            EventLog.log(EventLog.SEV_ERROR, "Could not open port [error] " + portName);
             sPort = null;
             return false;
         }

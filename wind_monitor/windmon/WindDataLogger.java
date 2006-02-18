@@ -148,7 +148,8 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 		}
 		
 		// Reset the dial size
-		dial.setSize(new Dimension(imageWidth, imageHeight));
+		dial.setSize(new Dimension(Math.min(imageWidth, imageHeight),
+                                   Math.min(imageWidth, imageHeight)));
 	}
 	
 	
