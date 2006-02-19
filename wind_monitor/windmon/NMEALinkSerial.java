@@ -141,6 +141,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
             return false;
         } catch (Exception e) {
             EventLog.log(EventLog.SEV_ERROR, "Could not open port [error] " + portName);
+            e.printStackTrace();
             sPort = null;
             return false;
         }

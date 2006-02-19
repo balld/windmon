@@ -44,8 +44,8 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     
     private GregorianCalendar calendar = null;
     private SimpleDateFormat fnameDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-    private SimpleDateFormat labelDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss z");
-    private SimpleDateFormat maxWindDateFormat = new SimpleDateFormat("HH:mm:ss z");
+    private SimpleDateFormat labelDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm z");
+    private SimpleDateFormat maxWindDateFormat = new SimpleDateFormat("HH:mm z");
     
     private WindDataRecord dayMax = null;
     
@@ -59,8 +59,10 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     private String logDir;
     private int imageWidth;
     private int imageHeight;
+    private int dialWidth;
     
-    DecimalFormat df = new DecimalFormat("0.00");
+    DecimalFormat df = new DecimalFormat("0.0");
+    DecimalFormat dfc = new DecimalFormat("000");
     
 	
 	public WindDataLogger (WindDataPlotter plotter)
@@ -136,6 +138,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 		logDir = Config.getParamAsString("WindLogDataDirectory", "/tmp/");
 		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
 		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
+        dialWidth = Math.min(imageWidth, imageHeight);
 
 		// If timer exists, reset it
 		if ( timer != null )
@@ -148,8 +151,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 		}
 		
 		// Reset the dial size
-		dial.setSize(new Dimension(Math.min(imageWidth, imageHeight),
-                                   Math.min(imageWidth, imageHeight)));
+		dial.setSize(new Dimension(dialWidth, dialWidth));
 	}
 	
 	
@@ -269,7 +271,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 			dial.setSpeed(rec.getAveSpeed());
 			dial.setWindSpeedHigh(rec.getMaxSpeed());
 			dial.setWindSpeedLow(rec.getMinSpeed());
-			BufferedImage bdimg = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+			BufferedImage bdimg = new BufferedImage(dialWidth, dialWidth, BufferedImage.TYPE_INT_RGB);
 			Graphics2D bdg = bdimg.createGraphics();
 			dial.justPaint(bdg);
 			File dialFile = new File(dialfname);
@@ -285,12 +287,13 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 			}
 			
             // And now the supporting text
-            String supptext = "<b>" + labelDate + "</b> (" + recordInterval/1000 + " second sample)<br>" +
-                              "    Min: " + df.format(rec.getMinSpeed()) + " knots<br>" +
-                              "    Ave: " + df.format(rec.getAveSpeed()) + " knots<br>" +
-                              "    Max: " + df.format(rec.getMaxSpeed()) + " knots<br>" +
-                              "Todays peak windspeed " + dayMax.getMaxSpeed()
-                              + " knots recorded at " + maxWindDate;
+            String supptext = "<b>" + labelDate + "</b><br>" + 
+                 "(" + recordInterval/1000 + " second sample)<br>" +
+                 "Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")<br> " +
+                 "Ave Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")<br>" +
+                 "Gust      : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")<br>" +
+                 "Today's peak windspeed " + dayMax.getMaxSpeed()
+                  + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate;
             plotter.setDisplayText(supptext);
             try
             {
