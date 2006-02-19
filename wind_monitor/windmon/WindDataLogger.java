@@ -289,9 +289,11 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
             // And now the supporting text
             String supptext = "<b>" + labelDate + "</b><br>" + 
                  "(" + recordInterval/1000 + " second sample)<br>" +
-                 "Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")<br> " +
-                 "Ave Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")<br>" +
-                 "Gust      : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")<br>" +
+                 "<table>" +
+                 "<tr><td>Direction</td><td>: " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")</td></tr>" +
+                 "<tr><td>Ave Speed</td><td>: " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")</td></tr>" +
+                 "<tr><td>Gust</td><td>: " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")</td></tr>" +
+                 "</table>" +
                  "Today's peak windspeed " + dayMax.getMaxSpeed()
                   + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate;
             plotter.setDisplayText(supptext);

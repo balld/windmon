@@ -10,6 +10,8 @@ import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageFilter;
+import java.awt.image.ReplicateScaleFilter;
 // import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
@@ -103,9 +105,10 @@ public class WindDial extends JPanel implements WindDataListener {
     private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
     private boolean anti_alias = true;
 
+    /* Loaded Images */
+    Image s_dial_image = null;
     
     // instance variables
-//    private Toolkit toolkit = null;
     private Image     s_dial = null;
     private Graphics2D  s_dial_g = null;
     private Image     d_dial = null;
@@ -137,8 +140,10 @@ public class WindDial extends JPanel implements WindDataListener {
     WindDial()
     {
         setDoubleBuffered(true);
-//        toolkit = getToolkit();
         setBackground(Color.BLACK);
+        
+        /* Load Images */
+        s_dial_image = Utils.getImage(this, "blackball512.png");
     }
 
     public synchronized void windDataEventReceived(WindDataEvent e)
@@ -227,11 +232,43 @@ public class WindDial extends JPanel implements WindDataListener {
                     d_needle_diam/2,
                     d_needle_diam/4,
                     d_needle_diam/4 };
+            int yd_points_l[] = { 0,
+                    -d_needle_len + d_needle_diam/2,
+                    -d_needle_len + d_needle_diam/2,
+                    -d_needle_len,
+                    -d_needle_len + d_needle_diam/2,
+                    -d_needle_len + d_needle_diam/2,
+                    0};
+            int xd_points_l[] = {-d_needle_diam/4,
+                    -d_needle_diam/4,
+                    -d_needle_diam/2,
+                    0,
+                    0,
+                    0,
+                    0 };
+            int yd_points_r[] = { 0,
+                    -d_needle_len + d_needle_diam/2,
+                    -d_needle_len + d_needle_diam/2,
+                    -d_needle_len,
+                    -d_needle_len + d_needle_diam/2,
+                    -d_needle_len + d_needle_diam/2,
+                    0};
+            int xd_points_r[] = {0,
+                    0,
+                    0,
+                    0,
+                    d_needle_diam/2,
+                    d_needle_diam/4,
+                    d_needle_diam/4 };
             at.setToTranslation(centre.x, centre.y);
             at.rotate(Math.toRadians(wind_angle));
             Shape dir_needle = at.createTransformedShape(new Polygon(xd_points, yd_points, 7));
+            Shape dir_needle_l = at.createTransformedShape(new Polygon(xd_points_l, yd_points_l, 7));
+            Shape dir_needle_r = at.createTransformedShape(new Polygon(xd_points_r, yd_points_r, 7));
             g2.setColor(needle_fill_col);     
-            g2.fill(dir_needle);
+            g2.fill(dir_needle_l);
+            g2.setColor(needle_fill_col.darker());     
+            g2.fill(dir_needle_r);
             g2.setColor(needle_line_col);     
             g2.draw(dir_needle);
         }        
@@ -248,6 +285,20 @@ public class WindDial extends JPanel implements WindDataListener {
                 -s_spindle_diam/2,
                 0 };
 
+        int ys_points_l[] = { 0,
+                0,
+                s_needle_len};
+        int xs_points_l[] = { 0,
+                -s_spindle_diam/2,
+                0 };
+        int ys_points_r[] = { 0,
+                0,
+                s_needle_len};
+        int xs_points_r[] = { s_spindle_diam/2,
+                0,
+                0 };
+
+        
         // High and low speed needles
         if ( wind_speed_high >= 0.0 )
         {
@@ -292,7 +343,9 @@ public class WindDial extends JPanel implements WindDataListener {
             at.rotate(Math.toRadians(s_zero_angle +
                     (360.0 - 2*s_zero_angle)
                     *(wind_speed/max_speed)));
-            g2.fill(at.createTransformedShape(new Polygon(xs_points, ys_points, 3)));
+            g2.fill(at.createTransformedShape(new Polygon(xs_points_l, ys_points_l, 3)));
+            g2.setColor(needle_fill_col.darker());
+            g2.fill(at.createTransformedShape(new Polygon(xs_points_r, ys_points_r, 3)));
         }
     }
 
@@ -413,6 +466,7 @@ public class WindDial extends JPanel implements WindDataListener {
         s_dial_g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         s_dial_g.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
         
+        
         // Draw the wind speed dial border
         s_dial_g.setColor(border_col);
         s_dial_g.fillOval(centre.x - s_radius,
@@ -421,11 +475,18 @@ public class WindDial extends JPanel implements WindDataListener {
                         s_diameter);
         
         // Draw wind speed dial inner.
-        s_dial_g.setColor(s_dial_col);
-        s_dial_g.fillOval(centre.x - s_radius + s_border_depth,
-                        centre.y - s_radius + s_border_depth,
-                        s_diameter - 2*s_border_depth,
-                        s_diameter - 2*s_border_depth);
+        // Draw scaled background image
+        s_dial_g.drawImage(s_dial_image, 
+                centre.x - s_radius + s_border_depth,
+                centre.y - s_radius + s_border_depth,
+                s_diameter - 2*s_border_depth,
+                s_diameter - 2*s_border_depth,
+                this);
+//        s_dial_g.setColor(s_dial_col);
+//        s_dial_g.fillOval(centre.x - s_radius + s_border_depth,
+//                        centre.y - s_radius + s_border_depth,
+//                        s_diameter - 2*s_border_depth,
+//                        s_diameter - 2*s_border_depth);
 
         
         // Create arc which spans full scale deflection of speed dial.
