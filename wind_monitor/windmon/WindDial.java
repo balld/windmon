@@ -24,6 +24,12 @@ import java.awt.geom.AffineTransform;
  */
 public class WindDial extends JPanel implements WindDataListener {
 
+	/*
+	 * Colour Scheme Constants
+	 */
+	public static final int COL_SCHEME_BLACK  = 1;
+	public static final int COL_SCHEME_BLUE  = 2;
+	
     private static final Dimension ps = new Dimension ( 400, 400 );
     /*
      * Beaufort Scale Definition.
@@ -58,18 +64,18 @@ public class WindDial extends JPanel implements WindDataListener {
     /*
      * static constant definitions
      */
-    private static Color s_dial_col = Color.black;
-    private static Color border_col = Color.gray;
-    private static Color scale_col = Color.white;
-	private static Color needle_fill_col = Color.red;
-	private static Color needle_line_col = Color.white;
-    private static Color bg_col = Color.darkGray;
-    private static Color arrow_col_low =  new Color(50, 50, 128);
-    private static Color arrow_col_high = new Color(100, 100, 255);
-    private static Color rose_col_high = arrow_col_high;
-    private static Color rose_col_low  = arrow_col_low;
-    private static Color rose_char_col = Color.WHITE;
-	private static Color needle_faint_col = Color.lightGray;
+    private Color s_dial_col = Color.black;
+    private Color border_col = Color.gray;
+    private Color scale_col = Color.white;
+	private Color needle_fill_col_low = new Color (200, 0, 0);
+	private Color needle_fill_col_high = new Color (255, 0, 0);
+	private Color needle_line_col = Color.white;
+    private Color arrow_col_low =  new Color(50, 50, 128);
+    private Color arrow_col_high = new Color(100, 100, 255);
+    private Color rose_col_high = arrow_col_high;
+    private Color rose_col_low  = arrow_col_low;
+    private Color rose_char_col = Color.WHITE;
+	private Color needle_faint_col = Color.lightGray;
     
     /*
      * Wind speed dial layout settings
@@ -139,12 +145,49 @@ public class WindDial extends JPanel implements WindDataListener {
     
     WindDial()
     {
-        setDoubleBuffered(true);
-        setBackground(Color.BLACK);
-        
-        /* Load Images */
-        s_dial_image = Utils.getImage(this, "blackball512.png");
+        this(COL_SCHEME_BLACK);
     }
+    
+    WindDial ( int col_scheme )
+	{
+    	setDoubleBuffered(true);
+    	switch ( col_scheme )
+		{
+    	case COL_SCHEME_BLACK:
+            s_dial_image = Utils.getImage(this, "blackball512.png");
+            setBackground(Color.BLACK);
+            s_dial_col = Color.black;
+            border_col = Color.gray;
+            scale_col = Color.white;
+        	needle_fill_col_low = new Color (220, 0, 0);
+        	needle_fill_col_high = new Color (255, 0, 0);
+        	needle_line_col = Color.white;
+            arrow_col_low =  new Color(50, 50, 128);
+            arrow_col_high = new Color(100, 100, 255);
+            rose_col_high = arrow_col_high;
+            rose_col_low  = arrow_col_low;
+            rose_char_col = Color.WHITE;
+        	needle_faint_col = Color.lightGray;
+        	break;
+    	case COL_SCHEME_BLUE:
+            s_dial_image = Utils.getImage(this, "mscblueball512.png");
+            setBackground(Color.WHITE);
+            s_dial_col = new Color (153, 204, 255); //MSC light blue
+            border_col = Color.gray;
+            scale_col = Color.BLACK;
+        	needle_fill_col_low = new Color (220, 0, 0);
+        	needle_fill_col_high = new Color (255, 0, 0);
+        	needle_line_col = Color.BLACK;
+            arrow_col_low =  new Color(0, 32, 90);
+            arrow_col_high = arrow_col_low.brighter();
+            rose_col_high = arrow_col_high;
+            rose_col_low  = arrow_col_low;
+            rose_char_col = Color.BLACK;
+        	needle_faint_col = Color.DARK_GRAY;
+        	break;
+		}
+    	
+	}
 
     public synchronized void windDataEventReceived(WindDataEvent e)
     {
@@ -265,9 +308,9 @@ public class WindDial extends JPanel implements WindDataListener {
             Shape dir_needle = at.createTransformedShape(new Polygon(xd_points, yd_points, 7));
             Shape dir_needle_l = at.createTransformedShape(new Polygon(xd_points_l, yd_points_l, 7));
             Shape dir_needle_r = at.createTransformedShape(new Polygon(xd_points_r, yd_points_r, 7));
-            g2.setColor(needle_fill_col);     
+            g2.setColor(needle_fill_col_high);     
             g2.fill(dir_needle_l);
-            g2.setColor(needle_fill_col.darker());     
+            g2.setColor(needle_fill_col_low);     
             g2.fill(dir_needle_r);
             g2.setColor(needle_line_col);     
             g2.draw(dir_needle);
@@ -304,9 +347,9 @@ public class WindDial extends JPanel implements WindDataListener {
         {
             // Draw the wind speed needle
             g2.setColor(needle_faint_col);
-            g2.drawOval(centre.x - s_spindle_diam/2,
-                        centre.y - s_spindle_diam/2,
-                         s_spindle_diam, s_spindle_diam);
+//            g2.drawOval(centre.x - s_spindle_diam/2,
+//                        centre.y - s_spindle_diam/2,
+//                         s_spindle_diam, s_spindle_diam);
 
             at.setToTranslation(centre.x, centre.y);
             at.rotate(Math.toRadians(s_zero_angle +
@@ -317,35 +360,33 @@ public class WindDial extends JPanel implements WindDataListener {
         if ( wind_speed_low >= 0.0 )
         {
             // Draw the wind speed needle
-            g2.setColor(needle_faint_col);
-            g2.drawOval(centre.x - s_spindle_diam/2,
-                        centre.y - s_spindle_diam/2,
-                         s_spindle_diam, s_spindle_diam);
-
             at.setToTranslation(centre.x, centre.y);
             at.rotate(Math.toRadians(s_zero_angle +
                                        (360.0 - 2*s_zero_angle)
                                       *(wind_speed_low/max_speed)));
+            g2.setColor(needle_faint_col);
             g2.draw(at.createTransformedShape(new Polygon(xs_points, ys_points, 3)));
+//            g2.drawOval(centre.x - s_spindle_diam/2,
+//                        centre.y - s_spindle_diam/2,
+//                         s_spindle_diam, s_spindle_diam);
         }
 
         
         // Draw the wind speed needle (if wind_speed non-negative
         if (wind_speed >= 0.0)
         {
-            g2.setColor(needle_fill_col);
-            g2.fillOval(centre.x - s_spindle_diam/2,
-                    centre.y - s_spindle_diam/2,
-                    s_spindle_diam, s_spindle_diam);
-            
-            
             at.setToTranslation(centre.x, centre.y);
             at.rotate(Math.toRadians(s_zero_angle +
                     (360.0 - 2*s_zero_angle)
                     *(wind_speed/max_speed)));
+
+            g2.setColor(needle_fill_col_high);
             g2.fill(at.createTransformedShape(new Polygon(xs_points_l, ys_points_l, 3)));
-            g2.setColor(needle_fill_col.darker());
+            g2.setColor(needle_fill_col_low);
             g2.fill(at.createTransformedShape(new Polygon(xs_points_r, ys_points_r, 3)));
+            g2.fillOval(centre.x - s_spindle_diam/2,
+                    centre.y - s_spindle_diam/2,
+                    s_spindle_diam, s_spindle_diam);
         }
     }
 
@@ -380,13 +421,14 @@ public class WindDial extends JPanel implements WindDataListener {
         int d_rose_length  = d_digit_offset - d_rose_inset;
         int d_rose_width  = d_rose_length / 3;
         d_needle_len = d_rose_length - d_needle_inset;
-
         // Create buffered image for direction dial background
         d_dial = (BufferedImage) g2.getDeviceConfiguration().
                                      createCompatibleImage(panel_size.width,
                                                           panel_size.height,
-                                                          Transparency.BITMASK);  
+                                                          Transparency.OPAQUE);  
         d_dial_g = (Graphics2D) d_dial.getGraphics();
+        d_dial_g.setColor(getBackground());
+        d_dial_g.fillRect(0, 0, panel_size.width, panel_size.height);
 
         // Set rendering properties        
         d_dial_g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);

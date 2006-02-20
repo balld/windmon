@@ -53,7 +53,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     private WindDataPlotter plotter;
     
     private WindDataStore store;
-    private WindDial dial = new WindDial();
+    private WindDial dial = new WindDial(WindDial.COL_SCHEME_BLUE);
 
     // Config parameters
     private String logDir;
