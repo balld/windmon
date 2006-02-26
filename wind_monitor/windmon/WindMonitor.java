@@ -99,8 +99,11 @@ public class WindMonitor extends JWindow
         jp2.setLayout(new GridLayout(1,2));
         
         wdl = new WindDial();
-        wdl.setBorder(border);
-        jp2.add(wdl);
+        JPanel wdlp = new JPanel();
+        wdlp.setLayout(new BorderLayout());
+        wdlp.setBorder(border);
+        wdlp.add(wdl, BorderLayout.CENTER);
+        jp2.add(wdlp);
         
         JFreeChartPlotter plotter = new JFreeChartPlotter();
         plotter.setBorder(border);

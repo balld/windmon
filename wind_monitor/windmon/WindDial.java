@@ -220,7 +220,7 @@ public class WindDial extends JPanel implements WindDataListener {
     public void paint(Graphics g)
     {
         // Run super class paint method
-        super.paint(g);
+//        super.paint(g);
         justPaint(g);
     }
     
@@ -233,12 +233,12 @@ public class WindDial extends JPanel implements WindDataListener {
         Graphics2D g2 = (Graphics2D) g;
 
         // Indicates frmae re-draw
-        g2.setColor(Color.GREEN);
-        if ( toggle )
-        {
-            g2.fillRect(0,0,20,20);
-        }
-        toggle = !toggle;
+//        g2.setColor(Color.GREEN);
+//        if ( toggle )
+//        {
+//            g2.fillRect(0,0,20,20);
+//        }
+//        toggle = !toggle;
         
         // Obtain the current size of this component
         Dimension size = getSize();
@@ -429,7 +429,7 @@ public class WindDial extends JPanel implements WindDataListener {
         d_dial_g = (Graphics2D) d_dial.getGraphics();
         d_dial_g.setColor(getBackground());
         d_dial_g.fillRect(0, 0, panel_size.width, panel_size.height);
-
+        
         // Set rendering properties        
         d_dial_g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         d_dial_g.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);

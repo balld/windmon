@@ -50,8 +50,10 @@ import org.jfree.ui.RectangleInsets;
  */
 public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 
-	private double speedDefaultMax = 2.0; 
+    public static final int COL_SCHEME_BLACK  = 1;
+    public static final int COL_SCHEME_BLUE  = 2;
 
+    private double speedDefaultMax = 2.0; 
 	
 	private ChartPanel speedChartPanel = null;
 	private ChartPanel angleChartPanel = null;
@@ -76,13 +78,43 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
     private Font b_font = null;
     private Font ta_font = null;
     private static int ta_font_size = 18;
+    
+    // Chart Clor Scheme
+    private Color chartBackground = Color.WHITE;
+    private Color plotBackground = new Color(0,32,90);
+    private Color chartForeground = Color.BLACK;
+    private Color plotForeground = Color.WHITE;
 
-	
-	public JFreeChartPlotter()
+    public JFreeChartPlotter()
+    {
+        this(COL_SCHEME_BLUE);
+    }
+        
+    
+	public JFreeChartPlotter(int colScheme)
 	{
 		super();
-		setBackground(Color.BLACK);
-		setPreferredSize(new Dimension(500, 300));
+        
+        // Colour Scheme
+        switch (colScheme)
+        {
+        case COL_SCHEME_BLUE:
+            chartBackground = Color.WHITE;
+            plotBackground = new Color(0,32,90);
+            chartForeground = Color.BLACK;
+            plotForeground = Color.WHITE;
+            break;
+        default:
+            chartBackground = Color.BLACK;
+            plotBackground = Color.BLACK;
+            chartForeground = Color.WHITE;
+            plotForeground = Color.WHITE;
+            break;
+        }
+
+        setBackground(Color.BLACK);
+        
+        setPreferredSize(new Dimension(500, 300));
 
         speedDataset = new TimeSeriesCollection();
         speedDataset.setDomainIsPointsInTime(true);
@@ -217,13 +249,13 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 				false          // generate URLs?
 		);
 		
-		speedChart.setBackgroundPaint(Color.black);
-		speedChart.getTitle().setPaint(Color.WHITE);
+		speedChart.setBackgroundPaint(chartBackground);
+		speedChart.getTitle().setPaint(chartForeground);
 		
 		XYPlot plot = (XYPlot) speedChart.getPlot();
-		plot.setBackgroundPaint(Color.black);
-		plot.setDomainGridlinePaint(Color.white);
-		plot.setRangeGridlinePaint(Color.white);
+		plot.setBackgroundPaint(plotBackground);
+		plot.setDomainGridlinePaint(plotForeground);
+		plot.setRangeGridlinePaint(plotForeground);
 		plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
 		plot.setDomainCrosshairVisible(true);
 		plot.setRangeCrosshairVisible(true);
@@ -238,16 +270,16 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
  
 		speedTimeAxis = (DateAxis) plot.getDomainAxis();
 		speedTimeAxis.setDateFormatOverride(new SimpleDateFormat("HH:mm:ss"));
-		speedTimeAxis.setLabelPaint(Color.WHITE);
-		speedTimeAxis.setAxisLinePaint(Color.WHITE);
-		speedTimeAxis.setTickLabelPaint(Color.WHITE);
+		speedTimeAxis.setLabelPaint(chartForeground);
+		speedTimeAxis.setAxisLinePaint(chartForeground);
+		speedTimeAxis.setTickLabelPaint(chartForeground);
 		
 		speedKnotsAxis = (NumberAxis) plot.getRangeAxis();
 		speedKnotsAxis.setLowerBound(0.0);
 		speedKnotsAxis.setUpperBound(speedDefaultMax * 1.10);
-		speedKnotsAxis.setLabelPaint(Color.WHITE);
-		speedKnotsAxis.setAxisLinePaint(Color.WHITE);
-		speedKnotsAxis.setTickLabelPaint(Color.WHITE);
+		speedKnotsAxis.setLabelPaint(chartForeground);
+		speedKnotsAxis.setAxisLinePaint(chartForeground);
+		speedKnotsAxis.setTickLabelPaint(chartForeground);
 		
 		//
 		// Angle Graph
@@ -262,13 +294,13 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 				false          // generate URLs?
 		);
 		
-		angleChart.setBackgroundPaint(Color.black);
-		angleChart.getTitle().setPaint(Color.WHITE);
+		angleChart.setBackgroundPaint(chartBackground);
+		angleChart.getTitle().setPaint(chartForeground);
 		
 		XYPlot a_plot = (XYPlot) angleChart.getPlot();
-		a_plot.setBackgroundPaint(Color.black);
-		a_plot.setDomainGridlinePaint(Color.white);
-		a_plot.setRangeGridlinePaint(Color.white);
+		a_plot.setBackgroundPaint(plotBackground);
+		a_plot.setDomainGridlinePaint(plotForeground);
+		a_plot.setRangeGridlinePaint(plotForeground);
 		a_plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
 		a_plot.setDomainCrosshairVisible(true);
 		a_plot.setRangeCrosshairVisible(true);
@@ -285,16 +317,16 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
  
 		angleTimeAxis = (DateAxis) a_plot.getDomainAxis();
 		angleTimeAxis.setDateFormatOverride(new SimpleDateFormat("HH:mm:ss"));
-		angleTimeAxis.setLabelPaint(Color.WHITE);
-		angleTimeAxis.setAxisLinePaint(Color.WHITE);
-		angleTimeAxis.setTickLabelPaint(Color.WHITE);
+		angleTimeAxis.setLabelPaint(chartForeground);
+		angleTimeAxis.setAxisLinePaint(chartForeground);
+		angleTimeAxis.setTickLabelPaint(chartForeground);
 		
 		angleBearingAxis = (NumberAxis) a_plot.getRangeAxis();
 		angleBearingAxis.setLowerBound(0.0);
 		angleBearingAxis.setUpperBound(360.0);
-		angleBearingAxis.setLabelPaint(Color.WHITE);
-		angleBearingAxis.setAxisLinePaint(Color.WHITE);
-		angleBearingAxis.setTickLabelPaint(Color.WHITE);
+		angleBearingAxis.setLabelPaint(chartForeground);
+		angleBearingAxis.setAxisLinePaint(chartForeground);
+		angleBearingAxis.setTickLabelPaint(chartForeground);
 		angleBearingAxis.setTickUnit(new JFreeCompassTickUnit(45.0));
 	}
 
