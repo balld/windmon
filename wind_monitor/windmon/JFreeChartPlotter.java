@@ -16,6 +16,8 @@ import java.awt.TextArea;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -66,8 +68,10 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 	TimeSeries max;
 	TimeSeries angle;
 	
-	private JFreeChart speedChart;
-	private JFreeChart angleChart;
+    private JFreeChart screenSpeedChart;
+    private JFreeChart screenAngleChart;
+    private JFreeChart imageSpeedChart;
+    private JFreeChart imageAngleChart;
 
 	private DateAxis speedTimeAxis;
 	private NumberAxis speedKnotsAxis;
@@ -79,38 +83,20 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
     private Font ta_font = null;
     private static int ta_font_size = 18;
     
-    // Chart Clor Scheme
-    private Color chartBackground = Color.WHITE;
-    private Color plotBackground = new Color(0,32,90);
-    private Color chartForeground = Color.BLACK;
-    private Color plotForeground = Color.WHITE;
+    // Need to store number Axis and update
+    private Vector numberAxisVec = new Vector();
 
     public JFreeChartPlotter()
     {
-        this(COL_SCHEME_BLUE);
+        this(COL_SCHEME_BLACK, COL_SCHEME_BLUE);
     }
         
     
-	public JFreeChartPlotter(int colScheme)
+	public JFreeChartPlotter(int screenColScheme, int imageColScheme)
 	{
 		super();
         
         // Colour Scheme
-        switch (colScheme)
-        {
-        case COL_SCHEME_BLUE:
-            chartBackground = Color.WHITE;
-            plotBackground = new Color(0,32,90);
-            chartForeground = Color.BLACK;
-            plotForeground = Color.WHITE;
-            break;
-        default:
-            chartBackground = Color.BLACK;
-            plotBackground = Color.BLACK;
-            chartForeground = Color.WHITE;
-            plotForeground = Color.WHITE;
-            break;
-        }
 
         setBackground(Color.BLACK);
         
@@ -131,15 +117,18 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		speedDataset.addSeries(min);
         angleDataset.addSeries(angle);
 		
-		createCharts();
+		screenSpeedChart = createSpeedChart(screenColScheme);
+        screenAngleChart = createAngleChart(screenColScheme);
+        imageSpeedChart = createSpeedChart(imageColScheme);
+        imageAngleChart = createAngleChart(imageColScheme);
 
-		speedChartPanel = new ChartPanel(speedChart);
+		speedChartPanel = new ChartPanel(screenSpeedChart);
 		speedChartPanel.setMouseZoomable(false, false);
         speedChartPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED,
                 new Color(100, 100, 255),
                 new Color(50, 50, 128)));
 //		speedChartPanel.setSize(this.getSize());
-        angleChartPanel = new ChartPanel(angleChart);
+        angleChartPanel = new ChartPanel(screenAngleChart);
 		angleChartPanel.setMouseZoomable(false, false);
         angleChartPanel.setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED,
                 new Color(100, 100, 255),
@@ -178,7 +167,7 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 	public void plotData(WindDataRecord[] records) {
 		// TODO Auto-generated method stub
 		updateDatasets(records);
-        this.repaint();
+        // this.repaint();
 	}
 
     public void setDisplayText(String buffer)
@@ -191,55 +180,64 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 	private void updateDatasets(WindDataRecord[] records)
 	{
 		double maxSpeed = speedDefaultMax;
-		
-		// If records is empty, then clean out the graphs
-		if ( records.length == 0 )
-		{
-			min.clear();
-			ave.clear();
-			max.clear();
-			angle.clear();
-		}
-		else
-		{
-			// Add new data points to graph
-			for (int i = 0; i<records.length; i++)
-			{
-				Second t = new Second(new Date(records[i].getEndTime()));
-				// Assume if a time is in one chart, its in all
-				if ( min.getDataItem(t) == null )
-				{
-					min.add(t, records[i].getMinSpeed());
-					ave.add(t, records[i].getAveSpeed());
-					max.add(t, records[i].getMaxSpeed());
-					angle.add(t, records[i].getAveAngle());
-				}
-				if ( records[i].getMaxSpeed() > maxSpeed )
-					maxSpeed = records[i].getMaxSpeed();
-			}
+		min.setNotify(false);
+        ave.setNotify(false);
+        max.setNotify(false);
+        angle.setNotify(false);
+
+        min.clear();
+        ave.clear();
+        max.clear();
+        angle.clear();
+
+        for ( int i = 0; i < records.length; i++ )
+        {
+            Second t = new Second(new Date(records[i].getEndTime()));
+            // Assume if a time is in one chart, its in all
+            min.add(t, records[i].getMinSpeed());
+            ave.add(t, records[i].getAveSpeed());
+            max.add(t, records[i].getMaxSpeed());
+            angle.add(t, records[i].getAveAngle());
+            
+            if ( records[i].getMaxSpeed() > maxSpeed )
+                maxSpeed = records[i].getMaxSpeed();
+//            EventLog.log(EventLog.SEV_DEBUG, "Added data item :" + records[i]);
+        }
 			
-			// Delete obsolete data points from graph (no longer in records).
-			Second s = new Second(new Date(records[0].getEndTime()));
-			int iend = 0;
-			while ( iend < min.getItemCount() && min.getDataItem(iend).getPeriod().compareTo(s) < 0 )
-			{
-				iend++;
-			}
-			
-			if ( iend > 0 )
-			{
-				min.delete(0, iend-1);
-				ave.delete(0, iend-1);
-				max.delete(0, iend-1);
-				angle.delete(0, iend-1);
-			}
-		}
-		speedKnotsAxis.setUpperBound(maxSpeed * 1.10);
+        setNumberAxisUpperBound(maxSpeed * 1.10);
+
+        min.setNotify(true);
+        ave.setNotify(true);
+        max.setNotify(true);
+        angle.setNotify(true);
+
 	}
 	
-	private void createCharts()
+	private JFreeChart createSpeedChart(int colScheme)
 	{
-		speedChart = ChartFactory.createTimeSeriesChart(
+        // Chart Clor Scheme
+        Color chartBackground = Color.WHITE;
+        Color plotBackground = new Color(0,32,90);
+        Color chartForeground = Color.BLACK;
+        Color plotForeground = Color.WHITE;
+
+        switch (colScheme)
+        {
+        case COL_SCHEME_BLUE:
+            chartBackground = Color.WHITE;
+            plotBackground = new Color(0,32,90);
+            chartForeground = Color.BLACK;
+            plotForeground = Color.WHITE;
+            break;
+        default:
+            chartBackground = Color.BLACK;
+            plotBackground = Color.BLACK;
+            chartForeground = Color.WHITE;
+            plotForeground = Color.WHITE;
+            break;
+        }
+	   
+        JFreeChart speedChart = ChartFactory.createTimeSeriesChart(
 				"Wind Speed",  // title
 				"Time",        // x-axis label
 				"Knots",       // y-axis label
@@ -280,11 +278,36 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		speedKnotsAxis.setLabelPaint(chartForeground);
 		speedKnotsAxis.setAxisLinePaint(chartForeground);
 		speedKnotsAxis.setTickLabelPaint(chartForeground);
-		
-		//
-		// Angle Graph
-		//
-		angleChart = ChartFactory.createTimeSeriesChart(
+        addNumberAxis(speedKnotsAxis);
+
+        return speedChart;
+    }
+    
+    private JFreeChart createAngleChart(int colScheme)
+    {
+        // Chart Clor Scheme
+        Color chartBackground = Color.WHITE;
+        Color plotBackground = new Color(0,32,90);
+        Color chartForeground = Color.BLACK;
+        Color plotForeground = Color.WHITE;
+
+        switch (colScheme)
+        {
+        case COL_SCHEME_BLUE:
+            chartBackground = Color.WHITE;
+            plotBackground = new Color(0,32,90);
+            chartForeground = Color.BLACK;
+            plotForeground = Color.WHITE;
+            break;
+        default:
+            chartBackground = Color.BLACK;
+            plotBackground = Color.BLACK;
+            chartForeground = Color.WHITE;
+            plotForeground = Color.WHITE;
+            break;
+        }
+       
+		JFreeChart angleChart = ChartFactory.createTimeSeriesChart(
 				"Wind Angle",  // title
 				"Time",        // x-axis label
 				"Bearing",       // y-axis label
@@ -328,14 +351,16 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		angleBearingAxis.setAxisLinePaint(chartForeground);
 		angleBearingAxis.setTickLabelPaint(chartForeground);
 		angleBearingAxis.setTickUnit(new JFreeCompassTickUnit(45.0));
+        
+        return angleChart;
 	}
 
 	public void writeSpeedPlotPNG(String fname, int width, int height)
 	{
-		File tmpfile = new File(fname + ".tmp");
+        File tmpfile = new File(fname + ".tmp");
 		try
 		{
-			ChartUtilities.saveChartAsPNG(tmpfile, speedChart, width, height);
+			ChartUtilities.saveChartAsPNG(tmpfile, imageSpeedChart, width, height);
 		}
 		catch (Exception e)
 		{
@@ -356,7 +381,7 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 		File tmpfile = new File(fname + ".tmp");
 		try
 		{
-			ChartUtilities.saveChartAsPNG(tmpfile, angleChart, width, height);
+			ChartUtilities.saveChartAsPNG(tmpfile, imageAngleChart, width, height);
 		}
 		catch (Exception e)
 		{
@@ -370,4 +395,25 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 			EventLog.log(EventLog.SEV_ERROR, "Could not rename image to '" + fname + "'");
 		}
 	}
+    
+    private void addNumberAxis(NumberAxis na)
+    {
+        numberAxisVec.add(na);
+    }
+    
+    private void removeNumberAxis(NumberAxis na)
+    {
+        numberAxisVec.remove(na);
+    }
+    
+    private void setNumberAxisUpperBound(double d)
+    {
+        Iterator iter = numberAxisVec.iterator();
+        while ( iter.hasNext() )
+        {
+            ((NumberAxis) iter.next()).setUpperBound(d);
+        }
+    }
+    
+    
 }

@@ -53,7 +53,7 @@ public class Config {
 				int i = ln.indexOf('#');
 				if ( i >= 0 )
 				{
-					ln = ln.substring(0, i-1).trim();
+					ln = ln.substring(0, i).trim();
 				}
 				else
 				{
@@ -176,4 +176,34 @@ public class Config {
 	{
 		return getParamAsString(param, null);
 	}
+
+    public static boolean getParamAsBoolean(String param, boolean dflt)
+    {
+        Object ob = params.get(param);
+        if ( ob == null )
+        {
+            EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+            return dflt;
+        }
+        else
+        {
+            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            
+            String str = (String) ob;
+            if ( str.equalsIgnoreCase("Y"))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    
+    public static boolean getParamAsBoolean(String param)
+    {
+        return getParamAsBoolean(param, false);
+    }
+
 }

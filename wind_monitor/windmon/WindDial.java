@@ -145,7 +145,7 @@ public class WindDial extends JPanel implements WindDataListener {
     
     WindDial()
     {
-        this(COL_SCHEME_BLUE);
+        this(COL_SCHEME_BLACK);
     }
     
     WindDial ( int col_scheme )

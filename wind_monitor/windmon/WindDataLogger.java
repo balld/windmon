@@ -60,6 +60,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     private int imageWidth;
     private int imageHeight;
     private int dialWidth;
+    private boolean webOutput = true;
     
     DecimalFormat df = new DecimalFormat("0.0");
     DecimalFormat dfc = new DecimalFormat("000");
@@ -138,7 +139,8 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 		logDir = Config.getParamAsString("WindLogDataDirectory", "/tmp/");
 		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
 		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
-        dialWidth = Math.min(imageWidth, imageHeight);
+        dialWidth = Config.getParamAsInt("WindLogDialImageHeight", 400);
+        webOutput = Config.getParamAsBoolean("GenerateWebFiles", true);
 
 		// If timer exists, reset it
 		if ( timer != null )
@@ -244,95 +246,99 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 
 			plotter.plotData( data );
 			
-			//
-			// Now write data to files for upload to database
-			//
-
-			// Format various date/times for output
-            String fnameDate = fnameDateFormat.format(new Date(rec.getEndTime()));
-			String labelDate = labelDateFormat.format(new Date(rec.getEndTime()));
-			String maxWindDate = maxWindDateFormat.format(new Date(dayMax.getEndTime()));
             
-            // Build all the filenames needed
-            String speedfname = logDir + fnameDate + "_speed.png";
-            String anglefname = logDir + fnameDate + "_angle.png";
-            String dialfname = logDir + fnameDate  + "_dialx.png";
-            String txtfname = logDir + fnameDate   + "_infox.txt";
-            String triggerfname = logDir + fnameDate  + "_trigr.rdy";
-			
-			// Graphs are easy thanks to JFreeChart
-			plotter.writeSpeedPlotPNG(logDir + fnameDate + "_speed.png",
-					                  imageWidth, imageHeight);
-			plotter.writeAnglePlotPNG(logDir + fnameDate + "_angle.png",
-					                  imageWidth, imageHeight);
-			
-			// Wind speed and angle dial is a bit bodged at the moment
-			dial.setWindAngle(rec.getAveAngle());
-			dial.setSpeed(rec.getAveSpeed());
-			dial.setWindSpeedHigh(rec.getMaxSpeed());
-			dial.setWindSpeedLow(rec.getMinSpeed());
-			BufferedImage bdimg = new BufferedImage(dialWidth, dialWidth, BufferedImage.TYPE_INT_RGB);
-			Graphics2D bdg = bdimg.createGraphics();
-			dial.justPaint(bdg);
-			File dialFile = new File(dialfname);
-			try
-			{
-				FileOutputStream os = new FileOutputStream(dialFile, false);
-				ChartUtilities.writeBufferedImageAsPNG(os, bdimg);
-				os.close();
-			}
-			catch (Exception e)
-			{
-				EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + dialfname + "'");
-			}
-			
-            // And now the supporting text
-            String supptext = "<p><b>" + labelDate + "</b><br>" + 
-                 "(" + recordInterval/1000 + " second sample)</p>" +
-                 "<table>" +
-                 "<tr><td>Direction</td><td>: " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")</td></tr>" +
-                 "<tr><td>Ave Speed</td><td>: " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")</td></tr>" +
-                 "<tr><td>Gust</td><td>: " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")</td></tr>" +
-                 "</table>" +
-                 "<p>Today's peak windspeed " + dayMax.getMaxSpeed()
-                  + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate + "</p>";
-            plotter.setDisplayText(supptext);
-            try
+            if ( webOutput )
             {
-                PrintWriter pw = new PrintWriter(
-                                 new FileWriter(txtfname, false));
-                pw.println(supptext);
-                pw.close();
+                //
+                // Now write data to files for upload to database
+                //
+                
+                // Format various date/times for output
+                String fnameDate = fnameDateFormat.format(new Date(rec.getEndTime()));
+                String labelDate = labelDateFormat.format(new Date(rec.getEndTime()));
+                String maxWindDate = maxWindDateFormat.format(new Date(dayMax.getEndTime()));
+                
+                // Build all the filenames needed
+                String speedfname = logDir + fnameDate + "_speed.png";
+                String anglefname = logDir + fnameDate + "_angle.png";
+                String dialfname = logDir + fnameDate  + "_dialx.png";
+                String txtfname = logDir + fnameDate   + "_infox.txt";
+                String triggerfname = logDir + fnameDate  + "_trigr.rdy";
+                
+                // Graphs are easy thanks to JFreeChart
+                plotter.writeSpeedPlotPNG(logDir + fnameDate + "_speed.png",
+                        imageWidth, imageHeight);
+                plotter.writeAnglePlotPNG(logDir + fnameDate + "_angle.png",
+                        imageWidth, imageHeight);
+                
+                // Wind speed and angle dial is a bit bodged at the moment
+                dial.setWindAngle(rec.getAveAngle());
+                dial.setSpeed(rec.getAveSpeed());
+                dial.setWindSpeedHigh(rec.getMaxSpeed());
+                dial.setWindSpeedLow(rec.getMinSpeed());
+                BufferedImage bdimg = new BufferedImage(dialWidth, dialWidth, BufferedImage.TYPE_INT_RGB);
+                Graphics2D bdg = bdimg.createGraphics();
+                dial.justPaint(bdg);
+                File dialFile = new File(dialfname);
+                try
+                {
+                    FileOutputStream os = new FileOutputStream(dialFile, false);
+                    ChartUtilities.writeBufferedImageAsPNG(os, bdimg);
+                    os.close();
+                }
+                catch (Exception e)
+                {
+                    EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + dialfname + "'");
+                }
+                
+                // And now the supporting text
+                String supptext = "<p><b>" + labelDate + "</b><br>" + 
+                "(" + recordInterval/1000 + " second sample)</p>" +
+                "<table>" +
+                "<tr><td>Direction</td><td>: " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")</td></tr>" +
+                "<tr><td>Ave Speed</td><td>: " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")</td></tr>" +
+                "<tr><td>Gust</td><td>: " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")</td></tr>" +
+                "</table>" +
+                "<p>Today's peak windspeed " + dayMax.getMaxSpeed()
+                + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate + "</p>";
+                plotter.setDisplayText(supptext);
+                try
+                {
+                    PrintWriter pw = new PrintWriter(
+                            new FileWriter(txtfname, false));
+                    pw.println(supptext);
+                    pw.close();
+                }
+                catch (Exception e)
+                {
+                    EventLog.log(EventLog.SEV_ERROR,
+                            "Could not write file '" + txtfname + "'");
+                }
+                
+                // And now the trigger file
+                try
+                {
+                    String tmpname = triggerfname + ".tmp";
+                    PrintWriter pw = new PrintWriter(
+                            new FileWriter(triggerfname, false));
+                    pw.println(speedfname);
+                    pw.println(anglefname);
+                    pw.println(dialfname);
+                    pw.println(txtfname);
+                    pw.close();
+                    
+                    File tmpFile = new File(tmpname);
+                    File triggerFile = new File(triggerfname);
+                    // This rename is atomic action which indicates all files are ready
+                    tmpFile.renameTo(triggerFile);
+                }
+                catch (Exception e)
+                {
+                    EventLog.log(EventLog.SEV_ERROR,
+                            "Could not write file '" + triggerfname + "'");
+                }
+                
             }
-            catch (Exception e)
-            {
-                EventLog.log(EventLog.SEV_ERROR,
-                             "Could not write file '" + txtfname + "'");
-            }
-
-            // And now the trigger file
-            try
-            {
-                String tmpname = triggerfname + ".tmp";
-                PrintWriter pw = new PrintWriter(
-                                 new FileWriter(triggerfname, false));
-                pw.println(speedfname);
-                pw.println(anglefname);
-                pw.println(dialfname);
-                pw.println(txtfname);
-                pw.close();
-
-                File tmpFile = new File(tmpname);
-                File triggerFile = new File(triggerfname);
-                // This rename is atomic action which indicates all files are ready
-                tmpFile.renameTo(triggerFile);
-            }
-            catch (Exception e)
-            {
-                EventLog.log(EventLog.SEV_ERROR,
-                             "Could not write file '" + triggerfname + "'");
-            }
-        
         }
 	}
 	/**
