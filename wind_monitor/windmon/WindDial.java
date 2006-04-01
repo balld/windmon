@@ -6,6 +6,7 @@
  */
 package windmon;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.geom.*;
@@ -13,6 +14,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageFilter;
 import java.awt.image.ReplicateScaleFilter;
 // import java.awt.font.FontRenderContext;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 
@@ -80,32 +83,34 @@ public class WindDial extends JPanel implements WindDataListener {
     /*
      * Wind speed dial layout settings
      */
-    private static int s_border_depth = 5;
-    private static int s_bdigit_inset = 10;
-    private static int s_bdigit_depth = 6;
-    private static int s_bscale_depth = 10;
-    private static int s_scale_inset = 5;
-    private static int s_scale_depth = 10;
-    private static int s_digit_depth = 0;
-    private static int s_spindle_diam = 20;
-    private static double s_zero_angle = 20.0;
-    private static int s_arrow_len = 10;
-    private static int s_arrow_width = 5;
-    private static int s_scale_interval = 5;
+    private int s_border_depth = 5;
+    private int s_bdigit_inset = 10;
+    private int s_bdigit_depth = 6;
+    private int s_bscale_depth = 10;
+    private int s_scale_inset = 5;
+    private int s_scale_depth = 10;
+    private int s_digit_depth = 0;
+    private int s_spindle_diam = 20;
+    private double s_zero_angle = 20.0;
+    private int s_arrow_len = 10;
+    private int s_arrow_width = 5;
+    private int s_scale_interval = 5;
+    private float s_bscale_line = 3.0f;
+    private float s_barc_line = 5.0f;
     
-    private static Font scale_font = new Font("serif", Font.PLAIN, 12);
-    private static Font bscale_font = new Font("serif", Font.PLAIN, 18);
-//    private static double sf_width = 0.6;
-//    private static double sf_height = 0.75;
+    private Font scale_font = new Font("serif", Font.PLAIN, 12);
+    private Font bscale_font = new Font("serif", Font.PLAIN, 18);
+//    private double sf_width = 0.6;
+//    private double sf_height = 0.75;
     
     /*
      * Wind direction dial layout settings
      */
-    private static int d_digit_inset = 10;
-    private static int d_rose_inset  = 10;
-    private static int d_needle_inset = 10;
-    private static int d_needle_diam = 60;
-    private static Font d_rose_font = new Font("serif", Font.PLAIN, 18);
+    private int d_digit_inset = 10;
+    private int d_rose_inset  = 10;
+    private int d_needle_inset = 10;
+    private int d_needle_diam = 60;
+    private Font d_rose_font = new Font("serif", Font.PLAIN, 18);
 
     private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
     private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
@@ -408,6 +413,46 @@ public class WindDial extends JPanel implements WindDataListener {
 //        centre   = new Point (radius, radius);
         centre   = new Point (size.width/2, size.height/2);
         
+        // Adjust Various Size Parameters
+        /*
+         * Wind speed dial layout settings
+         */
+        s_border_depth = 5*diameter/ps.width;
+        s_bdigit_inset = 5+(5*diameter/ps.width);
+        s_bdigit_depth = 6*diameter/ps.width;
+        s_bscale_depth = 10*diameter/ps.width;
+        s_scale_inset = 5*diameter/ps.width;
+        s_scale_depth = 10*diameter/ps.width;
+        s_digit_depth = 0*diameter/ps.width;
+        s_spindle_diam = 20*diameter/ps.width;
+        s_arrow_len = 10*diameter/ps.width;
+        s_arrow_width = 5*diameter/ps.width;
+        s_bscale_line = 3.0f*diameter/ps.width;
+        s_barc_line = 5.0f*diameter/ps.width;
+
+        s_zero_angle = 20.0 + (10*ps.width/diameter);
+        if ( diameter >= 300 )
+        {
+            s_scale_interval = 5;
+        }
+        else
+        {
+            s_scale_interval = 10;
+        }
+
+        scale_font = new Font("serif", Font.PLAIN, 6+(8*diameter/ps.width));
+        bscale_font = new Font("serif", Font.PLAIN, 4+(12*diameter/ps.width));
+        
+        /*
+         * Wind direction dial layout settings
+         */
+        d_digit_inset = 10*diameter/ps.width;
+        d_rose_inset  = 10*diameter/ps.width;
+        d_needle_inset = 10*diameter/ps.width;
+        d_needle_diam = 60*diameter/ps.width;
+        d_rose_font = new Font("serif", Font.PLAIN, 4+(14*diameter/ps.width));
+
+        
         prepareWindSpeedDial(g2);
         prepareWindDirectionDial(g2);
     }
@@ -548,8 +593,8 @@ public class WindDial extends JPanel implements WindDataListener {
         /*
          * Draw Beaufort wind speed scale
          */
-        s_dial_g.setStroke(new BasicStroke(5.0f));
-        temp_g.setStroke(new BasicStroke(3.0f));
+        s_dial_g.setStroke(new BasicStroke(s_barc_line));
+        temp_g.setStroke(new BasicStroke(s_bscale_line));
         for ( int i = 0; i <= 11; i++ )
         {
             double low  = (double) beaufort[i];
@@ -663,7 +708,7 @@ public class WindDial extends JPanel implements WindDataListener {
                                         temp_g.getFontRenderContext());
         tl1.draw(s_dial_g,
                  (float) (centre.x - tl1.getBounds().getCenterX()),
-                 (float) (centre.y + s_digit_offset - tl1.getBounds().getCenterY()));
+                 (float) (centre.y + s_digit_offset - tl1.getBounds().getHeight()));
 
         s_dial_g.setColor(scale_col);
         TextLayout tl2 = new TextLayout("Beaufort",
@@ -671,7 +716,7 @@ public class WindDial extends JPanel implements WindDataListener {
                                         temp_g.getFontRenderContext());
         tl2.draw(s_dial_g,
                  (float) (centre.x - tl2.getBounds().getCenterX()),
-                 (float) (centre.y + s_bdigit_offset - tl2.getBounds().getCenterY()));
+                 (float) (centre.y + s_bdigit_offset - tl2.getBounds().getHeight()));
     }
 
     /**
@@ -719,4 +764,30 @@ public class WindDial extends JPanel implements WindDataListener {
 	public void setWindSpeedLow(double wind_speed_low) {
 		this.wind_speed_low = wind_speed_low;
 	}
+    
+    /**
+     * @param args
+     */
+    public static void main(String args[])
+    {
+        JFrame jf = new JFrame("WindDial Test");
+        jf.setSize(200,200);
+        WindDial wd = new WindDial();
+        
+        jf.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {System.exit(0);}
+            public void windowDeiconified(WindowEvent e) { 
+            }
+            public void windowIconified(WindowEvent e) { 
+            }
+        });
+
+        jf.getContentPane().removeAll();
+        jf.getContentPane().setLayout(new BorderLayout(0,0));
+        jf.getContentPane().add(wd, BorderLayout.CENTER);
+        
+        jf.setVisible(true);
+        jf.validate();
+        jf.requestFocus();
+    }
 }
