@@ -81,13 +81,18 @@ public class WindMonitor extends JWindow
         DigitalClock dc = new DigitalClock();
         dc.setBackground(Color.BLACK);
         dc.setForeground(Color.WHITE);
+        Ticker tick = new Ticker();
+        tick.setForeground(Color.WHITE);
+        tick.setBackground(Color.BLACK);
         JPanel jp1 = new JPanel();
         jp1.setLayout(new BorderLayout());
         jp1.setBackground(Color.white);
         jp1.add(bn, BorderLayout.WEST);
         jp1.add(dc, BorderLayout.CENTER);
+        jp1.add(tick, BorderLayout.SOUTH);
         jp.add(jp1, BorderLayout.NORTH);
         dc.start();
+        tick.start();
 
         
 //      wv = new WindDisplay();
@@ -152,14 +157,15 @@ public class WindMonitor extends JWindow
         }
         else
         {
-        	EventLog.log(EventLog.SEV_FATAL, "Unrecognised connection type '" +
-        			                          connectionType + "'");
+        	EventLog.log(EventLog.SEV_INFO, "Unrecognised connection type '" +
+        			                          connectionType + "'. Using stub");
+            link = new NMEALinkStub();
         }
         NMEAController nmea = NMEAController.getCreateInstance(link);
 //        nmea.addWindDataListener(wv);
         nmea.addWindDataListener(wdl);
         nmea.addWindDataListener(wdt);
-        WindDataLogger logger = new WindDataLogger(plotter);
+        WindDataLogger logger = new WindDataLogger(plotter, tick);
         nmea.addWindDataListener(logger);
         
         setBackground(Color.pink);

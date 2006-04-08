@@ -51,6 +51,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     
     private Vector dataRecords;
     private WindDataPlotter plotter;
+    private Ticker ticker;
     
     private WindDataStore store;
     private WindDial dial = new WindDial(WindDial.COL_SCHEME_BLUE);
@@ -61,15 +62,18 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     private int imageHeight;
     private int dialWidth;
     private boolean webOutput = true;
+    private String initTickerText;
     
     DecimalFormat df = new DecimalFormat("0.0");
     DecimalFormat dfc = new DecimalFormat("000");
     
 	
-	public WindDataLogger (WindDataPlotter plotter)
+	public WindDataLogger (WindDataPlotter plotter, Ticker ticker)
 	{
 		readConfig();
 		this.plotter = plotter;
+        this.ticker = ticker;
+        ticker.setText(initTickerText);
 
 		store = new FileWindDataStore();
 		
@@ -141,6 +145,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
         dialWidth = Config.getParamAsInt("WindLogDialImageHeight", 400);
         webOutput = Config.getParamAsBoolean("GenerateWebFiles", true);
+        initTickerText = Config.getParamAsString("InitialTickerText", "WindMonitor (c) David Ball 2006");
 
 		// If timer exists, reset it
 		if ( timer != null )
@@ -301,7 +306,19 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
                 "</table>" +
                 "<p>Today's peak windspeed " + dayMax.getMaxSpeed()
                 + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate + "</p>";
+                
+                // If plotter supports HTML rendering, this will show text on screen
                 plotter.setDisplayText(supptext);
+                
+                // Set ticker text
+                ticker.setText(
+                        labelDate + " (" + recordInterval/1000 + " second sample)   " +
+                        "Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
+                        "Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
+                        "Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
+                        "Today's peak windspeed " + dayMax.getMaxSpeed()
+                        + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate
+                        );
                 try
                 {
                     PrintWriter pw = new PrintWriter(

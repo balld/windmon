@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.font.*;
 // import java.awt.geom.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -24,7 +25,13 @@ public class DigitalClock extends JPanel implements Runnable {
     private static final Dimension ps = new Dimension(525,30);
     private static int l_font_size = 48;
     private static int s_font_size = 24;
-    private static final long sleepAmount = 10;
+
+    // Check for update every second
+    private static final long sleepAmount = 1000;
+    // Update display every 60 seconds
+    private static final long updateInterval = 60000;
+    // Date/Time format - this should consider updateInterval above.
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm   EEE dd MMM yyyy");
     
     private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
     private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
@@ -34,25 +41,7 @@ public class DigitalClock extends JPanel implements Runnable {
     private Font l_font = null;
     private Font s_font = null;
     
-    // Months (Jan = 0)
-    private static String month_str[] = { "Jan", "Feb", "Mar", "Apr",
-                                          "May", "Jun", "Jul", "Aug",
-                                          "Sep", "Oct", "Nov", "Dec" };
-    // Days (Sun=1 to Sat=7)
-    private static String dow_str[] = { "", "Sun", "Mon", "Tue", "Wed", "Thu",
-                                            "Fri", "Sat" };
     
-    private static String num_str[] = { "00", "01", "02", "03", "04", "05",
-                                        "06", "07", "08", "09", "10", "11",
-                                        "12", "13", "14", "15", "16", "17",
-                                        "18", "19", "20", "21", "22", "23",
-                                        "24", "25", "26", "27", "28", "29",
-                                        "30", "31", "32", "33", "34", "35",
-                                        "36", "37", "38", "39", "40", "41",
-                                        "42", "43", "44", "45", "46", "47",
-                                        "48", "49", "50", "51", "52", "53",
-                                        "54", "55", "56", "57", "58", "59" };
-
     private long now = -1;
     private long last = -1;
 
@@ -106,12 +95,13 @@ public class DigitalClock extends JPanel implements Runnable {
     public void run ()
     {
         Thread me = Thread.currentThread();
-
+        long lastIntervalNum = 0;
         while (thread == me)
         {
             now = System.currentTimeMillis();
-            if ( now - last > 1000 && isVisible())
+            if ( now/updateInterval > lastIntervalNum && isVisible())
             {
+                lastIntervalNum = now/updateInterval;
                 repaint();
             }
             try {
@@ -128,7 +118,6 @@ public class DigitalClock extends JPanel implements Runnable {
         
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
-
         
         Dimension size = getSize();
         
@@ -139,67 +128,17 @@ public class DigitalClock extends JPanel implements Runnable {
         TextLayout tl = new TextLayout(time_str,
                                        l_font,
                                        g2.getFontRenderContext());
-//        tl.draw(g2,
-//                -(float) tl.getBounds().getCenterX(),
-//                -(float) tl.getBounds().getCenterY());
         int h = (int) tl.getBounds().getHeight();
         int y = h + ((size.height - h ) / 2);
         int w = (int) tl.getBounds().getWidth();
         int x = (size.width - w) / 2;
         tl.draw(g2, (float) x, (float) y );
-
-        
-        
-//        int y = g2.getFontMetrics(l_font).getAscent();
-//        g2.drawString(time_str, l_font_size/2,y);
     }
 
     private String buildTime()
     {
-        Calendar cal = new GregorianCalendar();
-        if ( now >= 0 )
-        {
-            cal.setTime(new Date(now));
-            last = now;
-        }
-        else if ( last >= 0 )
-        {
-            cal.setTime(new Date(last));
-        }
-        else
-        {
-            return new String("Error : No Time");
-        }
-        
-//        StringBuilder sb = new StringBuilder();
-//        Formatter formatter = new Formatter(sb);
-        
-        // This is how it should be done in Java 1.5+. Not compatible with earlier
-        // Java versions.
-        // String now_str = 
-        //               String.format("%1$tH:%1$tM:%1$tS  %1$te %1$tb %1$tY", cal);
-        
-        // And now the old way.
-        int hour, min, sec, dow, day, month, year;
-        
-        hour=cal.get(Calendar.HOUR_OF_DAY);
-        min =cal.get(Calendar.MINUTE);
-        sec =cal.get(Calendar.SECOND);
-        
-        dow  =cal.get(Calendar.DAY_OF_WEEK);
-        day  =cal.get(Calendar.DAY_OF_MONTH);
-        month=cal.get(Calendar.MONTH);
-        year =cal.get(Calendar.YEAR);
-        
-        //    String now_str = "18:00:00  7 Jan 2005";
-        String str = new String (  num_str[hour] + ":"
-                + num_str[min]  + ":"
-                + num_str[sec]  + "  "
-                + dow_str[dow]  + " "
-                + day           + " "
-                + month_str[month] + " "
-                + year );
-        return str;
+        Date dt = new Date(now);
+        return timeFormat.format(dt);
     }
     
     public Dimension getPreferredSize()
