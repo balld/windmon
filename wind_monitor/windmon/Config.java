@@ -82,7 +82,7 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
@@ -94,7 +94,18 @@ public class Config {
 
 	public static int getParamAsInt(String param)
 	{
-		return getParamAsInt(param, -1);
+        Object ob = params.get(param);
+        if ( ob == null )
+        {
+            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
+            /* Not reached */
+            return 0;
+        }
+        else
+        {
+            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            return Integer.parseInt((String) ob);
+        }
 	}
 	
 	public static long getParamAsLong(String param, long dflt)
@@ -102,7 +113,7 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
@@ -114,7 +125,18 @@ public class Config {
 
 	public static long getParamAsLong(String param)
 	{
-		return getParamAsLong(param, -1);
+        Object ob = params.get(param);
+        if ( ob == null )
+        {
+            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
+            /* Not reached */
+            return 0;
+        }
+        else
+        {
+            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            return Long.parseLong((String) ob);
+        }
 	}
 	
 	public static float getParamAsFloat(String param, float dflt)
@@ -122,7 +144,7 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
@@ -134,7 +156,18 @@ public class Config {
 
 	public static float getParamAsFloat(String param)
 	{
-		return getParamAsFloat(param, -1.0f);
+        Object ob = params.get(param);
+        if ( ob == null )
+        {
+            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
+            /* Not reached */
+            return 0;
+        }
+        else
+        {
+            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            return Float.parseFloat((String) ob);
+        }
 	}
 	
 	public static double getParamAsDouble(String param, double dflt)
@@ -142,7 +175,7 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
@@ -154,7 +187,18 @@ public class Config {
 
 	public static double getParamAsDouble(String param)
 	{
-		return getParamAsDouble(param, -1.0);
+        Object ob = params.get(param);
+        if ( ob == null )
+        {
+            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
+            /* Not reached */
+            return 0;
+        }
+        else
+        {
+            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            return Double.parseDouble((String) ob);
+        }
 	}
 	
 	public static String getParamAsString(String param, String dflt)
@@ -162,7 +206,7 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
@@ -174,7 +218,18 @@ public class Config {
 	
 	public static String getParamAsString(String param)
 	{
-		return getParamAsString(param, null);
+        Object ob = params.get(param);
+        if ( ob == null )
+        {
+            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
+            /* Not reached */
+            return null;
+        }
+        else
+        {
+            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            return (String) ob;
+        }
 	}
 
     public static boolean getParamAsBoolean(String param, boolean dflt)
@@ -182,7 +237,7 @@ public class Config {
         Object ob = params.get(param);
         if ( ob == null )
         {
-            EventLog.log(EventLog.SEV_WARN, param + " not found. Defaulted to " + dflt);
+            EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
             return dflt;
         }
         else
@@ -203,7 +258,26 @@ public class Config {
     
     public static boolean getParamAsBoolean(String param)
     {
-        return getParamAsBoolean(param, false);
+        Object ob = params.get(param);
+        if ( ob == null )
+        {
+            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
+            /* Not reached */
+            return false;
+        }
+        else
+        {
+            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            
+            String str = (String) ob;
+            if ( str.equalsIgnoreCase("Y"))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
-
 }

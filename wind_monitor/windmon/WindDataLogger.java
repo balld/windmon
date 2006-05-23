@@ -63,9 +63,13 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     private int dialWidth;
     private boolean webOutput = true;
     private String initTickerText;
+    private String templatePathname;
     
     DecimalFormat df = new DecimalFormat("0.0");
     DecimalFormat dfc = new DecimalFormat("000");
+    
+    // Report Generator
+    ReportGenerator rg = new ReportGenerator();
     
 	
 	public WindDataLogger (WindDataPlotter plotter, Ticker ticker)
@@ -146,6 +150,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
         dialWidth = Config.getParamAsInt("WindLogDialImageHeight", 400);
         webOutput = Config.getParamAsBoolean("GenerateWebFiles", true);
         initTickerText = Config.getParamAsString("InitialTickerText", "WindMonitor (c) David Ball 2006");
+        templatePathname = Config.getParamAsString("ReportTemplate");
 
 		// If timer exists, reset it
 		if ( timer != null )
@@ -296,43 +301,27 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
                     EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + dialfname + "'");
                 }
                 
-                // And now the supporting text
-                String supptext = "<p><b>" + labelDate + "</b><br>" + 
-                "(" + recordInterval/1000 + " second sample)</p>" +
-                "<table>" +
-                "<tr><td>Direction</td><td>: " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")</td></tr>" +
-                "<tr><td>Ave Speed</td><td>: " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")</td></tr>" +
-                "<tr><td>Gust</td><td>: " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")</td></tr>" +
-                "</table>" +
-                "<p>Today's peak windspeed " + dayMax.getMaxSpeed()
-                + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate + "</p>";
+                // Set report values
+                rg.setValue( ReportGenerator.REPORT_DTM, labelDate); 
+                rg.setValue( ReportGenerator.INTERVAL_SEC, "" + recordInterval/1000 );
+                rg.setValue( ReportGenerator.INTERVAL_MIN, "" + recordInterval/60000 );
+                rg.setValue( ReportGenerator.DIR_DEG, dfc.format(rec.getAveAngle()));
+                rg.setValue( ReportGenerator.DIR_COMP, Utils.angleToCompass(rec.getAveAngle()));
+                rg.setValue( ReportGenerator.AVE_SPEED_KTS, df.format(rec.getAveSpeed()));
+                rg.setValue( ReportGenerator.AVE_SPEED_BFT, Utils.speedToBeaufort(rec.getAveSpeed()));
+                rg.setValue( ReportGenerator.MIN_SPEED_KTS, df.format(rec.getMinSpeed()));
+                rg.setValue( ReportGenerator.MIN_SPEED_BFT, Utils.speedToBeaufort(rec.getMinSpeed()));
+                rg.setValue( ReportGenerator.MAX_SPEED_KTS, df.format(rec.getMaxSpeed()));
+                rg.setValue( ReportGenerator.MAX_SPEED_BFT, Utils.speedToBeaufort(rec.getMaxSpeed()));
+                rg.setValue( ReportGenerator.DAY_PEAK_KTS, df.format(dayMax.getMaxSpeed()));
+                rg.setValue( ReportGenerator.DAY_PEAK_BFT, Utils.speedToBeaufort(dayMax.getMaxSpeed()));
+                rg.setValue( ReportGenerator.DAY_PEAK_TM, maxWindDate);
+
+                // Generate report from template
+                rg.genReport( templatePathname, txtfname);
                 
-                // If plotter supports HTML rendering, this will show text on screen
-                plotter.setDisplayText(supptext);
                 
-                // Set ticker text
-                ticker.setText(
-                        labelDate + " (" + recordInterval/1000 + " second sample)   " +
-                        "Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
-                        "Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
-                        "Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
-                        "Today's peak windspeed " + dayMax.getMaxSpeed()
-                        + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate
-                        );
-                try
-                {
-                    PrintWriter pw = new PrintWriter(
-                            new FileWriter(txtfname, false));
-                    pw.println(supptext);
-                    pw.close();
-                }
-                catch (Exception e)
-                {
-                    EventLog.log(EventLog.SEV_ERROR,
-                            "Could not write file '" + txtfname + "'");
-                }
-                
-                // And now the trigger file
+                // And now set the trigger file to indicate files ready for upload
                 try
                 {
                     String tmpname = triggerfname + ".tmp";
@@ -354,7 +343,16 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
                     EventLog.log(EventLog.SEV_ERROR,
                             "Could not write file '" + triggerfname + "'");
                 }
-                
+
+                // Set ticker text
+                ticker.setText(
+                        labelDate + " (" + recordInterval/1000 + " second sample)   " +
+                        "Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
+                        "Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
+                        "Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
+                        "Today's peak windspeed " + df.format(dayMax.getMaxSpeed())
+                        + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate
+                        );
             }
         }
 	}

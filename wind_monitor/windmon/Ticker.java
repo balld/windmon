@@ -28,10 +28,14 @@ public class Ticker extends JPanel implements Runnable {
 
     // Check for update every second
     private static final long sleepAmount = 25;
-    // Update display every 1/10th seconds
-    private static final long updateInterval = 250;
+
+    // Update display interval in millisec
+    private static final long updateIntervalUnit = 50;
+    private long updateInterval;
+
     // Number of pixels text moved on each update
-    private int xposStep = 15;
+    private static final int xposStepUnit = 5;
+    private int xposStep;
 
     private int xpos = 0;
     
@@ -46,7 +50,8 @@ public class Ticker extends JPanel implements Runnable {
     private long last = -1;
 
     private String    text = "Set some text please! This is just some dummy text that I have entered to show how this ticker display will work. Hum dee hum dee hum";
-    private Image     textImg = null;
+    private Image     textImg_Curr = null;
+    private Image     textImg_Pend = null;
     private Graphics2D  g_textImg = null;
     private Dimension textImgSize = null;
     
@@ -54,6 +59,7 @@ public class Ticker extends JPanel implements Runnable {
     
     public Ticker()
     {
+        readConfig();
         setDoubleBuffered(true);
         b_font = Utils.getFont("LCD-N___.TTF");
         l_font = b_font.deriveFont(Font.PLAIN, l_font_size);
@@ -61,6 +67,11 @@ public class Ticker extends JPanel implements Runnable {
         last = System.currentTimeMillis();
     }
 
+    public void readConfig()
+    {
+        updateInterval = Config.getParamAsLong("TickerRefresh", 2)*updateIntervalUnit;
+        xposStep = Config.getParamAsInt("TickerStep", 3) * xposStepUnit;
+    }
     
     public void setVisible(boolean b)
     {
@@ -123,19 +134,29 @@ public class Ticker extends JPanel implements Runnable {
         Dimension size = getSize();
         super.paint(g);
         Graphics2D g2 = (Graphics2D) g;
-        if ( textImg == null )
+        if ( textImg_Curr == null )
         {
-            prepareText(g2);
+            if ( textImg_Pend == null )
+            {
+                prepareText(g2);
+            }
             xpos = size.width;
+            textImg_Curr = textImg_Pend;
         }
         
         
         int y = (size.height - textImgSize.height) / 2;
-        g2.drawImage(textImg, xpos, y, this);
+        g2.drawImage(textImg_Curr, xpos, y, this);
         xpos -= xposStep;
         if ( xpos + textImgSize.width < 0 )
         {
             xpos = size.width;
+            if ( textImg_Pend == null )
+            {
+                // Text Updated
+                prepareText(g2);
+            }
+            textImg_Curr = textImg_Pend;
         }
     }        
 
@@ -146,10 +167,10 @@ public class Ticker extends JPanel implements Runnable {
                                        g2.getFontRenderContext());
         textImgSize = new Dimension ( (int)tl.getBounds().getWidth(),
                                       (int)tl.getBounds().getHeight());
-        textImg = (BufferedImage) g2.getDeviceConfiguration().
+        textImg_Pend = (BufferedImage) g2.getDeviceConfiguration().
         createCompatibleImage(textImgSize.width,
                               textImgSize.height);
-        g_textImg = (Graphics2D) textImg.getGraphics();
+        g_textImg = (Graphics2D) textImg_Pend.getGraphics();
         g_textImg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         g_textImg.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
 
@@ -185,7 +206,7 @@ public class Ticker extends JPanel implements Runnable {
         // Force refresh of text buffer image.
         if ( g_textImg != null )
         {
-            textImg = null;
+            textImg_Pend = null;
             g_textImg.dispose();
             g_textImg = null;
         }
