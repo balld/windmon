@@ -50,17 +50,20 @@ public class Ticker extends JPanel implements Runnable {
     private long last = -1;
 
     private String    text = "Set some text please! This is just some dummy text that I have entered to show how this ticker display will work. Hum dee hum dee hum";
-    private Image     textImg_Curr = null;
-    private Image     textImg_Pend = null;
+    private Image     textImg = null;
     private Graphics2D  g_textImg = null;
     private Dimension textImgSize = null;
     
     private Thread thread = null;
     
+    private HashMap stringsMap = new HashMap();
+    private Iterator stringsItr = null;
+    
     public Ticker()
     {
         readConfig();
         setDoubleBuffered(true);
+
         b_font = Utils.getFont("LCD-N___.TTF");
         l_font = b_font.deriveFont(Font.PLAIN, l_font_size);
         
@@ -134,43 +137,48 @@ public class Ticker extends JPanel implements Runnable {
         Dimension size = getSize();
         super.paint(g);
         Graphics2D g2 = (Graphics2D) g;
-        if ( textImg_Curr == null )
+
+        if ( textImg == null )
         {
-            if ( textImg_Pend == null )
-            {
-                prepareText(g2);
-            }
             xpos = size.width;
-            textImg_Curr = textImg_Pend;
+            prepareText(g2);
         }
         
-        
         int y = (size.height - textImgSize.height) / 2;
-        g2.drawImage(textImg_Curr, xpos, y, this);
+        g2.drawImage(textImg, xpos, y, this);
         xpos -= xposStep;
+
         if ( xpos + textImgSize.width < 0 )
         {
             xpos = size.width;
-            if ( textImg_Pend == null )
-            {
-                // Text Updated
-                prepareText(g2);
-            }
-            textImg_Curr = textImg_Pend;
+            prepareText(g2);
         }
     }        
 
     public void prepareText ( Graphics2D g2 )
     {
+        if ( stringsMap.size() <= 0 )
+        {
+            text = "Default message. No text to display";
+        }
+        else 
+        {
+            if ( stringsItr == null || stringsItr.hasNext() == false )
+            {
+                stringsItr = stringsMap.values().iterator();
+            }
+            text = (String) stringsItr.next();
+        }
+        
         TextLayout tl = new TextLayout(text,
                                        l_font,
                                        g2.getFontRenderContext());
         textImgSize = new Dimension ( (int)tl.getBounds().getWidth(),
                                       (int)tl.getBounds().getHeight());
-        textImg_Pend = (BufferedImage) g2.getDeviceConfiguration().
+        textImg = (BufferedImage) g2.getDeviceConfiguration().
         createCompatibleImage(textImgSize.width,
                               textImgSize.height);
-        g_textImg = (Graphics2D) textImg_Pend.getGraphics();
+        g_textImg = (Graphics2D) textImg.getGraphics();
         g_textImg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         g_textImg.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
 
@@ -201,14 +209,7 @@ public class Ticker extends JPanel implements Runnable {
     /**
      * @param text The text to set.
      */
-    public synchronized void setText(String text) {
-        this.text = text;
-        // Force refresh of text buffer image.
-        if ( g_textImg != null )
-        {
-            textImg_Pend = null;
-            g_textImg.dispose();
-            g_textImg = null;
-        }
+    public synchronized void setText(Object key, String text) {
+        stringsMap.put(key, text);
     }
 }

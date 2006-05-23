@@ -94,6 +94,8 @@ public class WindMonitor extends JWindow
         dc.start();
         tick.start();
 
+        TickerFileWatcher tfw = new TickerFileWatcher(tick);
+        tfw.start();
         
 //      wv = new WindDisplay();
 //      wv.setBorder(border);

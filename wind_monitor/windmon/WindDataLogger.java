@@ -77,7 +77,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
 		readConfig();
 		this.plotter = plotter;
         this.ticker = ticker;
-        ticker.setText(initTickerText);
+        ticker.setText(this, initTickerText);
 
 		store = new FileWindDataStore();
 		
@@ -345,7 +345,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
                 }
 
                 // Set ticker text
-                ticker.setText(
+                ticker.setText(this, 
                         labelDate + " (" + recordInterval/1000 + " second sample)   " +
                         "Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
                         "Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
