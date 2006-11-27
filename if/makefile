@@ -1,9 +1,10 @@
 RM := rm -rf
 
 CFLAGS = -O0 -g3 -Wall -c -fmessage-length=0
+CLIBS = -lm
 INCS = -I"./"
 EXE = exe
-CLIBS = -lm
+
 
 COMMON_SRCS = 	common/IF_common.c common/IF_config.c common/hashtable.c
 
@@ -18,6 +19,11 @@ SERIALSERVER_OBJS = serialserver/IF_serialserver.o
 # All Target
 #
 all: serialtest serialserver
+
+$(EXE):
+	@echo 'Creating directory $(EXE)'
+	mkdir -p $(EXE)
+
 
 #
 # Targets for object files
@@ -45,14 +51,14 @@ serialtest/%.o: serialtest/%.c
 
 
 # Tool invocations
-serialtest: $(COMMON_OBJS) $(SERIALTEST_OBJS)
+serialtest: $(EXE) $(COMMON_OBJS) $(SERIALTEST_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
 	gcc  -o"$(EXE)/$@" $(COMMON_OBJS) $(SERIALTEST_OBJS) $(CLIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-serialserver: $(COMMON_OBJS) $(SERIALSERVER_OBJS)
+serialserver: $(EXE) $(COMMON_OBJS) $(SERIALSERVER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
 	gcc  -o"$(EXE)/$@" $(COMMON_OBJS) $(SERIALSERVER_OBJS) $(CLIBS)
