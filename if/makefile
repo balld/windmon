@@ -1,14 +1,20 @@
 RM := rm -rf
 
-CFLAGS = -O0 -g3 -Wall -c -fmessage-length=0
-CLIBS = -lm
-INCS = -I"./"
+CFLAGS = -O0 -g3 -Wall -c -fmessage-length=0 -DBIG_JOINS=1
+CLIBS = -L/usr/lib -lmysqlclient -lz -lcrypt -lnsl -lm
+INCS = -I"./" -I/usr/include/mysql 
 EXE = exe
 
 
-COMMON_SRCS = 	common/IF_common.c common/IF_config.c common/hashtable.c
+COMMON_SRCS = 	common/IF_common.c \
+                common/IF_config.c \
+                common/IF_dataaccess.c \
+                common/hashtable.c
 
-COMMON_OBJS = 	common/IF_common.o common/IF_config.o common/hashtable.o
+COMMON_OBJS = 	common/IF_common.o \
+                common/IF_config.o \
+                common/IF_dataaccess.o \
+                common/hashtable.o
 
 SERIALTEST_SRCS = serialtest/IF_serialtest.c
 SERIALTEST_OBJS = serialtest/IF_serialtest.o
