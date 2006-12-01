@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
                                         IF_STOP_BITS,
                                         IF_PARITY ) ) == NULL )
     {
-            IF_log_event ( 0, IF_EV_FATAL, "Could not open serial port\n" );
+            IF_log_event ( 0, IF_SEV_FATAL, "Could not open serial port\n" );
             exit (1);
     }
 

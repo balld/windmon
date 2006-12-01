@@ -13,8 +13,11 @@
 #include <sys/types.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <math.h>
+
 #include "common/IF_common.h"
 #include "common/IF_config.h"
+#include "common/IF_dataaccess.h"
 
 /***********************/
 /* Serial Interface    */
@@ -32,10 +35,23 @@
 /* By default, tcp/ip server listens on this port */
 #define IF_SERVER_PORT 2689
 
+/***********************/
+/* Recorded wind data  */
+/***********************/
+static int    iNumMeasurements = 0;
+static float  fSpeedMin = 0.0f;
+static float  fSpeedMax = 0.0f;
+static double dSpeedTotal = 0.0;
+static float  fAngleXComp = 0.0f;
+static float  fAngleYComp = 0.0f;
+static if_bool_t bTrigger = IF_FALSE;
 
 /************************/
 /* Func Prototypes      */
 /************************/
+void handler (int sig);
+void record_msg ( if_nmea_msg_t *pMsg );
+void log_data ();
 
 /* None */
 
@@ -48,10 +64,19 @@ int main(int argc, char* argv[])
 	char *dir = NULL;
 	char szConfigPath[PATH_MAX];
 	char szSerialDevice[PATH_MAX];
+
+	char szDB[1024];
+	char szDBUser[1024];
+	char szDBHost[1024];
+	char szDBPassword[1024];
+	
+	if_nmea_msg_t msg;
+	
+	int iLogInterval = 0;
 	
     if_status_t retval = IF_OK;
     
-    /* Read config file */
+    /* Generate full path for config file : <home dir>/windmon.cfg */
 	if ( ( dir = getenv ("HOME") ) != NULL )
 	{
 		sprintf ( szConfigPath, "%s/%s", dir, "windmon.cfg" );
@@ -61,15 +86,45 @@ int main(int argc, char* argv[])
 		sprintf ( szConfigPath, "%s", "windmon.cfg" );
 	}
 	
-	IF_log_event(0, IF_EV_INFO, "Loading config file '%s'", szConfigPath );
-	
+	/* And load the config file */ 
+	IF_log_event(0, IF_SEV_INFO, "Loading config file '%s'", szConfigPath );
 	if ( IF_load_config ( szConfigPath ) != IF_OK )
 	{
-		IF_log_event(0, IF_EV_FATAL, "Could not load config file '%s'",
+		IF_log_event(0, IF_SEV_FATAL, "Could not load config file '%s'",
 		             szConfigPath);
 		exit(1);
 	}
-	
+
+	/* Set up the database connection         */
+	/* Part 1 - Get settings from config file */
+	if ( IF_get_param_as_string("DB",
+	                             szDB,
+	                             sizeof(szDB)) != IF_OK
+	  || IF_get_param_as_string("DBUser",
+	                             szDBUser,
+	                             sizeof(szDBUser)) != IF_OK
+	  || IF_get_param_as_string("DBHost",
+	                             szDBHost,
+	                             sizeof(szDBHost)) != IF_OK
+	  || IF_get_param_as_string("DBPassword",
+	                             szDBPassword,
+	                             sizeof(szDBPassword)) != IF_OK )
+    {
+		IF_log_event(0, IF_SEV_FATAL, "Failed to read database settings");
+		exit(1);
+    }
+		     	
+	if ( IF_db_connect ( szDBHost,
+                         szDBUser,
+                         szDBPassword,
+                         szDB ) != IF_OK )
+    {
+		IF_log_event(0, IF_SEV_FATAL, "Failed to connect to database");
+		exit(1);
+    }    	
+		
+
+	/* Set up the serial port connection for NMEA device */
 	IF_get_param_as_string_dflt("NMEASerialPort",
 	                            szSerialDevice,
 	                            sizeof(szSerialDevice),
@@ -101,13 +156,13 @@ int main(int argc, char* argv[])
                                         IF_STOP_BITS,
                                         IF_PARITY ) ) == NULL )
     {
-            IF_log_event ( 0, IF_EV_FATAL, "Could not open serial port\n" );
+            IF_log_event ( 0, IF_SEV_FATAL, "Could not open serial port\n" );
             exit (1);
     }
 
     if ( ( socket_fds[0] = IF_socket_open ( IF_SERVER_PORT ) ) == NULL )
     {
-            IF_log_event ( 0, IF_EV_FATAL, "Could not open socket\n" );
+            IF_log_event ( 0, IF_SEV_FATAL, "Could not open socket\n" );
             exit (1);
     }
 
@@ -117,20 +172,35 @@ int main(int argc, char* argv[])
     sPollStruct[1].events = POLLIN;
     iNumFds = iNumSockets + 2;
     
+	/* Set up the alarm to trigger recording of data into database */
+	signal (SIGALRM, handler);
+	
+	if ( IF_get_param_as_int("WindLogRecordIntervalSec",
+	                         &iLogInterval) != IF_OK )
+	{
+		IF_log_event(0, IF_SEV_FATAL, "Failed to read log interval");
+		exit(1);
+	}
+	ualarm ( 1000000ul * iLogInterval, 1000000ul * iLogInterval );  
+	
+	
+
+	/**********************************
+	 * MAIN PROCESS LOOP
+	 **********************************/
     while ( retval == IF_OK )
     {
         iPollCount = poll ( sPollStruct, iNumFds, -1 );
         
         if ( iPollCount < 0 )
         {
-            IF_log_event_errno(0, IF_EV_FATAL, "Could not poll devices\n");
-            exit(1);
+            IF_log_event_errno(0, IF_SEV_WARN, "Could not poll devices");
         }
         else if ( iPollCount == 0 )
         {
             /* A signal or some other interrup. Poll again */
-            IF_log_event(0, IF_EV_WARN,
-                         "Poll returned but nothing ready\n");
+            IF_log_event(0, IF_SEV_WARN,
+                         "Poll returned but nothing ready");
             continue;
         }
 
@@ -143,22 +213,31 @@ int main(int argc, char* argv[])
             if ( sPollStruct[0].revents & POLLIN )
             {
                  /* Read data from seial port */
-                 IF_fd_read(serial_fd);
-                 /* Check for non-empty string in ready data buffer */
-                 if ( serial_fd->zReadyData[0] != '\0' )
+                 do
                  {
-                    /* Write data to each socket */
-                    for ( i = 0; i < iNumSockets; i++ )
-                    {
-                        write ( sPollStruct[i+2].fd,
-                                serial_fd->zReadyData,
-                                strlen(serial_fd->zReadyData) );
-                    }
-                }
+	                 IF_fd_read(serial_fd);
+	                 /* Check for non-empty string in ready data buffer */
+	                 if ( serial_fd->zReadyData[0] != '\0' )
+	                 {
+						/* Get NMEA message and store           */
+						if ( IF_parse_nmea_msg ( &msg,
+						                         serial_fd->zReadyData ) == IF_OK )
+						{
+							record_msg ( &msg );                	
+		                    /* Write data to each socket            */
+		                    for ( i = 0; i < iNumSockets; i++ )
+		                    {
+		                        write ( sPollStruct[i+2].fd,
+		                                serial_fd->zReadyData,
+		                                strlen(serial_fd->zReadyData) );
+		                    }
+						}
+	                }
+                 } while ( serial_fd->zReadyData[0] != '\0' );
             }
             else
             {
-                IF_log_event_errno(0, IF_EV_FATAL, "Error on serial I/O\n");
+                IF_log_event_errno(0, IF_SEV_FATAL, "Error on serial I/O\n");
                 exit(1);
             }
         }
@@ -193,7 +272,7 @@ int main(int argc, char* argv[])
             }
             else
             {
-                IF_log_event_errno(0, IF_EV_FATAL, "Error on socket I/O\n");
+                IF_log_event_errno(0, IF_SEV_FATAL, "Error on socket I/O\n");
                 exit(1);
             }
         }
@@ -207,7 +286,7 @@ int main(int argc, char* argv[])
         {
             if ( j > iNumSockets )
             {
-                IF_log_event(0, IF_EV_FATAL,
+                IF_log_event(0, IF_SEV_FATAL,
                                    "I/O polling error. Too many events\n");
                 exit(1);
             }
@@ -221,8 +300,9 @@ int main(int argc, char* argv[])
                     if ( IF_fd_read(socket_fds[j+1]) <= 0 )
                     {
                        /* Assume an error on this socket and close */
-                       IF_log_event(0, IF_EV_FATAL,
-                                          "Socket connection closed\n");
+                       IF_log_event(0, IF_SEV_WARN,
+                                    "Socket connection closed '%s'",
+                                    socket_fds[j+1]->zDesc );
                        /* Remove socket from arrays */
                        for ( m=j; m < iNumSockets; m++ )
                        {
@@ -240,19 +320,120 @@ int main(int argc, char* argv[])
                         write ( serial_fd->iFD,
                                 socket_fds[j+1]->zReadyData,
                                strlen(socket_fds[j+1]->zReadyData) );
+                        IF_log_event(0,
+                                     IF_SEV_INFO,
+                                     "Incoming message '%s' from '%s'",
+                                     socket_fds[j+1]->zReadyData,
+                                     socket_fds[j+1]->zDesc);
                     }
                 }
                 else
                 {
                     /* Assume an error on this socket and close */
-                    IF_log_event(0, IF_EV_FATAL,
-                                       "Socket connection lost\n");
+                    IF_log_event(0, IF_SEV_WARN,
+                                       "Socket connection lost '%s'\n",
+                                       socket_fds[j+1]->zDesc);
+                    IF_fd_dispose ( socket_fds[j+1] );
+                   /* Remove socket from arrays */
+                   for ( m=j; m < iNumSockets; m++ )
+                   {
+                       socket_fds[m+1] = socket_fds[m+2];
+                       sPollStruct[m+2] = sPollStruct[m+3];
+                   }
+                   iNumSockets--;
+                   iNumFds--;
                 }
             }
             j++;
         }
-    }
+	    if ( bTrigger == IF_TRUE )
+	    {
+	    	log_data();
+	    	bTrigger = IF_FALSE;
+	    }
+    } /* Main WHILE loop */
     
     exit (0);
 }
+
+void handler (int sig)
+{
+	bTrigger = IF_TRUE;
+}
+
+void record_msg ( if_nmea_msg_t *pMsg )
+{
+	float fTmpSpeed;
+	float fTmpAngle;
+	
+	if ( pMsg != NULL 
+	     && pMsg->bValid == IF_TRUE
+	     && pMsg->bProprietary != IF_TRUE
+	     && strcmp ( pMsg->szTalkerIDString, "WI" ) == 0
+	     && strcmp ( pMsg->szSentenceIDString, "MWV" ) ==0 )
+	 {
+		iNumMeasurements++;
+		fTmpAngle = atof(pMsg->aszFields[0]);
+		fTmpSpeed = atof(pMsg->aszFields[2]);
+
+        dSpeedTotal+=(double)fTmpSpeed;
+
+        fSpeedMin = fTmpSpeed < fSpeedMin ? fTmpSpeed :  fSpeedMin;
+        fSpeedMax = fTmpSpeed > fSpeedMax ? fTmpSpeed :  fSpeedMax;
+
+		fAngleXComp += sin(fTmpAngle * M_PI / 180.0);
+		fAngleYComp += cos(fTmpAngle * M_PI / 180.0);
+	}
+}
+
+void log_data ()
+{
+	float fSpeedAve = 0.0f;
+	float fAngleAve = 0.0f;
+	if ( iNumMeasurements > 0 )
+	{
+		fSpeedAve = (float) (dSpeedTotal/iNumMeasurements);
+	}
+	// Average angle. This is calculated as a vector average, i.e. X and Y
+	// components individually.
+
+	// Special cases
+	if ( fAngleYComp == 0.0 && fAngleXComp == 0.0 )
+	{
+		// No average direction(unlikely!). Default to North
+		fAngleAve = 0.0f;
+	}
+	else if ( fAngleYComp == 0.0 )
+	{
+		if ( fAngleXComp > 0.0 )
+			fAngleAve = 90.0f;
+		else
+			fAngleAve = 270.0f;
+	}
+	else
+	{
+		fAngleAve = (float) (atan(fAngleXComp / fAngleYComp) * 180.0 / M_PI);
+		if ( fAngleYComp < 0.0)
+		{
+			fAngleAve += 180.0f;
+		}
+		else if ( fAngleYComp > 0.0f && fAngleXComp < 0.0f )
+		{
+			fAngleAve += 360.0f;
+		}
+	}
+
+    IF_log_event(0, IF_SEV_INFO,
+                 "Measurements=%d. Speed Min=%f, Max=%f, Ave=%f. Direction Ave=%f",
+                 iNumMeasurements, fSpeedMin, fSpeedMax, fSpeedAve, fAngleAve );
+
+	/* Reset everything */
+	iNumMeasurements = 0;
+	fSpeedMin = 0.0f;
+	fSpeedMax = 0.0f;
+	dSpeedTotal = 0.0;
+	fAngleXComp = 0.0f;
+	fAngleYComp = 0.0f;
+}
+
 

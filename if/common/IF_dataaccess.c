@@ -49,7 +49,7 @@ if_status_t IF_db_connect ( char *hostname,
                            0) != NULL )   /* client_flag */
     {
 		IF_log_event ( 0,
-	                   IF_EV_INFO,
+	                   IF_SEV_INFO,
 	                   "Connected to database '%s' @ '%s' as '%s'",
 	                   dbname, hostname, user );
 	    connected = IF_TRUE;
@@ -57,7 +57,7 @@ if_status_t IF_db_connect ( char *hostname,
     else
     {
 		IF_log_event ( 0,
-	                   IF_EV_ERROR,
+	                   IF_SEV_ERROR,
 	                   "Failed to connect to database '%s' @ '%s' as '%s'. "
 	                   "'%s' [%d]",
 	                   dbname, hostname, user,

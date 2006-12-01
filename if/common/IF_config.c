@@ -67,7 +67,7 @@ static if_status_t read_config ( FILE *fp )
 		     && buffer[strlen(buffer)-1] != EOF )
 		{
 			IF_log_event ( 0,
-			               IF_EV_ERROR,
+			               IF_SEV_ERROR,
 			               "Line '%d' too long or not terminated correctly.",
 			               line_no );
 			return ( IF_ERR );
@@ -108,7 +108,7 @@ static if_status_t read_config ( FILE *fp )
 			if ( i < 0 )
 			{
 				IF_log_event ( 0,
-				               IF_EV_WARN,
+				               IF_SEV_WARN,
 				               "Line '%d' corrupt. No param name in '%s'",
 				               line_no,
 				               buffer );
@@ -145,7 +145,7 @@ static if_status_t read_config ( FILE *fp )
 			if ( i < 0 )
 			{
 				IF_log_event ( 0,
-				               IF_EV_WARN,
+				               IF_SEV_WARN,
 				               "Line '%d' corrupt. No param value in '%s'",
 				               line_no,
 				               buffer );
@@ -154,7 +154,7 @@ static if_status_t read_config ( FILE *fp )
 			}
 			
 			IF_log_event ( 0,
-		                   IF_EV_INFO,
+		                   IF_SEV_INFO,
 		                   "Saving config parameter '%s'='%s'",
 		                   pname, param );
 			save_param ( pname, param );
@@ -166,7 +166,7 @@ static if_status_t read_config ( FILE *fp )
 		else
 		{
 			IF_log_event ( 0,
-			               IF_EV_WARN,
+			               IF_SEV_WARN,
 			               "Line '%d' corrupt. No '=' in '%s'",
 			               line_no,
 			               buffer );
@@ -185,7 +185,7 @@ static if_status_t save_param ( char *pname, char *param )
     if ( (found = hashtable_search(htbl,pname)) != NULL )
     {
 		IF_log_event ( 0,
-		               IF_EV_WARN,
+		               IF_SEV_WARN,
 		               "Overwriting previous config parameter value '%s'='%s'",
 		               pname, param );
       	hashtable_remove(htbl,pname);
@@ -200,7 +200,7 @@ static if_status_t save_param ( char *pname, char *param )
     if ( !hashtable_insert(htbl,n,p) )
     {
 		IF_log_event ( 0,
-		               IF_EV_FATAL,
+		               IF_SEV_FATAL,
 		               "Could not save config parameter '%s'='%s'",
 		               pname, param );
     	exit(1);
@@ -228,7 +228,7 @@ if_status_t IF_load_config ( char *pathname )
 	if ( ( fp = fopen ( pathname, "r" ) ) == NULL )
 	{
 		IF_log_event_errno ( 0,
-		                     IF_EV_ERROR,
+		                     IF_SEV_ERROR,
 		                     "Could not open config file '%s'", pathname );
 	}
 	else
@@ -251,7 +251,7 @@ if_status_t IF_get_param_as_int    ( char *pname, int *param )
 	if ( ( pval = hashtable_search(htbl,pname) ) == NULL )
 	{
 		IF_log_event ( 0,
-		               IF_EV_WARN,
+		               IF_SEV_WARN,
 		               "Could not find config paramater '%s'",
 		               pname);
 		return IF_ERR;
@@ -269,7 +269,7 @@ if_status_t IF_get_param_as_float  ( char *pname, float *param )
 	if ( ( pval = hashtable_search(htbl,pname) ) == NULL )
 	{
 		IF_log_event ( 0,
-		               IF_EV_WARN,
+		               IF_SEV_WARN,
 		               "Could not find config paramater '%s'",
 		               pname);
 		return IF_ERR;
@@ -288,7 +288,7 @@ if_status_t IF_get_param_as_string ( char *pname, char *param, int param_size )
 	if ( ( pval = hashtable_search(htbl,pname) ) == NULL )
 	{
 		IF_log_event ( 0,
-		               IF_EV_WARN,
+		               IF_SEV_WARN,
 		               "Could not find config paramater '%s'",
 		               pname);
 		return IF_ERR;
@@ -309,7 +309,7 @@ if_status_t IF_get_param_as_int_dflt    ( char *pname, int *param, int dflt )
 	{
 		*param = dflt;
 		IF_log_event ( 0,
-		               IF_EV_WARN,
+		               IF_SEV_WARN,
 		               "Using default '%s' = '%d'",
 		               pname, *param);
 	}
@@ -325,7 +325,7 @@ if_status_t IF_get_param_as_float_dflt  ( char *pname, float *param, float dflt 
 	{
 		*param = dflt;
 		IF_log_event ( 0,
-		               IF_EV_WARN,
+		               IF_SEV_WARN,
 		               "Using default '%s' = '%f'",
 		               pname, *param);
 	}
@@ -342,7 +342,7 @@ if_status_t IF_get_param_as_string_dflt ( char *pname, char *param, int param_si
 		strncpy ( param, dflt, param_size );
 		param[param_size - 1] = '\0';
 		IF_log_event ( 0,
-		               IF_EV_WARN,
+		               IF_SEV_WARN,
 		               "Using default '%s' = '%s'",
 		               pname, param);
 	}
