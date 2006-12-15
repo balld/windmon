@@ -14,6 +14,8 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <math.h>
+#include <time.h>
+
 
 #include "common/IF_common.h"
 #include "common/IF_config.h"
@@ -44,6 +46,10 @@ static float  fSpeedMax = 0.0f;
 static double dSpeedTotal = 0.0;
 static float  fAngleXComp = 0.0f;
 static float  fAngleYComp = 0.0f;
+static time_t iStartDTM = 0;
+static time_t iEndDTM   = 0;
+
+/* Set when timer expires trigger writing data to database */
 static if_bool_t bTrigger = IF_FALSE;
 
 /************************/
@@ -173,16 +179,20 @@ int main(int argc, char* argv[])
     iNumFds = iNumSockets + 2;
     
 	/* Set up the alarm to trigger recording of data into database */
+	/* First the SIGALRM handler function */
 	signal (SIGALRM, handler);
-	
+
+	/* Then set a repeating alarm */	
 	if ( IF_get_param_as_int("WindLogRecordIntervalSec",
 	                         &iLogInterval) != IF_OK )
 	{
 		IF_log_event(0, IF_SEV_FATAL, "Failed to read log interval");
 		exit(1);
 	}
-	ualarm ( 1000000ul * iLogInterval, 1000000ul * iLogInterval );  
-	
+	ualarm ( 1000000ul * iLogInterval, 1000000ul * iLogInterval );
+
+	/* Set the measurement period start time */
+	iStartDTM = time(NULL);  
 	
 
 	/**********************************
@@ -372,17 +382,19 @@ void record_msg ( if_nmea_msg_t *pMsg )
 	     && strcmp ( pMsg->szTalkerIDString, "WI" ) == 0
 	     && strcmp ( pMsg->szSentenceIDString, "MWV" ) ==0 )
 	 {
-		iNumMeasurements++;
 		fTmpAngle = atof(pMsg->aszFields[0]);
 		fTmpSpeed = atof(pMsg->aszFields[2]);
 
         dSpeedTotal+=(double)fTmpSpeed;
 
-        fSpeedMin = fTmpSpeed < fSpeedMin ? fTmpSpeed :  fSpeedMin;
+        fSpeedMin = iNumMeasurements == 0 || fTmpSpeed < fSpeedMin ? fTmpSpeed :  fSpeedMin;
         fSpeedMax = fTmpSpeed > fSpeedMax ? fTmpSpeed :  fSpeedMax;
 
 		fAngleXComp += sin(fTmpAngle * M_PI / 180.0);
 		fAngleYComp += cos(fTmpAngle * M_PI / 180.0);
+
+		iNumMeasurements++;
+		
 	}
 }
 
@@ -390,6 +402,9 @@ void log_data ()
 {
 	float fSpeedAve = 0.0f;
 	float fAngleAve = 0.0f;
+
+    iEndDTM = time(NULL);
+
 	if ( iNumMeasurements > 0 )
 	{
 		fSpeedAve = (float) (dSpeedTotal/iNumMeasurements);
@@ -427,6 +442,14 @@ void log_data ()
                  "Measurements=%d. Speed Min=%f, Max=%f, Ave=%f. Direction Ave=%f",
                  iNumMeasurements, fSpeedMin, fSpeedMax, fSpeedAve, fAngleAve );
 
+    IF_db_log_wind_record ( iStartDTM,
+							iEndDTM,
+							iNumMeasurements,
+							fSpeedMin,
+							fSpeedMax,
+							fSpeedAve,
+							fAngleAve);
+
 	/* Reset everything */
 	iNumMeasurements = 0;
 	fSpeedMin = 0.0f;
@@ -434,6 +457,9 @@ void log_data ()
 	dSpeedTotal = 0.0;
 	fAngleXComp = 0.0f;
 	fAngleYComp = 0.0f;
+	
+	/* Next measurement period starts from end of this one */
+	iStartDTM = iEndDTM+1;
 }
 
 

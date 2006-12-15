@@ -496,6 +496,19 @@ if_status_t IF_parse_nmea_msg ( if_nmea_msg_t *pMsg, char *szMsgStr )
     }
     pCursor++;
 
+    /* Check "$" does not occur in remainder of message */
+    /* This indicates a garbled message                 */
+    if ( strchr ( pCursor, (int) '$') != NULL )
+    {
+        IF_log_event ( 0,
+                       IF_SEV_ERROR,
+                       "Garbled NMEA string '%s' : '$' prefix occurs within message",
+                       szStr);
+        return IF_ERR;
+    }
+
+
+
     /* Parse the message string */
     if ( *pCursor == 'P' )
     {

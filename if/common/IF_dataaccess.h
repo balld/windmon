@@ -8,5 +8,12 @@ if_status_t IF_db_connect ( char *hostname,
     	
 if_status_t IF_db_disconnect ();
 
+if_status_t IF_db_log_wind_record ( time_t iStartDTM,
+									time_t iEndDTM,
+									int iNumMeasurements,
+									float fSpeedMin,
+									float fSpeedMax,
+									float fSpeedAve,
+									float fAngleAve);
 
 #endif /*IF_DATAACCESS_H_*/
