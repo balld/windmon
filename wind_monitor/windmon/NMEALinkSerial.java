@@ -159,6 +159,21 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	    sPort.close();
     	    sPort = null;
     	    return false;
+    	} catch ( Exception e )
+    	{
+    		// There is a bug in Java 1.5/Linux 2.6.x which means param config
+    		// may fail first time, but work second time,
+    		try {
+    			sPort.setSerialPortParams(this.baudRate,
+    					this.databits,
+    					this.stopbits,
+    					this.parity);
+    		} catch (UnsupportedCommOperationException e2) {
+    			EventLog.log(EventLog.SEV_ERROR, "Could not configure port " + portName);
+    			sPort.close();
+    			sPort = null;
+    			return false;
+    		}
     	}
     	
     	// Open the input and output streams for the connection. If they won't

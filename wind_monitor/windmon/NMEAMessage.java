@@ -95,9 +95,18 @@ public class NMEAMessage
         // Check for "$" in first character
         if ( str.length() <= 0 || str.charAt(0) != '$')
         {
-            System.err.println("Invalid NMEA string: " + str);
+            System.err.println("Invalid NMEA string: '" + str + "'");
             return false;
         }
+        
+        // Check there is no "$" anywhere else as that suggests garbled message
+        // which can happen if link is interrupted and restored mid sentence
+        if ( str.length() > 1 && str.indexOf('$', 1) > 0 )
+        {
+            System.err.println("Garbled NMEA string: '" + str + "'");
+            return false;
+        }
+        
         // Parse the message string
         if ( str.charAt(1) == PROPRIETARY_CHAR )
         {

@@ -7,7 +7,6 @@
 package windmon;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.Timer;
@@ -31,7 +30,7 @@ import org.jfree.chart.ChartUtilities;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class WindDataLogger extends TimerTask implements WindDataListener {
+public class WindDataLoggerNMEA extends TimerTask implements WindDataListener {
 
 	private WindDataLoggerSet currentSet;
 	private WindDataLoggerSet lastSet;
@@ -72,7 +71,7 @@ public class WindDataLogger extends TimerTask implements WindDataListener {
     ReportGenerator rg = new ReportGenerator();
     
 	
-	public WindDataLogger (WindDataPlotter plotter, Ticker ticker)
+	public WindDataLoggerNMEA (WindDataPlotter plotter, Ticker ticker)
 	{
 		readConfig();
 		this.plotter = plotter;

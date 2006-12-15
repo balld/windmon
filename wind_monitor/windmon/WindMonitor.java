@@ -28,52 +28,76 @@ import javax.swing.border.*;
  * @version @(#)WeatherView.java	0.1 26/01/2005
  * @author David Ball
  */
-public class WindMonitor extends JWindow
+public class WindMonitor extends JPanel
 {
-    private static int WIDTH = 850, HEIGHT = 600;
     private static WindDisplay wv = null;
     private static WindDial wdl = null;
     private static WindDigits2 wdt = null;
     
+    private JWindow w = null;
+    private JFrame  f = null;
+    
     public WindMonitor()
     {
-    	// If using JFrame then set title.
-//        super("Wind Monitor");
-        getAccessibleContext().setAccessibleDescription(
-                                              "Wind Monitoring Application");
+    	super();
 
-        Config.loadConfig();
+    	Config.loadConfig();
         
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {System.exit(0);}
-            public void windowDeiconified(WindowEvent e) { 
-            }
-            public void windowIconified(WindowEvent e) { 
-            }
-        });
+        setLayout(new BorderLayout(5,5));
+        setBorder(new EmptyBorder(5,5,5,5));
+        setBackground(Color.black);
+    	
+    	Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+
+        String screenMode = Config.getParamAsString("ScreenMode", "Window");
+        if ( screenMode == "Window")
+        {
+        	/* Full screen */
+        	w = new JWindow();
+
+        	w.setLocation(0,0);
+            w.setSize(d.width, d.height);
+        	
+            w.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {System.exit(0);}
+                public void windowDeiconified(WindowEvent e) { 
+                }
+                public void windowIconified(WindowEvent e) { 
+                }
+            });
+            w.getAccessibleContext().setAccessibleDescription(
+            "Wind Monitoring Application");
+            w.getContentPane().removeAll();
+            w.getContentPane().setLayout(new BorderLayout(5,5));
+            w.getContentPane().add(this, BorderLayout.CENTER);
+        }
+        else
+        {
+        	/* Maximised Window */
+        	f = new JFrame ("Wind Monitor");
+
+        	f.setLocation(0,0);
+            f.setSize(d.width, d.height);
+            f.setIconImage(Utils.getImage(this, "MSCLogo.gif"));
+        	
+        	f.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {System.exit(0);}
+                public void windowDeiconified(WindowEvent e) { 
+                }
+                public void windowIconified(WindowEvent e) { 
+                }
+            });
+            f.getAccessibleContext().setAccessibleDescription(
+            "Wind Monitoring Application");
+            f.getContentPane().removeAll();
+            f.getContentPane().setLayout(new BorderLayout(5,5));
+            f.getContentPane().add(this, BorderLayout.CENTER);
+        }
         
-        Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-        setLocation(0,0);
-        setSize(d.width, d.height);
-//        setSize(WIDTH, HEIGHT);
 
-        JPanel jp = new JPanel();
-        jp.setLayout(new BorderLayout(5,5));
-        jp.setBorder(new EmptyBorder(5,5,5,5));
-        jp.setBackground(Color.black);
-
-        // If using JFrame, set an Icon image
-        // Use package class as image observer, else this won't work!
-//        setIconImage(Utils.getImage(jp, "MSCLogo.gif"));
-
-        getContentPane().removeAll();
-        getContentPane().setLayout(new BorderLayout(5,5));
-        getContentPane().add(jp, BorderLayout.CENTER);
-        
         Border border = BorderFactory.createBevelBorder(BevelBorder.LOWERED,
                 new Color(100, 100, 255),
                 new Color(50, 50, 128));
-        Insets insets = new Insets(5,5,5,5);
 
 
 //        Create digital clock and image
@@ -90,17 +114,12 @@ public class WindMonitor extends JWindow
         jp1.add(bn, BorderLayout.WEST);
         jp1.add(dc, BorderLayout.CENTER);
         jp1.add(tick, BorderLayout.SOUTH);
-        jp.add(jp1, BorderLayout.NORTH);
+        this.add(jp1, BorderLayout.NORTH);
         dc.start();
         tick.start();
 
         TickerFileWatcher tfw = new TickerFileWatcher(tick);
         tfw.start();
-        
-//      wv = new WindDisplay();
-//      wv.setBorder(border);
-//      jp.add(wv, BorderLayout.CENTER);
-
         
         JPanel jp2 = new JPanel();
         jp2.setLayout(new GridLayout(1,2));
@@ -115,10 +134,10 @@ public class WindMonitor extends JWindow
         JFreeChartPlotter plotter = new JFreeChartPlotter();
         plotter.setBorder(border);
         jp2.add(plotter);
-        jp.add(jp2, BorderLayout.CENTER);
+        this.add(jp2, BorderLayout.CENTER);
 
         wdt = new WindDigits2();
-        jp.add(wdt, BorderLayout.SOUTH);
+        this.add(wdt, BorderLayout.SOUTH);
 
         // JFrame : Create menu bar
 //        JMenuBar mbar = new JMenuBar();
@@ -164,19 +183,45 @@ public class WindMonitor extends JWindow
             link = new NMEALinkStub();
         }
         NMEAController nmea = NMEAController.getCreateInstance(link);
-//        nmea.addWindDataListener(wv);
         nmea.addWindDataListener(wdl);
         nmea.addWindDataListener(wdt);
-        WindDataLogger logger = new WindDataLogger(plotter, tick);
-        nmea.addWindDataListener(logger);
+
+        /*
+         * Original code logged wind data direct from the NMEA link.
+         * To aid stability, logging of data can be moved to external process,
+         * the Java app can just pull the data from a database.
+         */
+        String logMode = Config.getParamAsString("LogMode", "NMEA");
+        if ( logMode == "NMEA")
+        {
+        	WindDataLoggerNMEA logger = new WindDataLoggerNMEA(plotter, tick);
+        	nmea.addWindDataListener(logger);
+        }
+        else /* ( logMode == "DB" ) */
+        {
+        	/* TODO */
+        	WindDataLoggerMySql logger = new WindDataLoggerMySql(plotter, tick);
+        	/* Gets data from DB, so we don't register this logger as
+        	 * a WindDataListener */
+        }
         
-        setBackground(Color.pink);
-       	setVisible(true);
-        validate();
-        this.requestFocus();
-        
+        if ( w != null )
+        {
+        	w.setBackground(Color.pink);
+        	w.setVisible(true);
+        	w.validate();
+        	w.requestFocus();
+        }
+        else
+        {
+        	f.setBackground(Color.pink);
+        	f.setVisible(true);
+        	f.validate();
+        	f.requestFocus();
+        }        	
+
         // JFrame : Set extended state
-//        setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
+        // setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
         repaint();
         nmea.start();
     }

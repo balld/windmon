@@ -182,6 +182,10 @@ public class Ticker extends JPanel implements Runnable {
         g_textImg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
         g_textImg.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
 
+
+        g_textImg.setColor(getBackground());
+        g_textImg.fillRect(0, 0, textImgSize.width,
+                                 textImgSize.height);
         g_textImg.setColor(getForeground());
         g_textImg.setFont(l_font);
         TextLayout tl2 = new TextLayout(text,
