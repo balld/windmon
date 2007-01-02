@@ -103,6 +103,8 @@ public class NMEAController implements Runnable {
         		                          Float.parseFloat(msg.getField(2)));
         		}
         	} while (msg != null );
+	        dispatchWindDataEvent(-1.0f, -1.0f);
+            display_cleared = true;
         }
         thread = null;
     }

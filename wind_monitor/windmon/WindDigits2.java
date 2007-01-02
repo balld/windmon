@@ -153,8 +153,9 @@ public class WindDigits2 extends JPanel implements WindDataListener {
     
     public synchronized void windDataEventReceived(WindDataEvent e)
     {
-        if ( sample_count >= sample_interval || 
-                e.getWindSpeed() > this.getWindSpeed() )
+        if ( sample_count >= sample_interval
+             || e.getWindSpeed() > this.getWindSpeed()
+             || e.getWindSpeed() < 0.0f )
         {
             this.setWindSpeed(e.getWindSpeed());
             this.setWindAngle(e.getWindAngle());

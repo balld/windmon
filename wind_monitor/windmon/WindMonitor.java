@@ -28,7 +28,7 @@ import javax.swing.border.*;
  * @version @(#)WeatherView.java	0.1 26/01/2005
  * @author David Ball
  */
-public class WindMonitor extends JPanel
+public class WindMonitor extends JPanel implements ActionListener
 {
     private static WindDisplay wv = null;
     private static WindDial wdl = null;
@@ -36,6 +36,8 @@ public class WindMonitor extends JPanel
     
     private JWindow w = null;
     private JFrame  f = null;
+    
+    private JPopupMenu popup;
     
     public WindMonitor()
     {
@@ -50,7 +52,7 @@ public class WindMonitor extends JPanel
     	Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
 
         String screenMode = Config.getParamAsString("ScreenMode", "Window");
-        if ( screenMode == "Window")
+        if ( screenMode.compareToIgnoreCase("Window") == 0 )
         {
         	/* Full screen */
         	w = new JWindow();
@@ -160,9 +162,33 @@ public class WindMonitor extends JPanel
 //        mbar.add(mfile);
 //        mbar.add(mhelp);
 //        getContentPane().add(mbar, BorderLayout.NORTH);
+        
+        
+        //
+        //Create the popup menu.
+        //
+        JMenuItem menuItem;
+        popup = new JPopupMenu();
+        menuItem = new JMenuItem("Quit");
+        menuItem.addActionListener(this);
+        popup.add(menuItem);
+        menuItem = new JMenuItem("NMEA Options");
+        menuItem.addActionListener(this);
+        popup.add(menuItem);
 
-      setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        //Add listener to components that can bring up popup menus.
+        MouseListener popupListener = new PopupListener();
+        this.addMouseListener(popupListener);
+      
+        
+        //
+        // Set cursor to something different - just because
+        //
+        setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 
+        //
+        // Set up the wind data connection
+        //
         String connectionType = Config.getParamAsString("ConnectionType",
         		                                        "serial");
         NMEALink link = null;
@@ -229,5 +255,52 @@ public class WindMonitor extends JPanel
     public static void main(String args[])
     {
     	WindMonitor wm = new WindMonitor();
+    }
+    
+    // Handle actions from popup menu items
+    public void actionPerformed(ActionEvent e)
+    {
+    	String cmd = e.getActionCommand();
+    	EventLog.log(EventLog.SEV_INFO, "Menu action: " + cmd);
+    	if ( cmd.equalsIgnoreCase("Quit") )
+    	{
+    		System.exit(0);
+    	}
+    	else if ( cmd.equalsIgnoreCase("NMEA Options"))
+    	{
+    		JDialog dialog = new JDialog();
+    		dialog.setTitle("NMEA Options");
+    		NMEAController nmea = NMEAController.getInstance();
+    		if ( nmea == null )
+    		{
+    			return;
+    		}
+    		
+    		OptionsPanel op = new OptionsPanel(nmea);
+    		dialog.getContentPane().add(op);
+    		dialog.setSize(new Dimension(650,300));
+    		dialog.validate();
+    		dialog.setVisible(true);
+    	}
+    }
+    
+    //
+    // Sub-class to make popup menu appear when appropriate
+    //
+    class PopupListener extends MouseAdapter {
+        public void mousePressed(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
+        private void maybeShowPopup(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                popup.show(e.getComponent(),
+                           e.getX(), e.getY());
+            }
+        }
     }
 }
