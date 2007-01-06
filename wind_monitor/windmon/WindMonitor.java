@@ -30,12 +30,22 @@ import javax.swing.border.*;
  */
 public class WindMonitor extends JPanel implements ActionListener
 {
-    private static WindDisplay wv = null;
+	private static final long serialVersionUID = 0;
+	
+	private final String actionCommandQuit = "Quit";
+    private final String actionCommandNMEAOptions = "NMEA Options";
+    private final String actionCommandWindowScreenMode = "Window Screen Mode";
+    private final String actionCommandFrameScreenMode  = "Frame Screen Mode";
+
+//    private static WindDisplay wv = null;
     private static WindDial wdl = null;
     private static WindDigits2 wdt = null;
     
     private JWindow w = null;
     private JFrame  f = null;
+    
+    private JMenuItem screenModeMenuItem;
+
     
     private JPopupMenu popup;
     
@@ -49,53 +59,6 @@ public class WindMonitor extends JPanel implements ActionListener
         setBorder(new EmptyBorder(5,5,5,5));
         setBackground(Color.black);
     	
-    	Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-
-        String screenMode = Config.getParamAsString("ScreenMode", "Window");
-        if ( screenMode.compareToIgnoreCase("Window") == 0 )
-        {
-        	/* Full screen */
-        	w = new JWindow();
-
-        	w.setLocation(0,0);
-            w.setSize(d.width, d.height);
-        	
-            w.addWindowListener(new WindowAdapter() {
-                public void windowClosing(WindowEvent e) {System.exit(0);}
-                public void windowDeiconified(WindowEvent e) { 
-                }
-                public void windowIconified(WindowEvent e) { 
-                }
-            });
-            w.getAccessibleContext().setAccessibleDescription(
-            "Wind Monitoring Application");
-            w.getContentPane().removeAll();
-            w.getContentPane().setLayout(new BorderLayout(5,5));
-            w.getContentPane().add(this, BorderLayout.CENTER);
-        }
-        else
-        {
-        	/* Maximised Window */
-        	f = new JFrame ("Wind Monitor");
-
-        	f.setLocation(0,0);
-            f.setSize(d.width, d.height);
-            f.setIconImage(Utils.getImage(this, "MSCLogo.gif"));
-        	
-        	f.addWindowListener(new WindowAdapter() {
-                public void windowClosing(WindowEvent e) {System.exit(0);}
-                public void windowDeiconified(WindowEvent e) { 
-                }
-                public void windowIconified(WindowEvent e) { 
-                }
-            });
-            f.getAccessibleContext().setAccessibleDescription(
-            "Wind Monitoring Application");
-            f.getContentPane().removeAll();
-            f.getContentPane().setLayout(new BorderLayout(5,5));
-            f.getContentPane().add(this, BorderLayout.CENTER);
-        }
-        
 
         Border border = BorderFactory.createBevelBorder(BevelBorder.LOWERED,
                 new Color(100, 100, 255),
@@ -140,42 +103,21 @@ public class WindMonitor extends JPanel implements ActionListener
 
         wdt = new WindDigits2();
         this.add(wdt, BorderLayout.SOUTH);
-
-        // JFrame : Create menu bar
-//        JMenuBar mbar = new JMenuBar();
-//        JMenu mfile = new JMenu("File");
-//        JMenu mhelp = new JMenu("Help");
-//        Action exit = new ButtonExit("Exit",
-//        		                     new ImageIcon("images/icon_exit.gif"), this);
-//        Action options = new ButtonOptions("Options",
-//                                     new ImageIcon("images/icon_options.gif"), this);
-//        
-//        Action about = new ButtonAbout("About Wind Monitor",
-//        		                       new ImageIcon("images/icon_help.gif"), this);
-//
-//        mfile.add(options);
-//        mfile.addSeparator();
-//        mfile.add(exit);
-//        
-//        mhelp.add(about);
-//        
-//        mbar.add(mfile);
-//        mbar.add(mhelp);
-//        getContentPane().add(mbar, BorderLayout.NORTH);
-        
         
         //
         //Create the popup menu.
         //
         JMenuItem menuItem;
         popup = new JPopupMenu();
-        menuItem = new JMenuItem("Quit");
+        menuItem = new JMenuItem(actionCommandQuit);
         menuItem.addActionListener(this);
         popup.add(menuItem);
-        menuItem = new JMenuItem("NMEA Options");
+        menuItem = new JMenuItem(actionCommandNMEAOptions);
         menuItem.addActionListener(this);
         popup.add(menuItem);
+        // NOTE : We add one more menu item later to switch between screen modes.
 
+        
         //Add listener to components that can bring up popup menus.
         MouseListener popupListener = new PopupListener();
         this.addMouseListener(popupListener);
@@ -231,20 +173,15 @@ public class WindMonitor extends JPanel implements ActionListener
         	 * a WindDataListener */
         }
         
-        if ( w != null )
+        String initScreenMode = Config.getParamAsString("ScreenMode", "Window");
+        if ( initScreenMode.compareToIgnoreCase("Window") == 0 )
         {
-        	w.setBackground(Color.pink);
-        	w.setVisible(true);
-        	w.validate();
-        	w.requestFocus();
+        	applyWindowScreenMode();
         }
         else
         {
-        	f.setBackground(Color.pink);
-        	f.setVisible(true);
-        	f.validate();
-        	f.requestFocus();
-        }        	
+        	applyFrameScreenMode();
+        }
 
         // JFrame : Set extended state
         // setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
@@ -262,11 +199,11 @@ public class WindMonitor extends JPanel implements ActionListener
     {
     	String cmd = e.getActionCommand();
     	EventLog.log(EventLog.SEV_INFO, "Menu action: " + cmd);
-    	if ( cmd.equalsIgnoreCase("Quit") )
+    	if ( cmd.equalsIgnoreCase(actionCommandQuit) )
     	{
     		System.exit(0);
     	}
-    	else if ( cmd.equalsIgnoreCase("NMEA Options"))
+    	else if ( cmd.equalsIgnoreCase(actionCommandNMEAOptions))
     	{
     		JDialog dialog = new JDialog();
     		dialog.setTitle("NMEA Options");
@@ -282,7 +219,128 @@ public class WindMonitor extends JPanel implements ActionListener
     		dialog.validate();
     		dialog.setVisible(true);
     	}
+    	else if (cmd.equalsIgnoreCase(actionCommandWindowScreenMode))
+    	{
+    		applyWindowScreenMode();
+    	}
+    	else if (cmd.equalsIgnoreCase(actionCommandFrameScreenMode))
+    	{
+    		applyFrameScreenMode();
+    	}
     }
+
+    private void applyWindowScreenMode()
+    {
+    	//
+    	// Destroy the JFrame if it exists
+    	//
+    	if ( f != null )
+    	{
+        	f.getContentPane().remove(this);
+        	f.setVisible(false);
+        	f.dispose();
+        	f = null;
+    	}
+
+    	//
+    	// Create or update the popup menu item so user can change mode back to
+    	// frame mode
+    	//
+    	if ( screenModeMenuItem == null )
+    	{
+    		screenModeMenuItem = new JMenuItem(actionCommandFrameScreenMode);
+    		screenModeMenuItem.addActionListener(this);
+            popup.add(screenModeMenuItem);
+    	}
+    	else
+    	{
+    		screenModeMenuItem.setActionCommand(actionCommandFrameScreenMode);
+    		screenModeMenuItem.setText(actionCommandFrameScreenMode);
+    	}
+
+    	/* Full screen window (no borders) */
+    	w = new JWindow();
+
+    	Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+    	w.setLocation(0,0);
+    	w.setSize(d.width, d.height);
+
+    	w.addWindowListener(new WindowAdapter() {
+    		public void windowClosing(WindowEvent e) {System.exit(0);}
+    		public void windowDeiconified(WindowEvent e) { 
+    		}
+    		public void windowIconified(WindowEvent e) { 
+    		}
+    	});
+    	w.getAccessibleContext().setAccessibleDescription(
+    			"Wind Monitoring Application");
+    	w.getContentPane().removeAll();
+    	w.getContentPane().setLayout(new BorderLayout(5,5));
+    	w.getContentPane().add(this, BorderLayout.CENTER);
+
+    	w.setBackground(Color.pink);
+    	w.setVisible(true);
+    	w.validate();
+    	w.requestFocus();
+    }
+
+    private void applyFrameScreenMode()
+    {
+    	//
+    	// Destroy the JWindow if it exists
+    	//
+    	if ( w != null )
+    	{
+        	w.getContentPane().remove(this);
+        	w.setVisible(false);
+        	w.dispose();
+        	w = null;
+    	}
+
+    	//
+    	// Create or update the popup menu item so user can change mode back to
+    	// frame mode
+    	//
+    	if ( screenModeMenuItem == null )
+    	{
+    		screenModeMenuItem = new JMenuItem(actionCommandWindowScreenMode);
+    		screenModeMenuItem.addActionListener(this);
+            popup.add(screenModeMenuItem);
+    	}
+    	else
+    	{
+    		screenModeMenuItem.setActionCommand(actionCommandWindowScreenMode);
+    		screenModeMenuItem.setText(actionCommandWindowScreenMode);
+    	}
+
+    	
+    	f = new JFrame ("Wind Monitor");
+
+    	Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+    	f.setLocation(0,0);
+    	f.setSize(d.width, d.height);
+    	f.setIconImage(Utils.getImage(this, "MSCLogo.gif"));
+
+    	f.addWindowListener(new WindowAdapter() {
+    		public void windowClosing(WindowEvent e) {System.exit(0);}
+    		public void windowDeiconified(WindowEvent e) { 
+    		}
+    		public void windowIconified(WindowEvent e) { 
+    		}
+    	});
+    	f.getAccessibleContext().setAccessibleDescription(
+    			"Wind Monitoring Application");
+    	f.getContentPane().removeAll();
+    	f.getContentPane().setLayout(new BorderLayout(5,5));
+    	f.getContentPane().add(this, BorderLayout.CENTER);
+
+    	f.setBackground(Color.pink);
+    	f.setVisible(true);
+    	f.validate();
+    	f.requestFocus();
+    }
+
+    
     
     //
     // Sub-class to make popup menu appear when appropriate

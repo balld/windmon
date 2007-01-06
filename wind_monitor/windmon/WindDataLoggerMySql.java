@@ -45,7 +45,8 @@ public class WindDataLoggerMySql extends TimerTask {
 	private Timer timer;
 
 	private long analysisInterval; // Hold data in memory (ms)
-	private long recordInterval; // Record data at this interval (ms)
+	private long recordInterval; // Data is recorded in MySQL by external process at this interval (ms)
+	private long dbPollInterval; // This logger checks the MySql database at this interval for new data.
 
 	long lastUpdateDTM = -1;
 
@@ -118,6 +119,12 @@ public class WindDataLoggerMySql extends TimerTask {
 	public void readConfig()
 	{
 		recordInterval=Config.getParamAsLong("WindLogRecordIntervalSec", 10)*1000;
+
+		// Poll DB for new data at configured interval. Default is 1/10th of the 
+		// interval at which new data should be recorded in the database by the
+		// external process.
+		dbPollInterval=Config.getParamAsLong("DBPollIntervalSec", recordInterval/(10*1000))*1000;
+
 		analysisInterval=Config.getParamAsLong("WindLogHistorySec", 3600)*1000;
 		logDir = Config.getParamAsString("WindLogDataDirectory", "/tmp/");
 		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
@@ -154,8 +161,8 @@ public class WindDataLoggerMySql extends TimerTask {
 		}
 		timer = new Timer();
 		timer.schedule(this,
-				new Date(System.currentTimeMillis() + recordInterval),
-				recordInterval);
+				new Date(System.currentTimeMillis() + dbPollInterval),
+				dbPollInterval);
 	}
 
 	private void connectDB()
