@@ -18,7 +18,7 @@
 /***********************/
 /* Serial Interface    */
 /***********************/
-#define IF_DEVICE_NAME "/dev/ttyS1"
+#define IF_DEVICE_NAME "/dev/ttyS0"
 #define IF_BAUD_RATE 4800l
 #define IF_DATA_BITS 8
 #define IF_STOP_BITS 1

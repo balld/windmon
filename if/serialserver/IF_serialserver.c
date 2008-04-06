@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <math.h>
 #include <time.h>
+#include <sys/time.h>
 
 
 #include "common/IF_common.h"
@@ -55,9 +56,9 @@ static if_bool_t bTrigger = IF_FALSE;
 /************************/
 /* Func Prototypes      */
 /************************/
-void handler (int sig);
-void record_msg ( if_nmea_msg_t *pMsg );
-void log_data ();
+static void handler (int sig);
+static void record_msg ( if_nmea_msg_t *pMsg );
+static void log_data ();
 
 /* None */
 
@@ -79,7 +80,31 @@ int main(int argc, char* argv[])
 	if_nmea_msg_t msg;
 	
 	int iLogInterval = 0;
+
+    struct sigaction act = {{0}};
+    struct itimerval itval = {{0}};
+
+    /*
+     * Poll structure:
+     * Index 0 is serial port
+     * Index 1 is socket connection listener
+     * Index 2 and up is for client socket connections
+     */
+    struct pollfd sPollStruct[IF_MAX_SOCKETS + 2];
+    int iPollCount = 0;
+    int iNumSockets = 0;
+    int iNumFds = 0;
+    int i;
+    int j;
+    int m;
+
+    /* Socket fd info. Index 0 is for server (listening) port */
+    if_fd_info_t *socket_fds[IF_MAX_SOCKETS + 1];
+    if_fd_info_t *serial_fd = NULL;
+    if_fd_info_t *new_fd = NULL;
+    char *szFullMsg = "Sorry. No sockets available\n";
 	
+
     if_status_t retval = IF_OK;
     
     /* Generate full path for config file : <home dir>/windmon.cfg */
@@ -119,7 +144,8 @@ int main(int argc, char* argv[])
 		IF_log_event(0, IF_SEV_FATAL, "Failed to read database settings");
 		exit(1);
     }
-		     	
+
+	/* Part 2 - Connect to the database */
 	if ( IF_db_connect ( szDBHost,
                          szDBUser,
                          szDBPassword,
@@ -134,28 +160,9 @@ int main(int argc, char* argv[])
 	IF_get_param_as_string_dflt("NMEASerialPort",
 	                            szSerialDevice,
 	                            sizeof(szSerialDevice),
-	                            "/dev/ttyS0");	    
+	                            IF_DEVICE_NAME);	    
 
-    /* Socket fd info. Index 0 is for server (listening) port */
-    if_fd_info_t *socket_fds[IF_MAX_SOCKETS + 1];
-    if_fd_info_t *serial_fd = NULL;
-    if_fd_info_t *new_fd = NULL;
-    char *szFullMsg = "Sorry. No sockets available\n";
-
-    /*
-     * Poll structure:
-     * Index 0 is serial port
-     * Index 1 is socket connection listener
-     * Index 2 and up is for client socket connections
-     */
-    struct pollfd sPollStruct[IF_MAX_SOCKETS + 2];
-    int iPollCount = 0;
-    int iNumSockets = 0;
-    int iNumFds = 0;
-    int i;
-    int j;
-    int m;
-
+    /* Open serial port */
     if ( ( serial_fd = IF_serial_open ( szSerialDevice,
                                         IF_BAUD_RATE,
                                         IF_DATA_BITS,
@@ -166,21 +173,36 @@ int main(int argc, char* argv[])
             exit (1);
     }
 
+    /* Open socket to listen for incoming TCP connections. */
     if ( ( socket_fds[0] = IF_socket_open ( IF_SERVER_PORT ) ) == NULL )
     {
-            IF_log_event ( 0, IF_SEV_FATAL, "Could not open socket\n" );
-            exit (1);
+        IF_log_event_errno ( 0, IF_SEV_FATAL, "Could not open socket" );
+        exit (1);
     }
 
+    /* Populate I/O polling structure for serial port */
     sPollStruct[0].fd = serial_fd->iFD;
     sPollStruct[0].events = POLLIN;
+    /* Populate I/O polling structure for TCP server port */
     sPollStruct[1].fd = socket_fds[0]->iFD;
     sPollStruct[1].events = POLLIN;
+    /* Increment FD counter as we now have first to FDs in polling array */
+    /* Remaining slots in array will be for incoming TCP connnections to */
+    /* the server.                                                       */
     iNumFds = iNumSockets + 2;
     
 	/* Set up the alarm to trigger recording of data into database */
 	/* First the SIGALRM handler function */
-	signal (SIGALRM, handler);
+    act.sa_handler = handler;
+    sigemptyset (&act.sa_mask);
+    act.sa_flags = 0;
+
+    /* First the SIGALRM handler function */
+    if ( sigaction (SIGALRM, &act, NULL) != 0 )
+    {
+            IF_log_event_errno ( 0, IF_SEV_FATAL, "Could not set signal handler for process timer" );
+            exit (1);
+    }
 
 	/* Then set a repeating alarm */	
 	if ( IF_get_param_as_int("WindLogRecordIntervalSec",
@@ -189,11 +211,17 @@ int main(int argc, char* argv[])
 		IF_log_event(0, IF_SEV_FATAL, "Failed to read log interval");
 		exit(1);
 	}
-	ualarm ( 1000000ul * iLogInterval, 1000000ul * iLogInterval );
-
+    itval.it_interval.tv_sec = iLogInterval;
+    itval.it_value.tv_sec    = iLogInterval;
+    if ( setitimer ( ITIMER_REAL, &itval, NULL ) != 0 )
+    {
+		IF_log_event_errno(0, IF_SEV_FATAL, "Failed to set process timer");
+		exit(1);
+    }
+    	
 	/* Set the measurement period start time */
 	iStartDTM = time(NULL);  
-	
+
 
 	/**********************************
 	 * MAIN PROCESS LOOP
@@ -366,12 +394,12 @@ int main(int argc, char* argv[])
     exit (0);
 }
 
-void handler (int sig)
+static void handler (int sig)
 {
 	bTrigger = IF_TRUE;
 }
 
-void record_msg ( if_nmea_msg_t *pMsg )
+static void record_msg ( if_nmea_msg_t *pMsg )
 {
 	float fTmpSpeed;
 	float fTmpAngle;
@@ -398,7 +426,7 @@ void record_msg ( if_nmea_msg_t *pMsg )
 	}
 }
 
-void log_data ()
+static void log_data ()
 {
 	float fSpeedAve = 0.0f;
 	float fAngleAve = 0.0f;
