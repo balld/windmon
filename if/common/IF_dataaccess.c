@@ -237,7 +237,7 @@ void convert_time ( time_t t, MYSQL_TIME *m )
 		return;
 	}
 
-	ptm = gmtime ( &t );
+	ptm = localtime ( &t );
 	
 	m->year  = ptm->tm_year + 1900; /* tm_year is years since 1900 */
 	m->month = ptm->tm_mon + 1;     /* tm_mon is 0 .. 11 */

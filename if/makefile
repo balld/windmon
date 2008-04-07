@@ -2,18 +2,26 @@ RM := rm -rf
 
 CFLAGS = -O0 -g3 -Wall -c -fmessage-length=0 -DBIG_JOINS=1
 CLIBS = -L/usr/lib -lmysqlclient -lz -lcrypt -lnsl -lm
+TESTCLIBS = -L/usr/lib -lnsl -lm
 INCS = -I"./" -I/usr/include/mysql 
 EXE = exe
 
 
-COMMON_SRCS = 	common/IF_common.c \
-                common/IF_config.c \
-                common/IF_dataaccess.c \
-                common/hashtable.c
+# COMMON_SRCS = 	common/IF_common.c \
+#                common/IF_config.c \
+#                common/IF_dataaccess.c \
+#                common/hashtable.c
 
 COMMON_OBJS = 	common/IF_common.o \
                 common/IF_config.o \
                 common/IF_dataaccess.o \
+                common/hashtable.o
+
+# TEST_SRCS = 	common/IF_common.c \
+#                 common/IF_config.c
+
+TEST_OBJS = 	common/IF_common.o \
+                common/IF_config.o \
                 common/hashtable.o
 
 SERIALTEST_SRCS = serialtest/IF_serialtest.c
@@ -57,10 +65,10 @@ serialtest/%.o: serialtest/%.c
 
 
 # Tool invocations
-serialtest: $(EXE) $(COMMON_OBJS) $(SERIALTEST_OBJS)
+serialtest: $(EXE) $(TEST_OBJS) $(SERIALTEST_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc  -o"$(EXE)/$@" $(COMMON_OBJS) $(SERIALTEST_OBJS) $(CLIBS)
+	gcc  -o"$(EXE)/$@" $(TEST_OBJS) $(SERIALTEST_OBJS) $(TESTCLIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
