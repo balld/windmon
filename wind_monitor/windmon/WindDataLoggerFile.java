@@ -30,7 +30,7 @@ import org.jfree.chart.ChartUtilities;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class WindDataLoggerNMEA extends TimerTask implements WindDataListener {
+public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
 	private WindDataLoggerSet currentSet;
 	private WindDataLoggerSet lastSet;
@@ -40,6 +40,8 @@ public class WindDataLoggerNMEA extends TimerTask implements WindDataListener {
     private long recordInterval; // Record data at this interval (ms)
     
 	long nextMidnight;
+	
+	private boolean storeDataToFile = true;
     
     private GregorianCalendar calendar = null;
     private SimpleDateFormat fnameDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -71,14 +73,22 @@ public class WindDataLoggerNMEA extends TimerTask implements WindDataListener {
     ReportGenerator rg = new ReportGenerator();
     
 	
-	public WindDataLoggerNMEA (WindDataPlotter plotter, Ticker ticker)
+	public WindDataLoggerFile (WindDataPlotter plotter, Ticker ticker, boolean storeDataToFile)
 	{
 		readConfig();
 		this.plotter = plotter;
         this.ticker = ticker;
+        this.storeDataToFile = storeDataToFile;
         ticker.setText(this, initTickerText);
-
-		store = new FileWindDataStore();
+        
+        if ( storeDataToFile )
+        {
+        	store = new FileWindDataStore();
+        }
+        else
+        {
+        	store = null;
+        }
 		
 		/* Create new calendar with current time */
 		calendar = new GregorianCalendar();
@@ -104,7 +114,12 @@ public class WindDataLoggerNMEA extends TimerTask implements WindDataListener {
 		/* Fetch data back to the earlier of last midnight or analysis start */
 		long dataFetchStart = Math.min(lastMidnight, analysisStart);
 
-		Vector archData = store.getWindDataRecords(dataFetchStart, now, false);
+		Vector archData = null;
+		if ( store != null )
+		{
+			archData = store.getWindDataRecords(dataFetchStart, now, false);
+		}
+		
 		if ( archData != null )
 		{
 			dataRecords = archData;
@@ -238,7 +253,13 @@ public class WindDataLoggerNMEA extends TimerTask implements WindDataListener {
 			{
 				dataRecords.add(rec);
 			}
-			store.storeWindDataRecord(rec);
+
+			// Store data to file if using file store.
+			if ( store != null )
+			{
+				store.storeWindDataRecord(rec);
+			}
+			
 			EventLog.log(EventLog.SEV_DEBUG, "Saved : " + rec);
 			
 			// Only store data records going back for the configured period.
@@ -273,7 +294,7 @@ public class WindDataLoggerNMEA extends TimerTask implements WindDataListener {
                 String dialfname = logDir + fnameDate  + "_dialx.png";
                 String txtfname = logDir + fnameDate   + "_infox.txt";
                 String triggerfname = logDir + fnameDate  + "_trigr.rdy";
-                
+
                 // Graphs are easy thanks to JFreeChart
                 plotter.writeSpeedPlotPNG(logDir + fnameDate + "_speed.png",
                         imageWidth, imageHeight);
@@ -288,7 +309,9 @@ public class WindDataLoggerNMEA extends TimerTask implements WindDataListener {
                 BufferedImage bdimg = new BufferedImage(dialWidth, dialWidth, BufferedImage.TYPE_INT_RGB);
                 Graphics2D bdg = bdimg.createGraphics();
                 dial.justPaint(bdg);
+
                 File dialFile = new File(dialfname);
+                
                 try
                 {
                     FileOutputStream os = new FileOutputStream(dialFile, false);

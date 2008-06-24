@@ -159,18 +159,28 @@ public class WindMonitor extends JPanel implements ActionListener
          * To aid stability, logging of data can be moved to external process,
          * the Java app can just pull the data from a database.
          */
-        String logMode = Config.getParamAsString("LogMode", "NMEA");
-        if ( logMode == "NMEA")
-        {
-        	WindDataLoggerNMEA logger = new WindDataLoggerNMEA(plotter, tick);
-        	nmea.addWindDataListener(logger);
-        }
-        else /* ( logMode == "DB" ) */
+        String logMode = Config.getParamAsString("LogMode", "live");
+        if ( logMode.compareToIgnoreCase("DB") == 0 )
         {
         	/* TODO */
         	WindDataLoggerMySql logger = new WindDataLoggerMySql(plotter, tick);
         	/* Gets data from DB, so we don't register this logger as
         	 * a WindDataListener */
+        }
+        else if ( logMode.compareToIgnoreCase("file") == 0 )
+        {
+        	WindDataLoggerFile logger = new WindDataLoggerFile(plotter, tick, true);
+        	nmea.addWindDataListener(logger);
+        }
+        else /* ( logMode == "live") */
+        {
+        	if ( logMode != "live" )
+        	{
+            	EventLog.log(EventLog.SEV_INFO, "Unrecognised LogMode '" +
+                        logMode + "'. Using 'live'");
+        	}
+        	WindDataLoggerFile logger = new WindDataLoggerFile(plotter, tick, false);
+        	nmea.addWindDataListener(logger);
         }
         
         String initScreenMode = Config.getParamAsString("ScreenMode", "Window");
