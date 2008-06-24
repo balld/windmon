@@ -170,6 +170,11 @@ public class Ticker extends JPanel implements Runnable {
             text = (String) stringsItr.next();
         }
         
+        if ( text == null )
+        {
+        	text = "Default message. No text to display";
+        }
+        
         TextLayout tl = new TextLayout(text,
                                        l_font,
                                        g2.getFontRenderContext());
