@@ -17,9 +17,9 @@ import java.io.BufferedReader;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class Config {
-	private static String filename = "windmon.cfg";
-	private static Config config = null;
-	
+	private static final String filename = "windmon.cfg";
+	private static final String homeDirVar="%HOME%";
+	private static final String homeDir = System.getProperties().getProperty("user.home", "/");
 	private static Hashtable params;
 	
 	private Config()
@@ -30,9 +30,9 @@ public class Config {
 	{
 		BufferedReader br;
 		params = new Hashtable();
-        String homeDir = System.getProperties().getProperty("user.home", "/");
+        // String homeDir = System.getProperties().getProperty("user.home", "/");
         String path = homeDir + "/" + filename;
-        EventLog.log(EventLog.SEV_DEBUG, "Config file is '" + path + "'");
+        EventLog.log(EventLog.SEV_INFO, "Config file is '" + path + "'");
 		try
 		{
 			br = new BufferedReader(new FileReader(path));
@@ -62,10 +62,10 @@ public class Config {
 				int j = ln.indexOf('=');
 				if ( j > 0 ) // Need at least one character before '='
 				{
-					params.put(ln.substring(0, j),
-							   ln.substring(j+1, ln.length()));
+					String key = ln.substring(0, j);
+					String value = doSubs(ln.substring(j+1, ln.length()));
+					params.put(key,value);
 				}
-				
 			}
 			br.close();
 		}
@@ -73,9 +73,15 @@ public class Config {
 		{
 			e.printStackTrace();
 		}
-		System.out.println(params.toString());
+		// System.out.println(params.toString());
 	}
 	
+	public static String doSubs(String s)
+	{
+		String res = null;
+		res = s.replace(homeDirVar, homeDir);
+		return res;
+	}
 
 	public static int getParamAsInt(String param, int dflt)
 	{

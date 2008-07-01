@@ -52,8 +52,9 @@ public class WindMonitor extends JPanel implements ActionListener
     public WindMonitor()
     {
     	super();
-
     	Config.loadConfig();
+    	EventLog.setAppLogDirectory(Config.getParamAsString("AppLogDirectory"));
+    	EventLog.setLogLevelAsString(Config.getParamAsString("AppLogLevel", "DEBUG"));
         
         setLayout(new BorderLayout(5,5));
         setBorder(new EmptyBorder(5,5,5,5));
@@ -70,22 +71,32 @@ public class WindMonitor extends JPanel implements ActionListener
         DigitalClock dc = new DigitalClock();
         dc.setBackground(Color.BLACK);
         dc.setForeground(Color.WHITE);
-        Ticker tick = new Ticker();
-        tick.setForeground(Color.WHITE);
-        tick.setBackground(Color.BLACK);
-        JPanel jp1 = new JPanel();
-        jp1.setLayout(new BorderLayout());
-        jp1.setBackground(Color.white);
-        jp1.add(bn, BorderLayout.WEST);
-        jp1.add(dc, BorderLayout.CENTER);
-        jp1.add(tick, BorderLayout.SOUTH);
-        this.add(jp1, BorderLayout.NORTH);
-        dc.start();
-        tick.start();
 
-        TickerFileWatcher tfw = new TickerFileWatcher(tick);
-        tfw.start();
-        
+    	JPanel jp1 = new JPanel();
+    	jp1.setLayout(new BorderLayout());
+    	jp1.setBackground(Color.white);
+    	jp1.add(bn, BorderLayout.WEST);
+    	jp1.add(dc, BorderLayout.CENTER);
+
+        /*
+         * Ticker is optional.
+         */
+        Ticker tick = null;
+        if ( Config.getParamAsBoolean("ShowTickerYN",false) == true)
+        {
+        	tick = new Ticker();
+        	tick.setForeground(Color.WHITE);
+        	tick.setBackground(Color.BLACK);
+        	jp1.add(tick, BorderLayout.SOUTH);
+        	dc.start();
+        	tick.start();
+
+        	TickerFileWatcher tfw = new TickerFileWatcher(tick);
+        	tfw.start();
+        }        
+
+    	this.add(jp1, BorderLayout.NORTH);
+
         JPanel jp2 = new JPanel();
         jp2.setLayout(new GridLayout(1,2));
         

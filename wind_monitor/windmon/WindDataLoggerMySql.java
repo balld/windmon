@@ -97,7 +97,11 @@ public class WindDataLoggerMySql extends TimerTask {
 	{
 		this.plotter = plotter;
 		this.ticker = ticker;
-		ticker.setText(this, initTickerText);
+		
+		if ( ticker != null )
+		{
+			ticker.setText(this, initTickerText);
+		}
 
 		// Class.forName(xxx) loads the jdbc classes and
 		// creates a drivermanager class factory
@@ -126,11 +130,11 @@ public class WindDataLoggerMySql extends TimerTask {
 		dbPollInterval=Config.getParamAsLong("DBPollIntervalSec", recordInterval/(10*1000))*1000;
 
 		analysisInterval=Config.getParamAsLong("WindLogHistorySec", 3600)*1000;
-		logDir = Config.getParamAsString("WindLogDataDirectory", "/tmp/");
+		logDir = Config.getParamAsString("WindLogDataDirectory");
 		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
 		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
 		dialWidth = Config.getParamAsInt("WindLogDialImageHeight", 400);
-		webOutput = Config.getParamAsBoolean("GenerateWebFiles", true);
+		webOutput = Config.getParamAsBoolean("GenerateWebFilesYN", true);
 		initTickerText = Config.getParamAsString("InitialTickerText", "WindMonitor (c) David Ball 2006");
 		templatePathname = Config.getParamAsString("ReportTemplate");
 
@@ -139,6 +143,28 @@ public class WindDataLoggerMySql extends TimerTask {
 		dbHost     = Config.getParamAsString("DBHost", "localhost");
 		dbPassword = Config.getParamAsString("DBPassword");
 
+		if ( webOutput = true )
+		{
+			File path = new File(logDir);
+			if ( path.exists())
+			{
+				if ( !path.isDirectory() )
+				{
+					EventLog.log(EventLog.SEV_FATAL, "Log directory '" + logDir + "' exists but is not a directory");
+				}
+			}
+			else
+			{
+				if ( path.mkdirs() != true )
+				{
+					EventLog.log(EventLog.SEV_FATAL, "Log directory '" + logDir + "' could not be created");
+				}
+				else
+				{
+					EventLog.log(EventLog.SEV_INFO, "Log directory '" + logDir + "' created");
+				}
+			}
+		}
 
 		// Reset the dial size
 		dial.setSize(new Dimension(dialWidth, dialWidth));
@@ -343,7 +369,8 @@ public class WindDataLoggerMySql extends TimerTask {
 		if ( dbUpdateDTM <= lastUpdateDTM )
 		{
 			// No change, so exit
-			EventLog.log(EventLog.SEV_ERROR, "No new data in database to plot.");
+			// Not an error
+			// EventLog.log(EventLog.SEV_ERROR, "No new data in database to plot.");
 			return;
 		}
 
@@ -389,16 +416,16 @@ public class WindDataLoggerMySql extends TimerTask {
 			String maxWindDate = maxWindDateFormat.format(new Date(dayMax.getEndTime()));
 
 			// Build all the filenames needed
-			String speedfname = logDir + fnameDate + "_speed.png";
-			String anglefname = logDir + fnameDate + "_angle.png";
-			String dialfname = logDir + fnameDate  + "_dialx.png";
-			String txtfname = logDir + fnameDate   + "_infox.txt";
-			String triggerfname = logDir + fnameDate  + "_trigr.rdy";
+			String speedfname = logDir + "/" + fnameDate + "_speed.png";
+			String anglefname = logDir + "/" + fnameDate + "_angle.png";
+			String dialfname = logDir + "/" + fnameDate  + "_dialx.png";
+			String txtfname = logDir + "/" + fnameDate   + "_infox.txt";
+			String triggerfname = logDir + "/" + fnameDate  + "_trigr.rdy";
 
 			// Render speed and angle charts to image files (PNG) for web upload
-			plotter.writeSpeedPlotPNG(logDir + fnameDate + "_speed.png",
+			plotter.writeSpeedPlotPNG(logDir + "/" + fnameDate + "_speed.png",
 					imageWidth, imageHeight);
-			plotter.writeAnglePlotPNG(logDir + fnameDate + "_angle.png",
+			plotter.writeAnglePlotPNG(logDir + "/" + fnameDate + "_angle.png",
 					imageWidth, imageHeight);
 
 			// Render wind speed dial for web upload
@@ -467,14 +494,15 @@ public class WindDataLoggerMySql extends TimerTask {
 			}
 
 			// Set ticker text on the graphical display
-			ticker.setText(this, 
-					labelDate + " (" + recordInterval/1000 + " second sample)   " +
-					"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
-					"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
-					"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
-					"Today's peak windspeed " + df.format(dayMax.getMaxSpeed())
-					+ " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate
-			);
+			if ( ticker != null )
+			{
+				ticker.setText(this, 
+						labelDate + " (" + recordInterval/1000 + " second sample)   " +
+						"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
+						"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
+						"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
+						"Today's peak windspeed " + df.format(dayMax.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate);
+			}
 		}
 	}
 

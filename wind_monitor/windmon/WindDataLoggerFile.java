@@ -79,7 +79,11 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		this.plotter = plotter;
         this.ticker = ticker;
         this.storeDataToFile = storeDataToFile;
-        ticker.setText(this, initTickerText);
+        
+        if ( ticker != null )
+        {
+        	ticker.setText(this, initTickerText);
+        }
         
         if ( storeDataToFile )
         {
@@ -162,10 +166,34 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
 		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
         dialWidth = Config.getParamAsInt("WindLogDialImageHeight", 400);
-        webOutput = Config.getParamAsBoolean("GenerateWebFiles", true);
+        webOutput = Config.getParamAsBoolean("GenerateWebFilesYN", true);
         initTickerText = Config.getParamAsString("InitialTickerText", "WindMonitor (c) David Ball 2006");
         templatePathname = Config.getParamAsString("ReportTemplate");
 
+		if ( webOutput = true )
+		{
+			File path = new File(logDir);
+			if ( path.exists())
+			{
+				if ( !path.isDirectory() )
+				{
+					EventLog.log(EventLog.SEV_FATAL, "Log directory '" + logDir + "' exists but is not a directory");
+				}
+			}
+			else
+			{
+				if ( path.mkdirs() != true )
+				{
+					EventLog.log(EventLog.SEV_FATAL, "Log directory '" + logDir + "' could not be created");
+				}
+				else
+				{
+					EventLog.log(EventLog.SEV_INFO, "Log directory '" + logDir + "' created");
+				}
+			}
+		}
+        
+        
 		// If timer exists, reset it
 		if ( timer != null )
 		{
@@ -289,16 +317,16 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 String maxWindDate = maxWindDateFormat.format(new Date(dayMax.getEndTime()));
                 
                 // Build all the filenames needed
-                String speedfname = logDir + fnameDate + "_speed.png";
-                String anglefname = logDir + fnameDate + "_angle.png";
-                String dialfname = logDir + fnameDate  + "_dialx.png";
-                String txtfname = logDir + fnameDate   + "_infox.txt";
-                String triggerfname = logDir + fnameDate  + "_trigr.rdy";
+                String speedfname = logDir + "/" + fnameDate + "_speed.png";
+                String anglefname = logDir + "/" + fnameDate + "_angle.png";
+                String dialfname = logDir + "/" + fnameDate  + "_dialx.png";
+                String txtfname = logDir + "/" + fnameDate   + "_infox.txt";
+                String triggerfname = logDir + "/" + fnameDate  + "_trigr.rdy";
 
                 // Graphs are easy thanks to JFreeChart
-                plotter.writeSpeedPlotPNG(logDir + fnameDate + "_speed.png",
+                plotter.writeSpeedPlotPNG(logDir + "/" + fnameDate + "_speed.png",
                         imageWidth, imageHeight);
-                plotter.writeAnglePlotPNG(logDir + fnameDate + "_angle.png",
+                plotter.writeAnglePlotPNG(logDir + "/" + fnameDate + "_angle.png",
                         imageWidth, imageHeight);
                 
                 // Wind speed and angle dial is a bit bodged at the moment
@@ -367,14 +395,17 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 }
 
                 // Set ticker text
-                ticker.setText(this, 
-                        labelDate + " (" + recordInterval/1000 + " second sample)   " +
-                        "Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
-                        "Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
-                        "Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
-                        "Today's peak windspeed " + df.format(dayMax.getMaxSpeed())
-                        + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate
-                        );
+                if ( ticker != null )
+                {
+                	ticker.setText(this, 
+                			labelDate + " (" + recordInterval/1000 + " second sample)   " +
+                			"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
+                			"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
+                			"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
+                			"Today's peak windspeed " + df.format(dayMax.getMaxSpeed())
+                			+ " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate
+                	);
+                }
             }
         }
 	}

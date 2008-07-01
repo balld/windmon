@@ -7,6 +7,7 @@
 package windmon;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -34,6 +35,26 @@ public class FileWindDataStore implements WindDataStore {
 	public FileWindDataStore()
 	{
 		path = Config.getParamAsString("WindLogDataDirectory");
+		File fpath = new File(path);
+		if ( fpath.exists())
+		{
+			if ( !fpath.isDirectory() )
+			{
+				EventLog.log(EventLog.SEV_FATAL, "Log directory '" + path + "' exists but is not a directory");
+			}
+		}
+		else
+		{
+			if ( fpath.mkdirs() != true )
+			{
+				EventLog.log(EventLog.SEV_FATAL, "Log directory '" + path + "' could not be created");
+			}
+			else
+			{
+				EventLog.log(EventLog.SEV_INFO, "Log directory '" + path + "' created");
+			}
+		}
+		
 	}
 	/* (non-Javadoc)
 	 * @see windmon.WindDataStore#storeWindDataRecord(windmon.WindDataRecord)
@@ -43,7 +64,7 @@ public class FileWindDataStore implements WindDataStore {
 		
 		try
 		{
-			PrintWriter pw = new PrintWriter(new FileWriter(path + fn, true));
+			PrintWriter pw = new PrintWriter(new FileWriter(path + "/" + fn, true));
 			pw.println(record.toString());
 			pw.close();
 		}
@@ -83,7 +104,7 @@ public class FileWindDataStore implements WindDataStore {
 				long fileEnd = fileStart + FILE_INTERVAL;
 			try
 			{
-				BufferedReader br = new BufferedReader(new FileReader(path + fn));
+				BufferedReader br = new BufferedReader(new FileReader(path + "/" + fn));
 				String ln;
 				while ( (ln = br.readLine()) != null)
 				{
@@ -112,7 +133,7 @@ public class FileWindDataStore implements WindDataStore {
 			}
 			catch (Exception e)
 			{
-				EventLog.log(EventLog.SEV_WARN, "Could not read log file '" + path + fn + "'");
+				EventLog.log(EventLog.SEV_WARN, "Could not read log file '" + path + "/" + fn + "'");
 			}
 			// file finished, set current time to end time of file.
 			curr = fileEnd;

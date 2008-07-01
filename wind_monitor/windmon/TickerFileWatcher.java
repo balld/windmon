@@ -45,7 +45,7 @@ public class TickerFileWatcher implements Runnable {
 
     public void readConfig()
     {
-        sleepAmount = Config.getParamAsLong("TickerFileCheckInterval", 60)*1000;
+        sleepAmount = Config.getParamAsLong("TickerFileCheckIntervalSec", 60)*1000;
         filename = Config.getParamAsString("TickerFilename", null);
     }
     
