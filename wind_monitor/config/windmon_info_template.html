@@ -1,0 +1,29 @@
+<!-- START Weather Station include -->
+
+<div id="Content">
+        <H1>Marconi weather station</H1>
+        Wind conditions at Marconi SC. Sample time <windmon.report_dtm/> (<windmon.interval_min/> minute sample)
+        <table>
+                <tr>
+                        <td>Direction</td>
+                        <td>: <windmon.dir_deg/> (<windmon.dir_comp/>)</td>
+                </tr>
+                <tr>
+                        <td>Ave Speed</td>
+                        <td>: <windmon.ave_speed_kts/> knots (F<windmon.ave_speed_bft/>)</td>
+                </tr>
+                <tr>
+                        <td>Gust</td>
+                        <td>: <windmon.max_speed_kts/> knots (F<windmon.max_speed_bft/>)</td>
+                </tr>
+        </table>
+        Today's peak windspeed <windmon.day_peak_kts/> knots (F<windmon.day_peak_bft/>) recorded at <windmon.day_peak_tm/><br>
+        <table>
+        <tr><td align=center><IMG alt=b src="dialx.png"></td></tr>
+        <tr><td align=center><IMG alt=b src="speed.png"></td></tr>
+        <tr><td align=center><IMG alt=b src="angle.png"></td></tr>
+        </table>
+<!--    <p class="PageLastUpdated">Page last updated:&nbsp;&nbsp;01/05/2006 22:32:44</p> -->
+</div>
+<!-- END Weather Station include -->
+

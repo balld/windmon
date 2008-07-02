@@ -7,6 +7,7 @@
 package windmon;
 
 import java.util.Hashtable;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.BufferedReader;
 
@@ -33,16 +34,26 @@ public class Config {
         // String homeDir = System.getProperties().getProperty("user.home", "/");
         String path = homeDir + "/" + filename;
         EventLog.log(EventLog.SEV_INFO, "Config file is '" + path + "'");
-		try
-		{
+
+        try {
 			br = new BufferedReader(new FileReader(path));
+		} catch (FileNotFoundException e1) {
+            EventLog.log(EventLog.SEV_WARN, "Unable to open config file '" + path + "' - will try default settings.");
+            br = null;
 		}
-		catch (Exception e)
+		
+		if ( br == null )
 		{
-            EventLog.log(EventLog.SEV_FATAL, "Unable to open config file " + path);
-			e.printStackTrace();
-			return;
+			/* No config file found - use default file */
+	        path = "config/" + filename;
+	        try {
+				br = new BufferedReader(new FileReader(path));
+			} catch (FileNotFoundException e1) {
+	            EventLog.log(EventLog.SEV_FATAL, "Unable to open default config file " + path);
+			}
+			
 		}
+
 		
 		try
 		{
