@@ -4,12 +4,13 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package windmon;
+package windmon.retired;
 
 import java.awt.event.ActionEvent;
 import javax.swing.JFrame;
 import javax.swing.Icon;
 import javax.swing.JDialog;
+import javax.swing.JTextPane;
 import java.awt.Dimension;
 
 
@@ -19,11 +20,11 @@ import java.awt.Dimension;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public class ButtonOptions extends ActionButton {
+public class ButtonAbout extends ActionButton {
 
 	JFrame fr;
 	
-	public ButtonOptions(String caption, Icon img, JFrame fr)
+	public ButtonAbout(String caption, Icon img, JFrame fr)
 	{
 		super(caption, img);
 		this.fr = fr;
@@ -33,16 +34,15 @@ public class ButtonOptions extends ActionButton {
 	 */
 	public void actionPerformed(ActionEvent e)
 	{
-		JDialog dialog = new JDialog (fr, "Options", true);
-		NMEAController nmea = NMEAController.getInstance();
-		if ( nmea == null )
-		{
-			return;
-		}
-		
-		OptionsPanel op = new OptionsPanel(nmea);
-		dialog.getContentPane().add(op);
-		dialog.setSize(new Dimension(650,300));
+		JDialog dialog = new JDialog (fr, "About Wind Monitor", true);
+		JTextPane tp = new JTextPane();
+		tp.setText("Wind Monitor v0.1a\n" +
+				"\n" +
+				"NMEA visual display software\n" +
+				"by David Ball.\n" );
+		tp.setEditable(false);
+		dialog.getContentPane().add(tp);
+		dialog.setSize(new Dimension(400,400));
 		dialog.validate();
 		dialog.setVisible(true);
 	}

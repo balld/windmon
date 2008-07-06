@@ -10,7 +10,7 @@
  */
 
 
-package windmon;
+package windmon.retired;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -20,6 +20,12 @@ import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.border.*;
+
+import windmon.DigitalClock;
+import windmon.WindDataEvent;
+import windmon.WindDataListener;
+import windmon.WindDial;
+import windmon.WindDigits2;
 
 
 /**
@@ -54,7 +60,7 @@ public class WindDisplay extends JPanel implements WindDataListener
 //        setLayout(new BorderLayout(5,5));
         setLayout(new BorderLayout(0,0));
 
-        wg = new WindDial();
+        wg = new WindDial(WindDial.COL_SCHEME_BLACK);
         wg.setMaxSpeed(maxWindSpeed);
         wg.setSpeed(windSpeed);
         wg.setWindAngle(windAngle);

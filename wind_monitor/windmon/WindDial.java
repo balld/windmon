@@ -148,12 +148,12 @@ public class WindDial extends JPanel implements WindDataListener {
     // To indicate re-draw
     private boolean toggle = false;
     
-    WindDial()
+    public WindDial()
     {
         this(COL_SCHEME_BLACK);
     }
     
-    WindDial ( int col_scheme )
+    public WindDial ( int col_scheme )
 	{
     	setDoubleBuffered(true);
     	switch ( col_scheme )

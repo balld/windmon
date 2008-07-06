@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package windmon;
+package windmon.retired;
 
 import java.awt.*;
 
@@ -12,6 +12,8 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.SoftBevelBorder;
+
+import windmon.Utils;
 
 /**
  * @author BallD

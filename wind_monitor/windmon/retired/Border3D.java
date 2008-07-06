@@ -1,4 +1,4 @@
-package windmon;
+package windmon.retired;
 
 
 import java.awt.*;

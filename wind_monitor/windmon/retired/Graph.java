@@ -4,9 +4,11 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package windmon;
+package windmon.retired;
 
 import javax.swing.JPanel;
+
+
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;

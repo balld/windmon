@@ -4,9 +4,14 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package windmon;
+package windmon.retired;
 
 import javax.swing.JPanel;
+
+import windmon.Utils;
+import windmon.WindDataEvent;
+import windmon.WindDataListener;
+
 import java.awt.*;
 import java.awt.font.*;
 import java.awt.geom.*;
