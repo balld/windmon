@@ -368,9 +368,7 @@ public class WindDataLoggerMySql extends TimerTask {
 		long dbUpdateDTM = selectDBUpdateDTM();
 		if ( dbUpdateDTM <= lastUpdateDTM )
 		{
-			// No change, so exit
-			// Not an error
-			// EventLog.log(EventLog.SEV_ERROR, "No new data in database to plot.");
+			// No change, so return
 			return;
 		}
 
@@ -390,6 +388,10 @@ public class WindDataLoggerMySql extends TimerTask {
 		/* Copy latest (by datetime) record into WindataRecord rec */
 		WindDataRecord rec = data[data.length-1];  
 
+		long actualRecordIntervalMilli = rec.getEndTime() - rec.getStartTime();
+		long actualRecordInterval = Math.round(((double)actualRecordIntervalMilli)/1000.0);
+		long actualRecordIntervalMins =  Math.round(((double)actualRecordInterval) / 60.0);
+		
 		// Get the day maximum
 		if ( (dayMax = selectDayMax(rec.getStartTime())) == null )
 		{
@@ -452,8 +454,8 @@ public class WindDataLoggerMySql extends TimerTask {
 
 			// Set report values - these are substituted into the upload report template
 			rg.setValue( ReportGenerator.REPORT_DTM, labelDate); 
-			rg.setValue( ReportGenerator.INTERVAL_SEC, "" + recordInterval/1000 );
-			rg.setValue( ReportGenerator.INTERVAL_MIN, "" + recordInterval/60000 );
+			rg.setValue( ReportGenerator.INTERVAL_SEC, "" + actualRecordInterval );
+			rg.setValue( ReportGenerator.INTERVAL_MIN, "" + actualRecordIntervalMins );
 			rg.setValue( ReportGenerator.DIR_DEG, dfc.format(rec.getAveAngle()));
 			rg.setValue( ReportGenerator.DIR_COMP, Utils.angleToCompass(rec.getAveAngle()));
 			rg.setValue( ReportGenerator.AVE_SPEED_KTS, df.format(rec.getAveSpeed()));
@@ -496,8 +498,14 @@ public class WindDataLoggerMySql extends TimerTask {
 			// Set ticker text on the graphical display
 			if ( ticker != null )
 			{
+				String actualRecordIntervalStr = null;
+				if ( actualRecordInterval < 59 )
+					actualRecordIntervalStr = actualRecordInterval + " second measurement";
+				else
+					actualRecordIntervalStr = actualRecordIntervalMins + " minute measurement";
+					
 				ticker.setText(this, 
-						labelDate + " (" + recordInterval/1000 + " second sample)   " +
+						labelDate + " (" + actualRecordIntervalStr + ")   " +
 						"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
 						"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
 						"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +

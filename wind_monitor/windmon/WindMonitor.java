@@ -34,8 +34,8 @@ public class WindMonitor extends JPanel implements ActionListener
 	
 	private final String actionCommandQuit = "Quit";
     private final String actionCommandNMEAOptions = "NMEA Options";
-    private final String actionCommandWindowScreenMode = "Window Screen Mode";
-    private final String actionCommandFrameScreenMode  = "Frame Screen Mode";
+    private final String actionCommandWindowScreenMode = "Full Screen Mode";
+    private final String actionCommandFrameScreenMode  = "Normal Mode";
 
 //    private static WindDisplay wv = null;
     private static WindDial wdl = null;
@@ -194,7 +194,7 @@ public class WindMonitor extends JPanel implements ActionListener
         	nmea.addWindDataListener(logger);
         }
         
-        String initScreenMode = Config.getParamAsString("ScreenMode", "Window");
+        String initScreenMode = Config.getParamAsString("FullScreen", "Window");
         if ( initScreenMode.compareToIgnoreCase("Window") == 0 )
         {
         	applyWindowScreenMode();

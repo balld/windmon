@@ -308,7 +308,7 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
         }
        
 		JFreeChart angleChart = ChartFactory.createTimeSeriesChart(
-				"Wind Angle",  // title
+				"Wind Direction",  // title
 				"Time",        // x-axis label
 				"Bearing",       // y-axis label
 				angleDataset,       // data
