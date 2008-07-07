@@ -11,9 +11,6 @@ import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageFilter;
-import java.awt.image.ReplicateScaleFilter;
-// import java.awt.font.FontRenderContext;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.font.TextLayout;
@@ -27,6 +24,10 @@ import java.awt.geom.AffineTransform;
  */
 public class WindDial extends JPanel implements WindDataListener {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/*
 	 * Colour Scheme Constants
 	 */
@@ -64,13 +65,9 @@ public class WindDial extends JPanel implements WindDataListener {
                                                 "W",
                                                 "NW"
                                                 };
-    /*
-     * static constant definitions
-     */
-    private Color s_dial_col = Color.black;
     private Color border_col = Color.gray;
     private Color scale_col = Color.white;
-	private Color needle_fill_col_low = new Color (200, 0, 0);
+    private Color needle_fill_col_low = new Color (200, 0, 0);
 	private Color needle_fill_col_high = new Color (255, 0, 0);
 	private Color needle_line_col = Color.white;
     private Color arrow_col_low =  new Color(50, 50, 128);
@@ -114,15 +111,14 @@ public class WindDial extends JPanel implements WindDataListener {
 
     private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
     private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
-    private boolean anti_alias = true;
 
     /* Loaded Images */
     Image s_dial_image = null;
     
     // instance variables
-    private Image     s_dial = null;
+    private BufferedImage     speedDialImage = null;
     private Graphics2D  s_dial_g = null;
-    private Image     d_dial = null;
+    private BufferedImage     directionDialImage = null;
     private Graphics2D  d_dial_g = null;
     
     // Layout variables derived at start-up and on re-size
@@ -145,9 +141,6 @@ public class WindDial extends JPanel implements WindDataListener {
     private double wind_speed_high = -1.0;
     private double wind_speed_low = -1.0;
 
-    // To indicate re-draw
-    private boolean toggle = false;
-    
     public WindDial()
     {
         this(COL_SCHEME_BLACK);
@@ -161,7 +154,6 @@ public class WindDial extends JPanel implements WindDataListener {
     	case COL_SCHEME_BLACK:
             s_dial_image = Utils.getImage(this, "blackball512.png");
             setBackground(Color.BLACK);
-            s_dial_col = Color.black;
             border_col = Color.gray;
             scale_col = Color.white;
         	needle_fill_col_low = new Color (220, 0, 0);
@@ -177,7 +169,6 @@ public class WindDial extends JPanel implements WindDataListener {
     	case COL_SCHEME_BLUE:
             s_dial_image = Utils.getImage(this, "mscblueball512.png");
             setBackground(Color.WHITE);
-            s_dial_col = new Color (153, 204, 255); //MSC light blue
             border_col = Color.gray;
             scale_col = Color.BLACK;
         	needle_fill_col_low = new Color (220, 0, 0);
@@ -253,14 +244,14 @@ public class WindDial extends JPanel implements WindDataListener {
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
 
         // Check for uninitiated background images or Panel re-size
-        if ( s_dial == null || d_dial == null
+        if ( speedDialImage == null || directionDialImage == null
              || !panel_size.equals(size))
         {
             prepareDial(g2);
         }
         
         // Draw the wind direction dial background
-        g2.drawImage(d_dial, 0, 0, this);
+        g2.drawImage(directionDialImage, 0, 0, this);
 
         d_needle_diam = radius - s_radius;
         // Draw the wind direction needle if wind_angle > zero
@@ -323,7 +314,7 @@ public class WindDial extends JPanel implements WindDataListener {
         
         
         // Draw the wind speed dial background
-        g2.drawImage(s_dial, 0, 0, this);
+        g2.drawImage(speedDialImage, 0, 0, this);
 
         // Coordinates for needle
         int ys_points[] = { 0,
@@ -467,11 +458,11 @@ public class WindDial extends JPanel implements WindDataListener {
         int d_rose_width  = d_rose_length / 3;
         d_needle_len = d_rose_length - d_needle_inset;
         // Create buffered image for direction dial background
-        d_dial = (BufferedImage) g2.getDeviceConfiguration().
+        directionDialImage = (BufferedImage) g2.getDeviceConfiguration().
                                      createCompatibleImage(panel_size.width,
                                                           panel_size.height,
                                                           Transparency.OPAQUE);  
-        d_dial_g = (Graphics2D) d_dial.getGraphics();
+        d_dial_g = (Graphics2D) directionDialImage.getGraphics();
         d_dial_g.setColor(getBackground());
         d_dial_g.fillRect(0, 0, panel_size.width, panel_size.height);
         
@@ -543,11 +534,11 @@ public class WindDial extends JPanel implements WindDataListener {
         
             
         // Create buffered image for speed dial background
-        s_dial = (BufferedImage) g2.getDeviceConfiguration().
+        speedDialImage = (BufferedImage) g2.getDeviceConfiguration().
                                     createCompatibleImage(panel_size.width,
                                                           panel_size.height,
                                                           Transparency.BITMASK);
-        s_dial_g = (Graphics2D) s_dial.getGraphics();
+        s_dial_g = (Graphics2D) speedDialImage.getGraphics();
 
         // Set rendering properties        
         s_dial_g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
@@ -569,11 +560,6 @@ public class WindDial extends JPanel implements WindDataListener {
                 s_diameter - 2*s_border_depth,
                 s_diameter - 2*s_border_depth,
                 this);
-//        s_dial_g.setColor(s_dial_col);
-//        s_dial_g.fillOval(centre.x - s_radius + s_border_depth,
-//                        centre.y - s_radius + s_border_depth,
-//                        s_diameter - 2*s_border_depth,
-//                        s_diameter - 2*s_border_depth);
 
         
         // Create arc which spans full scale deflection of speed dial.
@@ -605,7 +591,7 @@ public class WindDial extends JPanel implements WindDataListener {
             }
             double angle_start = - s_zero_angle - 90.0 - low * deg_per_k;
             double angle_extent = -(high-low)*deg_per_k;
-            double angle_end   = angle_start + angle_extent;
+            // double angle_end   = angle_start + angle_extent;
             double angle_mid   = angle_start + (angle_extent/2.0);
             
             arc.setAngleStart(angle_start);
@@ -733,7 +719,7 @@ public class WindDial extends JPanel implements WindDataListener {
     {
         this.max_speed = max_speed;
         // Force re-draw of dials
-        this.s_dial = null;
+        this.speedDialImage = null;
     }
 
     public Dimension getPreferredSize()
@@ -790,4 +776,12 @@ public class WindDial extends JPanel implements WindDataListener {
         jf.validate();
         jf.requestFocus();
     }
+
+	public BufferedImage getDirectionDialImage() {
+		return directionDialImage;
+	}
+
+	public BufferedImage getSpeedDialImage() {
+		return speedDialImage;
+	}
 }
