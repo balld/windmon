@@ -143,7 +143,7 @@ public class WindDataLoggerMySql extends TimerTask {
 		dbHost     = Config.getParamAsString("DBHost", "localhost");
 		dbPassword = Config.getParamAsString("DBPassword");
 
-		if ( webOutput = true )
+		if ( webOutput == true )
 		{
 			File path = new File(logDir);
 			if ( path.exists())

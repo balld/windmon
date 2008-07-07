@@ -170,7 +170,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
         initTickerText = Config.getParamAsString("InitialTickerText", "WindMonitor (c) David Ball 2006");
         templatePathname = Config.getParamAsString("ReportTemplate");
 
-		if ( webOutput = true )
+		if ( webOutput == true )
 		{
 			File path = new File(logDir);
 			if ( path.exists())
