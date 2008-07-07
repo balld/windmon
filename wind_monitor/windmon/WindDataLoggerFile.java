@@ -303,7 +303,15 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 			dataRecords.copyInto(data);
 
 			plotter.plotData( data );
+
+			long actualRecordIntervalMilli = rec.getEndTime() - rec.getStartTime();
+			long actualRecordInterval = Math.round(((double)actualRecordIntervalMilli)/1000.0);
+			long actualRecordIntervalMins =  Math.round(((double)actualRecordInterval) / 60.0);
 			
+            // Format various date/times for output
+            String fnameDate = fnameDateFormat.format(new Date(rec.getEndTime()));
+            String maxWindDate = maxWindDateFormat.format(new Date(dayMax.getEndTime()));
+			String labelDate = labelDateFormat.format(new Date(rec.getEndTime()));
             
             if ( webOutput )
             {
@@ -311,10 +319,6 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 // Now write data to files for upload to database
                 //
                 
-                // Format various date/times for output
-                String fnameDate = fnameDateFormat.format(new Date(rec.getEndTime()));
-                String labelDate = labelDateFormat.format(new Date(rec.getEndTime()));
-                String maxWindDate = maxWindDateFormat.format(new Date(dayMax.getEndTime()));
                 
                 // Build all the filenames needed
                 String speedfname = logDir + "/" + fnameDate + "_speed.png";
@@ -353,8 +357,8 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 
                 // Set report values
                 rg.setValue( ReportGenerator.REPORT_DTM, labelDate); 
-                rg.setValue( ReportGenerator.INTERVAL_SEC, "" + recordInterval/1000 );
-                rg.setValue( ReportGenerator.INTERVAL_MIN, "" + recordInterval/60000 );
+                rg.setValue( ReportGenerator.INTERVAL_SEC, "" + actualRecordInterval );
+                rg.setValue( ReportGenerator.INTERVAL_MIN, "" + actualRecordIntervalMins );
                 rg.setValue( ReportGenerator.DIR_DEG, dfc.format(rec.getAveAngle()));
                 rg.setValue( ReportGenerator.DIR_COMP, Utils.angleToCompass(rec.getAveAngle()));
                 rg.setValue( ReportGenerator.AVE_SPEED_KTS, df.format(rec.getAveSpeed()));
@@ -393,19 +397,22 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                     EventLog.log(EventLog.SEV_ERROR,
                             "Could not write file '" + triggerfname + "'");
                 }
-
+            }
                 // Set ticker text
-                if ( ticker != null )
-                {
-                	ticker.setText(this, 
-                			labelDate + " (" + recordInterval/1000 + " second sample)   " +
-                			"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
-                			"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
-                			"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
-                			"Today's peak windspeed " + df.format(dayMax.getMaxSpeed())
-                			+ " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate
-                	);
-                }
+            if ( ticker != null )
+            {
+    			String actualRecordIntervalStr = null;
+    			if ( actualRecordInterval < 59 )
+    				actualRecordIntervalStr = actualRecordInterval + " second measurement";
+    			else
+    				actualRecordIntervalStr = actualRecordIntervalMins + " minute measurement";
+
+    			ticker.setText(this, 
+    					labelDate + " (" + actualRecordIntervalStr + ")   " +
+    					"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
+    					"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
+    					"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
+    					"Today's peak windspeed " + df.format(dayMax.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate);
             }
         }
 	}

@@ -194,8 +194,8 @@ public class WindMonitor extends JPanel implements ActionListener
         	nmea.addWindDataListener(logger);
         }
         
-        String initScreenMode = Config.getParamAsString("FullScreen", "Window");
-        if ( initScreenMode.compareToIgnoreCase("Window") == 0 )
+        String initScreenMode = Config.getParamAsString("ScreenMode", "Normal");
+        if ( initScreenMode.compareToIgnoreCase("FullScreen") == 0 )
         {
         	applyWindowScreenMode();
         }

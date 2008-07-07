@@ -405,17 +405,17 @@ public class WindDataLoggerMySql extends TimerTask {
 		/* Plot data on the screen */
 		plotter.plotData( data );
 
+		// Format various date/times for output
+		String fnameDate = fnameDateFormat.format(new Date(rec.getEndTime()));
+		String labelDate = labelDateFormat.format(new Date(rec.getEndTime()));
+		String maxWindDate = maxWindDateFormat.format(new Date(dayMax.getEndTime()));
+
 		/* If web upload files are to be produced ... */
 		if ( webOutput )
 		{
 			//
 			// Now write data to files for upload to database
 			//
-
-			// Format various date/times for output
-			String fnameDate = fnameDateFormat.format(new Date(rec.getEndTime()));
-			String labelDate = labelDateFormat.format(new Date(rec.getEndTime()));
-			String maxWindDate = maxWindDateFormat.format(new Date(dayMax.getEndTime()));
 
 			// Build all the filenames needed
 			String speedfname = logDir + "/" + fnameDate + "_speed.png";
@@ -494,23 +494,23 @@ public class WindDataLoggerMySql extends TimerTask {
 				EventLog.log(EventLog.SEV_ERROR,
 						"Could not write file '" + triggerfname + "'");
 			}
+		}
 
-			// Set ticker text on the graphical display
-			if ( ticker != null )
-			{
-				String actualRecordIntervalStr = null;
-				if ( actualRecordInterval < 59 )
-					actualRecordIntervalStr = actualRecordInterval + " second measurement";
-				else
-					actualRecordIntervalStr = actualRecordIntervalMins + " minute measurement";
-					
-				ticker.setText(this, 
-						labelDate + " (" + actualRecordIntervalStr + ")   " +
-						"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
-						"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
-						"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
-						"Today's peak windspeed " + df.format(dayMax.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate);
-			}
+		// Set ticker text on the graphical display
+		if ( ticker != null )
+		{
+			String actualRecordIntervalStr = null;
+			if ( actualRecordInterval < 59 )
+				actualRecordIntervalStr = actualRecordInterval + " second measurement";
+			else
+				actualRecordIntervalStr = actualRecordIntervalMins + " minute measurement";
+
+			ticker.setText(this, 
+					labelDate + " (" + actualRecordIntervalStr + ")   " +
+					"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
+					"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
+					"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
+					"Today's peak windspeed " + df.format(dayMax.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate);
 		}
 	}
 

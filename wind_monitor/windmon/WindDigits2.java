@@ -54,8 +54,8 @@ public class WindDigits2 extends JPanel implements WindDataListener {
     /*
      * Accessible variables
      */
-    private double wind_speed = 0.0;
-    private double wind_angle = 90.0;
+    private double wind_speed = -1.0; 
+    private double wind_angle = -1.0;
 
     DecimalFormat df = new DecimalFormat("000");
     
@@ -101,6 +101,7 @@ public class WindDigits2 extends JPanel implements WindDataListener {
         this.add(createDisplay(label_deg, "degrees", s_font));
         this.add(createDisplay(label_comp, "compass", s_font));
 
+        updateLabels();
     }
     
     public void updateLabels ()

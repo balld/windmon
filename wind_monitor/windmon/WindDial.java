@@ -136,8 +136,8 @@ public class WindDial extends JPanel implements WindDataListener {
      * Accessible variables
      */
     private double max_speed = 67.0;
-    private double wind_speed = 0.0;
-    private double wind_angle = 90.0;
+    private double wind_speed = -1.0;
+    private double wind_angle = -1.0; 
     private double wind_speed_high = -1.0;
     private double wind_speed_low = -1.0;
 
