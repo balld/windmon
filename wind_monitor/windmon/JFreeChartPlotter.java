@@ -8,11 +8,8 @@ package windmon;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.TextArea;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,11 +18,7 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import javax.swing.JTextPane;
 import javax.swing.border.BevelBorder;
-import javax.swing.text.StringContent;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.StyleSheet;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -39,7 +32,6 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.text.TextBox;
 import org.jfree.ui.RectangleInsets;
 
 
@@ -52,7 +44,11 @@ import org.jfree.ui.RectangleInsets;
  */
 public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 
-    public static final int COL_SCHEME_BLACK  = 1;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6044692530650948455L;
+	public static final int COL_SCHEME_BLACK  = 1;
     public static final int COL_SCHEME_BLUE  = 2;
 
     private double speedDefaultMax = 2.0; 
@@ -77,11 +73,6 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 	private NumberAxis speedKnotsAxis;
 	private DateAxis angleTimeAxis;
 	private NumberAxis angleBearingAxis;
-    
-    private JTextPane ta;
-    private Font b_font = null;
-    private Font ta_font = null;
-    private static int ta_font_size = 18;
     
     // Need to store number Axis and update
     private Vector numberAxisVec = new Vector();

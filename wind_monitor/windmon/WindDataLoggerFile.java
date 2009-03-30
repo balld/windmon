@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Vector;
 
 import org.jfree.chart.ChartUtilities;
+import org.jibble.simpleftp.SimpleFTP;
 
 /**
  * @author David
@@ -58,7 +59,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     private WindDial dial = new WindDial(WindDial.COL_SCHEME_BLUE);
 
     // Config parameters
-    private String logDir;
+    private String uploadDir;
     private int imageWidth;
     private int imageHeight;
     private int dialWidth;
@@ -162,7 +163,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 	{
 		recordInterval=Config.getParamAsLong("WindLogRecordIntervalSec", 10)*1000;
 		analysisInterval=Config.getParamAsLong("WindLogHistorySec", 3600)*1000;
-		logDir = Config.getParamAsString("WindLogDataDirectory", "/tmp/");
+		uploadDir = Config.getParamAsString("WindLogUploadDirectory", "/tmp/");
 		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
 		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
         dialWidth = Config.getParamAsInt("WindLogDialImageHeight", 400);
@@ -172,23 +173,23 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
 		if ( webOutput == true )
 		{
-			File path = new File(logDir);
+			File path = new File(uploadDir);
 			if ( path.exists())
 			{
 				if ( !path.isDirectory() )
 				{
-					EventLog.log(EventLog.SEV_FATAL, "Log directory '" + logDir + "' exists but is not a directory");
+					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' exists but is not a directory");
 				}
 			}
 			else
 			{
 				if ( path.mkdirs() != true )
 				{
-					EventLog.log(EventLog.SEV_FATAL, "Log directory '" + logDir + "' could not be created");
+					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' could not be created");
 				}
 				else
 				{
-					EventLog.log(EventLog.SEV_INFO, "Log directory '" + logDir + "' created");
+					EventLog.log(EventLog.SEV_INFO, "Upload directory '" + uploadDir + "' created");
 				}
 			}
 		}
@@ -321,17 +322,15 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 
                 
                 // Build all the filenames needed
-                String speedfname = logDir + "/" + fnameDate + "_speed.png";
-                String anglefname = logDir + "/" + fnameDate + "_angle.png";
-                String dialfname = logDir + "/" + fnameDate  + "_dialx.png";
-                String txtfname = logDir + "/" + fnameDate   + "_infox.txt";
-                String triggerfname = logDir + "/" + fnameDate  + "_trigr.rdy";
+                String speedfname = uploadDir + "/" + fnameDate + "_speed.png";
+                String anglefname = uploadDir + "/" + fnameDate + "_angle.png";
+                String dialfname = uploadDir + "/" + fnameDate  + "_dialx.png";
+                String txtfname = uploadDir + "/" + fnameDate   + "_infox.txt";
+                String triggerfname = uploadDir + "/" + fnameDate  + "_trigr.rdy";
 
                 // Graphs are easy thanks to JFreeChart
-                plotter.writeSpeedPlotPNG(logDir + "/" + fnameDate + "_speed.png",
-                        imageWidth, imageHeight);
-                plotter.writeAnglePlotPNG(logDir + "/" + fnameDate + "_angle.png",
-                        imageWidth, imageHeight);
+                plotter.writeSpeedPlotPNG(speedfname, imageWidth, imageHeight);
+                plotter.writeAnglePlotPNG(anglefname, imageWidth, imageHeight);
                 
                 // Wind speed and angle dial is a bit bodged at the moment
                 dial.setWindAngle(rec.getAveAngle());
@@ -414,6 +413,8 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     					"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
     					"Today's peak windspeed " + df.format(dayMax.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate);
             }
+            
+
         }
 	}
 	/**

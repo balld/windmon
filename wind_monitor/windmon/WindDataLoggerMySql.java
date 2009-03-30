@@ -65,7 +65,7 @@ public class WindDataLoggerMySql extends TimerTask {
 	private WindDial dial = new WindDial(WindDial.COL_SCHEME_BLUE);
 
 	// Config parameters
-	private String logDir;
+	private String uploadDir;
 	private int imageWidth;
 	private int imageHeight;
 	private int dialWidth;
@@ -130,7 +130,7 @@ public class WindDataLoggerMySql extends TimerTask {
 		dbPollInterval=Config.getParamAsLong("DBPollIntervalSec", recordInterval/(10*1000))*1000;
 
 		analysisInterval=Config.getParamAsLong("WindLogHistorySec", 3600)*1000;
-		logDir = Config.getParamAsString("WindLogDataDirectory");
+		uploadDir = Config.getParamAsString("WindLogUploadDirectory");
 		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
 		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
 		dialWidth = Config.getParamAsInt("WindLogDialImageHeight", 400);
@@ -145,23 +145,23 @@ public class WindDataLoggerMySql extends TimerTask {
 
 		if ( webOutput == true )
 		{
-			File path = new File(logDir);
+			File path = new File(uploadDir);
 			if ( path.exists())
 			{
 				if ( !path.isDirectory() )
 				{
-					EventLog.log(EventLog.SEV_FATAL, "Log directory '" + logDir + "' exists but is not a directory");
+					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' exists but is not a directory");
 				}
 			}
 			else
 			{
 				if ( path.mkdirs() != true )
 				{
-					EventLog.log(EventLog.SEV_FATAL, "Log directory '" + logDir + "' could not be created");
+					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' could not be created");
 				}
 				else
 				{
-					EventLog.log(EventLog.SEV_INFO, "Log directory '" + logDir + "' created");
+					EventLog.log(EventLog.SEV_INFO, "Upload directory '" + uploadDir + "' created");
 				}
 			}
 		}
@@ -418,16 +418,16 @@ public class WindDataLoggerMySql extends TimerTask {
 			//
 
 			// Build all the filenames needed
-			String speedfname = logDir + "/" + fnameDate + "_speed.png";
-			String anglefname = logDir + "/" + fnameDate + "_angle.png";
-			String dialfname = logDir + "/" + fnameDate  + "_dialx.png";
-			String txtfname = logDir + "/" + fnameDate   + "_infox.txt";
-			String triggerfname = logDir + "/" + fnameDate  + "_trigr.rdy";
+			String speedfname = uploadDir + "/" + fnameDate + "_speed.png";
+			String anglefname = uploadDir + "/" + fnameDate + "_angle.png";
+			String dialfname = uploadDir + "/" + fnameDate  + "_dialx.png";
+			String txtfname = uploadDir + "/" + fnameDate   + "_infox.txt";
+			String triggerfname = uploadDir + "/" + fnameDate  + "_trigr.rdy";
 
 			// Render speed and angle charts to image files (PNG) for web upload
-			plotter.writeSpeedPlotPNG(logDir + "/" + fnameDate + "_speed.png",
+			plotter.writeSpeedPlotPNG(uploadDir + "/" + fnameDate + "_speed.png",
 					imageWidth, imageHeight);
-			plotter.writeAnglePlotPNG(logDir + "/" + fnameDate + "_angle.png",
+			plotter.writeAnglePlotPNG(uploadDir + "/" + fnameDate + "_angle.png",
 					imageWidth, imageHeight);
 
 			// Render wind speed dial for web upload
