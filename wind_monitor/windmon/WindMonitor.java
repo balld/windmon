@@ -155,6 +155,10 @@ public class WindMonitor extends JPanel implements ActionListener
         {
         	link = new NMEALinkSerial();
         }
+        else if ( connectionType.compareToIgnoreCase("dummy") == 0 )
+        {
+        	link = new NMEALinkStub();
+        }
         else
         {
         	EventLog.log(EventLog.SEV_INFO, "Unrecognised connection type '" +
@@ -185,7 +189,7 @@ public class WindMonitor extends JPanel implements ActionListener
         }
         else /* ( logMode == "live") */
         {
-        	if ( logMode != "live" )
+        	if ( logMode.compareToIgnoreCase("live") != 0 )
         	{
             	EventLog.log(EventLog.SEV_INFO, "Unrecognised LogMode '" +
                         logMode + "'. Using 'live'");
