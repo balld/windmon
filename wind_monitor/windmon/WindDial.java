@@ -1,8 +1,5 @@
 /*
  * Created on 30-Jan-2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
@@ -17,10 +14,10 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 
 /**
- * @author BallD
+ * @author David Ball
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Graphical UI component that displays wind speed and direction on an 
+ * analogue-style anemometer dial.
  */
 public class WindDial extends JPanel implements WindDataListener {
 

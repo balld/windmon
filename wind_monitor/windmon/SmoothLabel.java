@@ -1,8 +1,5 @@
 /*
  * Created on 12-Feb-2006
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
@@ -17,8 +14,7 @@ import javax.swing.JLabel;
 /**
  * @author david
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Subclass of JLabel that applies antialiasing by default when drawing.
  */
 public class SmoothLabel extends JLabel {
 

@@ -17,8 +17,7 @@ import java.util.*;
 /**
  * @author BallD
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * A digital clock.
  */
 public class DigitalClock extends JPanel implements Runnable {
 

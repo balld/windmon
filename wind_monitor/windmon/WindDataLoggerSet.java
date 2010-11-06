@@ -9,8 +9,8 @@ package windmon;
 /**
  * @author David
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Collates individual wind data readings to produce a summary WindDataRecord
+ * on demand. 
  */
 public class WindDataLoggerSet implements Cloneable{
 	

@@ -4,16 +4,13 @@ import java.util.Vector;
 
 /*
  * Created on Sep 3, 2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 
 /**
  * @author david
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Interface for classes that enable the storage and retrieval of 
+ * WindDataRecord instances.
  */
 public interface WindDataStore {
 	public void storeWindDataRecord(WindDataRecord record);

@@ -25,8 +25,8 @@ import javax.comm.UnsupportedCommOperationException;
 /**
  * @author David
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Implementation of NMEALink that uses the javax.comm package to communicate
+ * directly on an hardware serial port (e.g. RS232)
  */
 public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
 

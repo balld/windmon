@@ -67,7 +67,7 @@ public class WindMonitor extends JPanel implements ActionListener
 
 
 //        Create digital clock and image
-        Banner2 bn = new Banner2();
+        LogoPanel bn = new LogoPanel();
         DigitalClock dc = new DigitalClock();
         dc.setBackground(Color.BLACK);
         dc.setForeground(Color.WHITE);
@@ -107,7 +107,7 @@ public class WindMonitor extends JPanel implements ActionListener
         wdlp.add(wdl, BorderLayout.CENTER);
         jp2.add(wdlp);
         
-        JFreeChartPlotter plotter = new JFreeChartPlotter();
+        WindDataPlotterJFreeChart plotter = new WindDataPlotterJFreeChart();
         plotter.setBorder(border);
         jp2.add(plotter);
         this.add(jp2, BorderLayout.CENTER);

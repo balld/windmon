@@ -1,8 +1,5 @@
 /*
  * Created on Sep 3, 2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
@@ -19,10 +16,11 @@ import java.util.Vector;
 /**
  * @author david
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Implements a WindDataStore using a simple file-based system.
+ * Data is divided into one file per hour, and filenames are set based on the
+ * start time of the file. 
  */
-public class FileWindDataStore implements WindDataStore {
+public class WindDataStoreFile implements WindDataStore {
 	// These settins affect the number of files created. Currently every hour.
 	private static final String DATE_FMT = "yyyyMMddHHz";
 	private static final long   FILE_INTERVAL = 3600000; // 1 hour
@@ -31,7 +29,7 @@ public class FileWindDataStore implements WindDataStore {
 			                                      + DATE_FMT + "'.dat'");
 	String path = null;
 	
-	public FileWindDataStore()
+	public WindDataStoreFile()
 	{
 		path = Config.getParamAsString("WindLogDataDirectory");
 		File fpath = new File(path);

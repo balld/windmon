@@ -1,8 +1,5 @@
 /*
  * Created on Jul 31, 2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
@@ -12,8 +9,8 @@ import java.net.*;
 /**
  * @author david
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Implementation of NMEALink that connects to the NMEA device via 
+ * TCP/IP socket connection to with an intermediate server process.
  */
 public class NMEALinkSocket implements NMEALink, Runnable
 {

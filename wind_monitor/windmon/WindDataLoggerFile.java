@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.Vector;
 
 import org.jfree.chart.ChartUtilities;
-import org.jibble.simpleftp.SimpleFTP;
+// import org.jibble.simpleftp.SimpleFTP;
 
 /**
  * @author David
@@ -88,7 +88,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
         
         if ( storeDataToFile )
         {
-        	store = new FileWindDataStore();
+        	store = new WindDataStoreFile();
         }
         else
         {

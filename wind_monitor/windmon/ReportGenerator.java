@@ -1,8 +1,5 @@
 /*
  * Created on 22-May-2006
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
@@ -15,8 +12,8 @@ import java.util.HashMap;
 /**
  * @author david
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Creates period reports of wind data, based on template file containing
+ * predefined placeholder tags that are replace with actual weather values.
  */
 public class ReportGenerator {
 

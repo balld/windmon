@@ -14,8 +14,7 @@ import java.io.BufferedReader;
 /**
  * @author David
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Load configuration files and access individual parameters.
  */
 public class Config {
 	private static final String filename = "windmon.cfg";

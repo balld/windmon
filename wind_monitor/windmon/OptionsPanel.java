@@ -1,8 +1,5 @@
 /*
  * Created on 10-Feb-2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
@@ -13,8 +10,8 @@ import java.awt.event.*;
 /**
  * @author BallD
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * UI panel that enables the user to input and send NMEA commands that configure
+ * the Autonnic masthead unit.
  */
 public class OptionsPanel extends JPanel implements ActionListener
 {

@@ -6,22 +6,17 @@
  */
 package windmon;
 
-import javax.swing.JPanel;
-import java.awt.*;
-import java.awt.font.*;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.FileReader;
-// import java.awt.geom.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 
 /**
  * @author BallD
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Watcher that waits for a message file to be updated (by external application) and
+ * then passes the updated text to the ticker UI component.
+ * This is used to set the shipping forecast text in the ticker from a text file that
+ * is downloaded by a shell script.
  */
 public class TickerFileWatcher implements Runnable {
 

@@ -1,5 +1,10 @@
 package windmon;
 
+/**
+ * @author David
+ *
+ * Interface for classes that implemente data link to an NMEA device.
+ */
 public interface NMEALink
 {
     public NMEAMessage getNMEAMessage();

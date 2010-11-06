@@ -9,8 +9,7 @@ package windmon;
 /**
  * @author david
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Interface for a UI classes that graphically plot wind data.
  */
 public interface WindDataPlotter {
     public void setDisplayText(String buffer);

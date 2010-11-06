@@ -1,8 +1,5 @@
 /*
  * Created on Aug 29, 2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
@@ -39,14 +36,10 @@ import org.jfree.ui.RectangleInsets;
 /**
  * @author david
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Implementation of WindDataPlotter that uses the org.jfree.chart package.
  */
-public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
+public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter {
 
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 6044692530650948455L;
 	public static final int COL_SCHEME_BLACK  = 1;
     public static final int COL_SCHEME_BLUE  = 2;
@@ -77,13 +70,13 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
     // Need to store number Axis and update
     private Vector numberAxisVec = new Vector();
 
-    public JFreeChartPlotter()
+    public WindDataPlotterJFreeChart()
     {
         this(COL_SCHEME_BLACK, COL_SCHEME_BLUE);
     }
         
     
-	public JFreeChartPlotter(int screenColScheme, int imageColScheme)
+	public WindDataPlotterJFreeChart(int screenColScheme, int imageColScheme)
 	{
 		super();
         
@@ -156,7 +149,6 @@ public class JFreeChartPlotter extends JPanel implements WindDataPlotter {
 	 * @see windmon.WindDataPlotter#plotData(windmon.WindDataRecord[])
 	 */
 	public void plotData(WindDataRecord[] records) {
-		// TODO Auto-generated method stub
 		updateDatasets(records);
         // this.repaint();
 	}

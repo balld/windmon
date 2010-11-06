@@ -1,8 +1,5 @@
 /*
  * Created on 09-Feb-2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
@@ -11,8 +8,12 @@ import java.util.Vector;
 /**
  * @author BallD
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Singleton (sort of!) class that controls connection to the NMEA masthead 
+ * device.
+ * Reads messages from the specified NMEALink and dispatches them to registered
+ * listeners.
+ * Also provides methods to send (write) a limited set of commands to the NMEA 
+ * device via the link.
  */
 public class NMEAController implements Runnable {
 

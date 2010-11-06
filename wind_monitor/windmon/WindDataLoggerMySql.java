@@ -14,7 +14,6 @@ import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.GregorianCalendar;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -285,7 +284,7 @@ public class WindDataLoggerMySql extends TimerTask {
 	
 	WindDataRecord selectDayMax(long t)
 	{
-		String lastMidnight = mySqlDateFormat.format(t) + " 00:00:00";
+		String lastMidnight = mySqlDateFormat.format(new Date(t)) + " 00:00:00";
 		WindDataRecord rec = null;
 
 		try

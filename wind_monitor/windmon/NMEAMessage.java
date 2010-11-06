@@ -1,8 +1,6 @@
 /*
  * Created on 08-Feb-2005
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
@@ -11,8 +9,8 @@ import java.util.Vector;
 /**
  * @author BallD
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Encapsulates an NMEA message. Currently supports only message types required
+ * for the Autonnic Masthead unit.
  */
 public class NMEAMessage
 {

@@ -1,21 +1,16 @@
 /*
  * Created on 25-Aug-2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 package windmon;
 
-import java.io.PrintWriter;
-import java.io.BufferedReader;
-import java.util.StringTokenizer;
 import java.text.DecimalFormat;
+import java.util.StringTokenizer;
 
 /**
  * @author David
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Encapsulates wind data recorded over a specific period. Class includes
+ * methods to convert record to/from readable text format.
  */
 public class WindDataRecord {
 	private static final String recordType = "W1";

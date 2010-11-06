@@ -9,8 +9,7 @@ package windmon;
 /**
  * @author David
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Interface for classes that register as listeners to receive wind data events.
  */
 public interface WindDataListener {
 	public void windDataEventReceived(WindDataEvent e);

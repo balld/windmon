@@ -16,8 +16,7 @@ import java.text.FieldPosition;
 /**
  * @author david
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Basic application logging implementation. Writes to messages to a file.
  */
 public class EventLog {
 	

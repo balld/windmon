@@ -6,20 +6,27 @@
  */
 package windmon;
 
-import javax.swing.JPanel;
-import java.awt.*;
-import java.awt.font.*;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
-// import java.awt.geom.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+
+import javax.swing.JPanel;
 
 
 /**
  * @author BallD
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * UI component that implements a 'ticker' scrolling text display.
+ * Mutliple strings can be added and updated, identified by a string key.
+ * Ticker displays each string in the collection (HashMap) in turn, then
+ * repeats over again in a continuous loop.
  */
 public class Ticker extends JPanel implements Runnable {
 

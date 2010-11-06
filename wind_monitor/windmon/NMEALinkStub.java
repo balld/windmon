@@ -9,8 +9,8 @@ package windmon;
 /**
  * @author david
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Dummy implementation of NMEALink that just generates test data. For testing.
+ * Does not actually connect to anything!  
  */
 public class NMEALinkStub implements NMEALink
 {

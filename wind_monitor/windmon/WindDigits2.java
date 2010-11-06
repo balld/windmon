@@ -6,25 +6,24 @@
  */
 package windmon;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.RenderingHints;
+import java.text.DecimalFormat;
+
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
-import java.awt.*;
-import java.awt.font.*;
-import java.awt.geom.*;
-import java.text.AttributedCharacterIterator;
-import java.text.AttributedString;
-import java.text.DecimalFormat;
-import java.util.*;
-
 
 /**
- * @author BallD
+ * @author David Ball
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Graphical UI component that displays wind speed and direction on  
+ * digital-style numercical display.
  */
 public class WindDigits2 extends JPanel implements WindDataListener {
 

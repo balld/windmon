@@ -1,15 +1,3 @@
-/*
- * @(#)WindMonitor.java	0.1 26/01/2005
- * 
- * Copyright (c) 2005 David Ball All Rights Reserved.
- * 
- */
-
-/*
- * @(#)WeatherMonitor.java	0.1 26/01/2005
- */
-
-
 package windmon;
 
 import java.awt.*;
@@ -23,10 +11,10 @@ import javax.swing.border.*;
 
 
 /**
- * Wind Monitor Application
- *
- * @version @(#)WeatherView.java	0.1 26/01/2005
  * @author David Ball
+ * 
+ * Wind Monitor Test Harness Application.
+ * 
  */
 public class TestApp extends JWindow
 {
