@@ -6,18 +6,19 @@
  */
 package windmon.retired;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.font.TextLayout;
+
 import javax.swing.JPanel;
 
 import windmon.Utils;
 import windmon.WindDataEvent;
 import windmon.WindDataListener;
-
-import java.awt.*;
-import java.awt.font.*;
-import java.awt.geom.*;
-import java.text.AttributedCharacterIterator;
-import java.text.AttributedString;
-import java.util.*;
 
 
 /**

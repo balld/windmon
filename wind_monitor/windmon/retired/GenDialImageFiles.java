@@ -1,17 +1,11 @@
 package windmon.retired;
 
-import java.awt.AlphaComposite;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileOutputStream;
 
 import javax.imageio.ImageIO;
-
-import org.jfree.chart.ChartUtilities;
 
 import windmon.EventLog;
 import windmon.WindDial;

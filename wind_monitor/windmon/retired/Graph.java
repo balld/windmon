@@ -6,16 +6,23 @@
  */
 package windmon.retired;
 
-import javax.swing.JPanel;
-
-
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.image.BufferedImage;
-// import java.awt.font.FontRenderContext;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.Transparency;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.Vector;
+
+import javax.swing.JPanel;
 
 /**
  * @author BallD

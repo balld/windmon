@@ -12,14 +12,13 @@
 
 package windmon.retired;
 
-import java.awt.*;
-import java.awt.event.*;
-// import java.awt.font.TextLayout;
-// import java.awt.font.FontRenderContext;
-// import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EmptyBorder;
 
 import windmon.DigitalClock;
 import windmon.WindDataEvent;
