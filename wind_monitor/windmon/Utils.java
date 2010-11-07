@@ -469,4 +469,28 @@ public class Utils {
         else
             return "N ";
     }
+    
+    public static boolean createDirectoryIfNotExists(String s) {
+    	File path = new File(s);
+    	if ( path.exists())
+    	{
+    		if (path.isDirectory()) {
+    			return true;
+    		} else {
+    			EventLog.log(EventLog.SEV_ERROR,
+    					"Path '" + s + "' exists but is not a directory");
+    			return false;
+    		}
+    	} else {
+    		if ( path.mkdirs() == true ) {
+    			EventLog.log(EventLog.SEV_INFO,
+    					"Directory '" + s + "' created");
+    			return true;
+    		} else {
+    			EventLog.log(EventLog.SEV_FATAL,
+    					"Direcory '" + s + "' could not be created");
+    			return false;
+    		}				
+    	}
+    }    	
 }

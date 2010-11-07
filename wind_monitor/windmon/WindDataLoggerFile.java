@@ -15,21 +15,24 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.util.Date;
 import java.util.Vector;
 
 import org.jfree.chart.ChartUtilities;
-// import org.jibble.simpleftp.SimpleFTP;
+import org.jibble.simpleftp.SimpleFTP;
+// import org.jibble.simpleftp.simpleftp.SimpleFTP;
 
 /**
  * @author David
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * TODO To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Style - Code Templates
  */
 public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
@@ -66,7 +69,17 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     private boolean webOutput = true;
     private String initTickerText;
     private String templatePathname;
-    
+    private boolean ftpUpload = false;
+    private String ftpHost;
+    private String ftpUser;
+    private String ftpPassword;
+    private String ftpRemoteDirectory;
+    private String ftpRemoteNameDial;
+    private String ftpRemoteNameSpeed;
+    private String ftpRemoteNameAngle;
+    private String ftpRemoteNameReport;
+
+
     DecimalFormat df = new DecimalFormat("0.0");
     DecimalFormat dfc = new DecimalFormat("000");
     
@@ -144,7 +157,10 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 			}
 			if ( rec.getEndTime() < analysisStart )
 			{
-				/* Delete this record now as it is not within the analysis period */
+				/*
+				 * Delete this record now as it is not within the analysis
+				 * period
+				 */
 				dataRecords.remove(i);
 			}
             else
@@ -163,13 +179,30 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 	{
 		recordInterval=Config.getParamAsLong("WindLogRecordIntervalSec", 10)*1000;
 		analysisInterval=Config.getParamAsLong("WindLogHistorySec", 3600)*1000;
-		uploadDir = Config.getParamAsString("WindLogUploadDirectory", "/tmp/");
 		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
 		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
         dialWidth = Config.getParamAsInt("WindLogDialImageHeight", 400);
         webOutput = Config.getParamAsBoolean("GenerateWebFilesYN", true);
         initTickerText = Config.getParamAsString("InitialTickerText", "WindMonitor (c) David Ball 2006");
         templatePathname = Config.getParamAsString("ReportTemplate");
+        
+        ftpUpload = Config.getParamAsBoolean("FTPUploadToWebYN", false);
+        if (ftpUpload) {
+        	// FTP fields are mandatory if FTP upload is enabled.
+        	ftpHost = Config.getParamAsString("FTPHost");
+        	ftpUser = Config.getParamAsString("FTPUser");
+        	ftpPassword = Config.getParamAsString("FTPPassword");
+        	ftpRemoteDirectory = Config.getParamAsString("FTPRemoteDirectory", ".");
+            ftpRemoteNameDial = Config.getParamAsString("FTPRemoteNameDial", "dial.png");
+            ftpRemoteNameSpeed = Config.getParamAsString("FTPRemoteNameSpeed", "speed.png");
+            ftpRemoteNameAngle = Config.getParamAsString("FTPRemoteNameAngle", "angle.png");
+            ftpRemoteNameReport = Config.getParamAsString("FTPRemoteNameReport", "report.html");
+        }
+        
+        if (webOutput || ftpUpload) {
+    		uploadDir = Config.getParamAsString("WindLogUploadDirectory", "/tmp/");
+        	Utils.createDirectoryIfNotExists(uploadDir);
+        }
 
 		if ( webOutput == true )
 		{
@@ -210,7 +243,9 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 	}
 	
 	
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see windmon.WindDataListener#windDataEventReceived(windmon.WindDataEvent)
 	 */
 	public void windDataEventReceived(WindDataEvent e) {
@@ -263,7 +298,8 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 			if ( rec.getEndTime() > nextMidnight )
 			{
 				dayMax = rec;
-				// Find next midnight. While loop just in case we've fallen more than
+				// Find next midnight. While loop just in case we've fallen more
+				// than
 				// one day behind.
 				while ( nextMidnight < rec.getEndTime() )
 				{
@@ -271,13 +307,14 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 					nextMidnight = calendar.getTimeInMillis();
 				}
 			}
-			// Else check for new max today 
+			// Else check for new max today
 			else if ( dayMax == null || rec.getMaxSpeed() > dayMax.getMaxSpeed())
 			{
 				dayMax = rec;
 			}
 
-			// Only add data to display data if at least one reading was received.
+			// Only add data to display data if at least one reading was
+			// received.
 			if ( rec.getNumReadings() > 0 )
 			{
 				dataRecords.add(rec);
@@ -313,26 +350,27 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
             String fnameDate = fnameDateFormat.format(new Date(rec.getEndTime()));
             String maxWindDate = maxWindDateFormat.format(new Date(dayMax.getEndTime()));
 			String labelDate = labelDateFormat.format(new Date(rec.getEndTime()));
-            
-            if ( webOutput )
-            {
-                //
-                // Now write data to files for upload to database
-                //
-                
-                
-                // Build all the filenames needed
-                String speedfname = uploadDir + "/" + fnameDate + "_speed.png";
-                String anglefname = uploadDir + "/" + fnameDate + "_angle.png";
-                String dialfname = uploadDir + "/" + fnameDate  + "_dialx.png";
-                String txtfname = uploadDir + "/" + fnameDate   + "_infox.txt";
-                String triggerfname = uploadDir + "/" + fnameDate  + "_trigr.rdy";
 
-                // Graphs are easy thanks to JFreeChart
-                plotter.writeSpeedPlotPNG(speedfname, imageWidth, imageHeight);
-                plotter.writeAnglePlotPNG(anglefname, imageWidth, imageHeight);
-                
-                // Wind speed and angle dial is a bit bodged at the moment
+            // Set ticker text
+            if ( ticker != null )
+            {
+    			String actualRecordIntervalStr = null;
+    			if ( actualRecordInterval < 59 )
+    				actualRecordIntervalStr = actualRecordInterval + " second measurement";
+    			else
+    				actualRecordIntervalStr = actualRecordIntervalMins + " minute measurement";
+
+    			ticker.setText(this, 
+    					labelDate + " (" + actualRecordIntervalStr + ")   " +
+    					"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
+    					"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
+    					"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
+    					"Today's peak windspeed " + df.format(dayMax.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate);
+            }
+			
+            if ( webOutput || ftpUpload)
+            {
+                // Draw dial image to bdg
                 dial.setWindAngle(rec.getAveAngle());
                 dial.setSpeed(rec.getAveSpeed());
                 dial.setWindSpeedHigh(rec.getMaxSpeed());
@@ -341,19 +379,6 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 Graphics2D bdg = bdimg.createGraphics();
                 dial.justPaint(bdg);
 
-                File dialFile = new File(dialfname);
-                
-                try
-                {
-                    FileOutputStream os = new FileOutputStream(dialFile, false);
-                    ChartUtilities.writeBufferedImageAsPNG(os, bdimg);
-                    os.close();
-                }
-                catch (Exception e)
-                {
-                    EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + dialfname + "'");
-                }
-                
                 // Set report values
                 rg.setValue( ReportGenerator.REPORT_DTM, labelDate); 
                 rg.setValue( ReportGenerator.INTERVAL_SEC, "" + actualRecordInterval );
@@ -370,53 +395,105 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 rg.setValue( ReportGenerator.DAY_PEAK_BFT, Utils.speedToBeaufort(dayMax.getMaxSpeed()));
                 rg.setValue( ReportGenerator.DAY_PEAK_TM, maxWindDate);
 
+                // Build all the filenames needed
+                String speedfname = uploadDir + "/" + fnameDate + "_speed.png";
+                String anglefname = uploadDir + "/" + fnameDate + "_angle.png";
+                String dialfname = uploadDir + "/" + fnameDate  + "_dialx.png";
+                String txtfname = uploadDir + "/" + fnameDate   + "_infox.txt";
+                String triggerfname = uploadDir + "/" + fnameDate  + "_trigr.rdy";
+
+                // Graphs are easy thanks to JFreeChart
+                plotter.writeSpeedPlotPNG(speedfname, imageWidth, imageHeight);
+                plotter.writeAnglePlotPNG(anglefname, imageWidth, imageHeight);
+
+                File dialFile = new File(dialfname);
+                try
+                {
+                    FileOutputStream os = new FileOutputStream(dialFile, false);
+                    ChartUtilities.writeBufferedImageAsPNG(os, bdimg);
+                    os.close();
+                }
+                catch (Exception e)
+                {
+                    EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + dialfname + "'");
+                }
+                
+
                 // Generate report from template
                 rg.genReport( templatePathname, txtfname);
                 
                 
-                // And now set the trigger file to indicate files ready for upload
+                // And now set the trigger file to indicate files ready for
+				// upload
                 try
-                {
-                    String tmpname = triggerfname + ".tmp";
-                    PrintWriter pw = new PrintWriter(
-                            new FileWriter(triggerfname, false));
-                    pw.println(speedfname);
-                    pw.println(anglefname);
-                    pw.println(dialfname);
-                    pw.println(txtfname);
-                    pw.close();
-                    
-                    File tmpFile = new File(tmpname);
-                    File triggerFile = new File(triggerfname);
-                    // This rename is atomic action which indicates all files are ready
-                    tmpFile.renameTo(triggerFile);
-                }
+				{
+                	String tmpname = triggerfname + ".tmp";
+                	PrintWriter pw = new PrintWriter(
+                			new FileWriter(triggerfname, false));
+                	pw.println(speedfname);
+                	pw.println(anglefname);
+                	pw.println(dialfname);
+                	pw.println(txtfname);
+                	pw.close();
+                	
+                	File tmpFile = new File(tmpname);
+                	File triggerFile = new File(triggerfname);
+                	// This rename is atomic action which indicates all files
+					// are ready
+                	tmpFile.renameTo(triggerFile);
+				}
                 catch (Exception e)
-                {
-                    EventLog.log(EventLog.SEV_ERROR,
-                            "Could not write file '" + triggerfname + "'");
+				{
+                	EventLog.log(EventLog.SEV_ERROR,
+                			"Could not write file '" + triggerfname + "'");
+				}
+                
+                if (ftpUpload) {
+                	//
+                	// GUI to upload files to FTP site.
+                	//
+                	
+                	// Build all the filenames needed
+                	String remSpeedfname = fnameDate + "_speed_tmp.png";
+                	String remAnglefname = fnameDate + "_angle_tmp.png";
+                	String remDialfname = fnameDate  + "_dialx_tmp.png";
+                	String remTxtfname = fnameDate   + "_infox_tmp.txt";
+                	
+                	// Open FTP Connection
+                	SimpleFTP ftp = ftpConnect();
+                	
+                	if (ftp != null) {
+                		ftpSendFile(ftp, dialfname, remDialfname);
+                		ftpSendFile(ftp, speedfname, remSpeedfname);
+                		ftpSendFile(ftp, anglefname, remAnglefname);
+                		ftpSendFile(ftp, txtfname, remTxtfname);
+
+                		ftpDeleteFile(ftp, ftpRemoteNameDial);
+                		ftpDeleteFile(ftp, ftpRemoteNameSpeed);
+                		ftpDeleteFile(ftp, ftpRemoteNameAngle);
+                		ftpDeleteFile(ftp, ftpRemoteNameReport);
+
+                		ftpRenameFile(ftp, remDialfname, ftpRemoteNameDial);
+                		ftpRenameFile(ftp, remSpeedfname, ftpRemoteNameSpeed);
+                		ftpRenameFile(ftp, remAnglefname, ftpRemoteNameAngle);
+                		ftpRenameFile(ftp, remTxtfname, ftpRemoteNameReport);
+                		
+                		ftpDisconnect(ftp);
+                	}
+                		
+            		// Don't need to keep web files if Web Output parameter is not set.
+                	if (!webOutput) {
+                		localDeleteFile(dialfname);
+                		localDeleteFile(speedfname);
+                		localDeleteFile(anglefname);
+                		localDeleteFile(txtfname);
+                		localDeleteFile(triggerfname);
+                	}
                 }
             }
-                // Set ticker text
-            if ( ticker != null )
-            {
-    			String actualRecordIntervalStr = null;
-    			if ( actualRecordInterval < 59 )
-    				actualRecordIntervalStr = actualRecordInterval + " second measurement";
-    			else
-    				actualRecordIntervalStr = actualRecordIntervalMins + " minute measurement";
-
-    			ticker.setText(this, 
-    					labelDate + " (" + actualRecordIntervalStr + ")   " +
-    					"Mean Direction : " + dfc.format(rec.getAveAngle()) + " (" + Utils.angleToCompass(rec.getAveAngle()) + ")  " +
-    					"Average Speed : " + df.format(rec.getAveSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getAveSpeed()) + ")  " +
-    					"Gust : " + df.format(rec.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(rec.getMaxSpeed()) + ")  " +
-    					"Today's peak windspeed " + df.format(dayMax.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate);
-            }
-            
-
-        }
+		}
 	}
+	
 	/**
 	 * @return Returns the plotter.
 	 */
@@ -424,7 +501,8 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		return plotter;
 	}
 	/**
-	 * @param plotter The plotter to set.
+	 * @param plotter
+	 *            The plotter to set.
 	 */
 	public void setPlotter(WindDataPlotter plotter) {
 		this.plotter = plotter;
@@ -434,4 +512,106 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
         plotter.plotData( data );
 	}
+	
+	
+	private SimpleFTP ftpConnect() {
+    	SimpleFTP ftp = new SimpleFTP();
+    	boolean connected = false;
+    	try {
+    		ftp.connect(ftpHost, 21, ftpUser, ftpPassword);
+    		connected = true;
+    		
+    		if(!ftp.cwd(ftpRemoteDirectory)) {
+    			throw new IOException("Could not change to remote directory '" + ftpRemoteDirectory + "'.");
+    		}
+
+    		if(!ftp.bin()) {
+    			throw new IOException("Could not change to binary mode.");
+    		}
+
+    		EventLog.log(EventLog.SEV_INFO, "Opened FTP connection to '" + 
+    				ftpHost + "' directory '" + ftpRemoteDirectory + "' as user '" + ftpUser +"'.");
+    	} catch (Exception e) {
+    		EventLog.log(EventLog.SEV_ERROR, "Could not open FTP connection to '" + 
+    				ftpHost + "' as user '" + ftpUser +"': " + e.getMessage());
+    		if (connected) {
+    			try {
+    				ftp.disconnect();
+    				connected = false;
+    			} catch (Exception e2) {
+    			}
+    		}
+    	}
+    	
+    	if (connected) {
+    		return ftp;
+    	} else {
+    		return null;
+    	}
+	}
+	
+	private static void ftpDisconnect(SimpleFTP ftp) {
+		try {
+			ftp.disconnect();
+		}
+		catch (Exception e) {
+        	EventLog.log(EventLog.SEV_WARN, "Failed FTP disconnect: " + e.getMessage()); 
+		}
+	}
+	
+	private static void ftpSendFile(SimpleFTP ftp, String localName, String remoteName) {
+		boolean success = false;
+		try {
+			success = ftp.stor(new FileInputStream(new File(localName)), remoteName);
+		} catch (Exception e) {
+			e.printStackTrace();
+			success = false;
+		}
+		
+        if (!success) {
+        	EventLog.log(EventLog.SEV_WARN, "Failed FTP transfer local file '" + 
+        			localName + "' to remote file '" + remoteName + "'");
+        } else {
+        	EventLog.log(EventLog.SEV_INFO, "Successful FTP transfer local file '" + 
+        			localName + "' to remote file '" + remoteName + "'");
+        }
+	}
+	
+	private static void ftpDeleteFile(SimpleFTP ftp, String remoteName) {
+		try {
+			ftp.delete(remoteName);
+        	EventLog.log(EventLog.SEV_INFO,
+					"Successful FTP delete remote file '" + remoteName + "'");
+		} catch (Exception e) {
+        	EventLog.log(EventLog.SEV_WARN, "Failed FTP delete remote file '" + 
+        			remoteName + "': " + e.getMessage());
+		}
+	}
+
+	private static void ftpRenameFile(SimpleFTP ftp, String oldName, String newName) {
+		try {
+			ftp.rename(oldName, newName);
+        	EventLog.log(EventLog.SEV_INFO, "Successful FTP rename remote file from '" + 
+        			oldName + "' to '" + newName + "'");
+		} catch (Exception e) {
+        	EventLog.log(EventLog.SEV_WARN, "Failed FTP rename remote file from '" + 
+        			oldName + "' to '" + newName + "': " + e.getMessage());
+		}
+	}
+
+	private static void localDeleteFile(String fname)
+	{
+		try {
+			File f = new File(fname);
+			if (!f.delete()) {
+				throw new IOException("Delete Failed.");
+			}
+        	EventLog.log(EventLog.SEV_INFO, "Deleted local file '" + 
+        			fname + "'.");
+		} catch (Exception e) {
+        	EventLog.log(EventLog.SEV_WARN, "Failed delete local file '" + 
+        			fname + "': " + e.getMessage());
+		}
+	}
 }
+

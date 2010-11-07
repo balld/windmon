@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.io.File;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -358,6 +359,18 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 		}
 	}
 	
+	public void writeSpeedPlotPNG(OutputStream os, int width, int height)
+	{
+		try
+		{
+			ChartUtilities.writeChartAsPNG(os, imageSpeedChart, width, height);
+		}
+		catch (Exception e)
+		{
+			EventLog.log(EventLog.SEV_ERROR, "Could write speed chart to output stream.");
+			e.printStackTrace();
+		}
+	}
 
 	public void writeAnglePlotPNG(String fname, int width, int height)
 	{
@@ -378,7 +391,21 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 			EventLog.log(EventLog.SEV_ERROR, "Could not rename image to '" + fname + "'");
 		}
 	}
-    
+
+	public void writeAnglePlotPNG(OutputStream os, int width, int height)
+	{
+		try
+		{
+			ChartUtilities.writeChartAsPNG(os, imageAngleChart, width, height);
+		}
+		catch (Exception e)
+		{
+			EventLog.log(EventLog.SEV_ERROR, "Could not write anlge chart to output stream");
+			e.printStackTrace();
+		}
+	}
+	
+	
     private void addNumberAxis(NumberAxis na)
     {
         numberAxisVec.add(na);
