@@ -21,7 +21,11 @@ import java.util.*;
  */
 public class DigitalClock extends JPanel implements Runnable {
 
-    private static final Dimension ps = new Dimension(525,30);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3588190825599838664L;
+	private static final Dimension ps = new Dimension(525,30);
     private static int l_font_size = 48;
     private static int s_font_size = 24;
 

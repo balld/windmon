@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.Vector;
 
 import org.jfree.chart.ChartUtilities;
-import org.jibble.simpleftp.SimpleFTP;
 // import org.jibble.simpleftp.simpleftp.SimpleFTP;
 
 /**
@@ -78,18 +77,35 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     private String ftpRemoteNameSpeed;
     private String ftpRemoteNameAngle;
     private String ftpRemoteNameReport;
+    
+    private String ftpRemoteNameLiveUpdate;
+    private boolean ftpLiveUpdate = false;
+    private long ftpLiveUpdateInterval = 0;
+    
 
+    // Live Update Members
+    private long lastLiveUpdateTime = 0;
+    private float maxSpeedSinceLastUpdate = 0.0;
 
-    DecimalFormat df = new DecimalFormat("0.0");
-    DecimalFormat dfc = new DecimalFormat("000");
+    private DecimalFormat df = new DecimalFormat("0.0");
+    private DecimalFormat dfc = new DecimalFormat("000");
     
     // Report Generator
-    ReportGenerator rg = new ReportGenerator();
+    private ReportGenerator rg = new ReportGenerator();
+    
+    private FTPTaskQueue ftpQueue = null;
+    
+    
     
 	
 	public WindDataLoggerFile (WindDataPlotter plotter, Ticker ticker, boolean storeDataToFile)
 	{
 		readConfig();
+		
+		if (ftpUpload || ftpLiveUpdate) {
+			this.ftpQueue = new FTPTaskQueue(ftpHost, ftpUser, ftpPassword, ftpRemoteDirectory);
+		}
+		
 		this.plotter = plotter;
         this.ticker = ticker;
         this.storeDataToFile = storeDataToFile;
@@ -177,7 +193,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
 	public void readConfig()
 	{
-		recordInterval=Config.getParamAsLong("WindLogRecordIntervalSec", 10)*1000;
+		recordInterval=Config.getParamAsLong("WindLogRecordIntervalSec", 300)*1000;
 		analysisInterval=Config.getParamAsLong("WindLogHistorySec", 3600)*1000;
 		imageWidth = Config.getParamAsInt("WindLogGraphImageWidth", 600);
 		imageHeight = Config.getParamAsInt("WindLogGraphImageHeight", 400);
@@ -187,16 +203,26 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
         templatePathname = Config.getParamAsString("ReportTemplate");
         
         ftpUpload = Config.getParamAsBoolean("FTPUploadToWebYN", false);
-        if (ftpUpload) {
+        ftpLiveUpdate = Config.getParamAsBoolean("FTPLiveUpdateYN", false);
+        
+        if (ftpUpload || ftpLiveUpdate) {
         	// FTP fields are mandatory if FTP upload is enabled.
         	ftpHost = Config.getParamAsString("FTPHost");
         	ftpUser = Config.getParamAsString("FTPUser");
         	ftpPassword = Config.getParamAsString("FTPPassword");
         	ftpRemoteDirectory = Config.getParamAsString("FTPRemoteDirectory", ".");
+        }
+        
+        if (ftpUpload) {
             ftpRemoteNameDial = Config.getParamAsString("FTPRemoteNameDial", "dial.png");
             ftpRemoteNameSpeed = Config.getParamAsString("FTPRemoteNameSpeed", "speed.png");
             ftpRemoteNameAngle = Config.getParamAsString("FTPRemoteNameAngle", "angle.png");
             ftpRemoteNameReport = Config.getParamAsString("FTPRemoteNameReport", "report.html");
+        }
+        
+        if (ftpLiveUpdate) {
+        	ftpRemoteNameLiveUpdate = Config.getParamAsString("FTPRemoteNameLiveUpdate", "live.txt");
+        	ftpLiveUpdateInterval = Config.getParamAsLong("FTPLiveUpdateIntervalSec", 10)*1000;
         }
         
         if (webOutput || ftpUpload) {
@@ -264,10 +290,14 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		// Start timer on receipt of message
 		if ( timer == null )
 		{
+			long actualInterval = recordInterval;
+			if (ftpLiveUpdate) {
+				actualInterval = Math.min(actualInterval, ftpLiveUpdateInterval);
+			}
 			timer = new Timer();
             timer.schedule(this,
-                    new Date(System.currentTimeMillis() + recordInterval),
-                    recordInterval);
+                    new Date(System.currentTimeMillis() + actualInterval),
+                    actualInterval);
 		}
 
 		synchronized(currentSet)
@@ -279,6 +309,27 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 	
 	public void run()
 	{
+		//
+		// Live Update
+		//
+		if (liveUpdate) {
+			float speed = e.getWindSpeed();
+			long timeNow = System.currentTimeMillis();
+			if (speed > maxSpeedSinceLastUpdate) {
+				maxSpeedSinceLastUpdate = speed;
+			}
+			if (timeNow - lastLiveUpdateTime > ftpLiveUpdateInterval) {
+				// TODO - Do live update
+				
+				lastLiveUpdateTime = timeNow;
+				maxSpeedSinceLastUpdate = 0;
+			}
+		}
+
+
+		//
+		// Periodic plot update
+		//
 		if ( currentSet != null )
 		{
             // Minimum synchronised block on currentSet. We copy data,
@@ -459,35 +510,28 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 	String remDialfname = fnameDate  + "_dialx_tmp.png";
                 	String remTxtfname = fnameDate   + "_infox_tmp.txt";
                 	
-                	// Open FTP Connection
-                	SimpleFTP ftp = ftpConnect();
+                	ftpQueue.addTask(FTPTask.createSendTask(dialfname, remDialfname, true));
+                	ftpQueue.addTask(FTPTask.createSendTask(speedfname, remSpeedfname, true));
+                	ftpQueue.addTask(FTPTask.createSendTask(anglefname, remAnglefname, true));
+                	ftpQueue.addTask(FTPTask.createSendTask(txtfname, remTxtfname, false));
                 	
-                	if (ftp != null) {
-                		ftpSendFile(ftp, dialfname, remDialfname);
-                		ftpSendFile(ftp, speedfname, remSpeedfname);
-                		ftpSendFile(ftp, anglefname, remAnglefname);
-                		ftpSendFile(ftp, txtfname, remTxtfname);
+                	ftpQueue.addTask(FTPTask.createRemoteDeleteTask(ftpRemoteNameDial));
+                	ftpQueue.addTask(FTPTask.createRemoteDeleteTask(ftpRemoteNameSpeed));
+                	ftpQueue.addTask(FTPTask.createRemoteDeleteTask(ftpRemoteNameAngle));
+                	ftpQueue.addTask(FTPTask.createRemoteDeleteTask(ftpRemoteNameReport));
 
-                		ftpDeleteFile(ftp, ftpRemoteNameDial);
-                		ftpDeleteFile(ftp, ftpRemoteNameSpeed);
-                		ftpDeleteFile(ftp, ftpRemoteNameAngle);
-                		ftpDeleteFile(ftp, ftpRemoteNameReport);
-
-                		ftpRenameFile(ftp, remDialfname, ftpRemoteNameDial);
-                		ftpRenameFile(ftp, remSpeedfname, ftpRemoteNameSpeed);
-                		ftpRenameFile(ftp, remAnglefname, ftpRemoteNameAngle);
-                		ftpRenameFile(ftp, remTxtfname, ftpRemoteNameReport);
-                		
-                		ftpDisconnect(ftp);
-                	}
-                		
+                	ftpQueue.addTask(FTPTask.createRenameTask(remDialfname, ftpRemoteNameDial));
+                	ftpQueue.addTask(FTPTask.createRenameTask(remSpeedfname, ftpRemoteNameSpeed));
+                	ftpQueue.addTask(FTPTask.createRenameTask(remAnglefname, ftpRemoteNameAngle));
+                	ftpQueue.addTask(FTPTask.createRenameTask(remTxtfname, ftpRemoteNameReport));
+                	
             		// Don't need to keep web files if Web Output parameter is not set.
                 	if (!webOutput) {
-                		localDeleteFile(dialfname);
-                		localDeleteFile(speedfname);
-                		localDeleteFile(anglefname);
-                		localDeleteFile(txtfname);
-                		localDeleteFile(triggerfname);
+                    	ftpQueue.addTask(FTPTask.createLocalDeleteTask(dialfname));
+                    	ftpQueue.addTask(FTPTask.createLocalDeleteTask(speedfname));
+                    	ftpQueue.addTask(FTPTask.createLocalDeleteTask(anglefname));
+                    	ftpQueue.addTask(FTPTask.createLocalDeleteTask(txtfname));
+                    	ftpQueue.addTask(FTPTask.createLocalDeleteTask(triggerfname));
                 	}
                 }
             }
@@ -512,106 +556,6 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
         plotter.plotData( data );
 	}
-	
-	
-	private SimpleFTP ftpConnect() {
-    	SimpleFTP ftp = new SimpleFTP();
-    	boolean connected = false;
-    	try {
-    		ftp.connect(ftpHost, 21, ftpUser, ftpPassword);
-    		connected = true;
-    		
-    		if(!ftp.cwd(ftpRemoteDirectory)) {
-    			throw new IOException("Could not change to remote directory '" + ftpRemoteDirectory + "'.");
-    		}
 
-    		if(!ftp.bin()) {
-    			throw new IOException("Could not change to binary mode.");
-    		}
-
-    		EventLog.log(EventLog.SEV_INFO, "Opened FTP connection to '" + 
-    				ftpHost + "' directory '" + ftpRemoteDirectory + "' as user '" + ftpUser +"'.");
-    	} catch (Exception e) {
-    		EventLog.log(EventLog.SEV_ERROR, "Could not open FTP connection to '" + 
-    				ftpHost + "' as user '" + ftpUser +"': " + e.getMessage());
-    		if (connected) {
-    			try {
-    				ftp.disconnect();
-    				connected = false;
-    			} catch (Exception e2) {
-    			}
-    		}
-    	}
-    	
-    	if (connected) {
-    		return ftp;
-    	} else {
-    		return null;
-    	}
-	}
-	
-	private static void ftpDisconnect(SimpleFTP ftp) {
-		try {
-			ftp.disconnect();
-		}
-		catch (Exception e) {
-        	EventLog.log(EventLog.SEV_WARN, "Failed FTP disconnect: " + e.getMessage()); 
-		}
-	}
-	
-	private static void ftpSendFile(SimpleFTP ftp, String localName, String remoteName) {
-		boolean success = false;
-		try {
-			success = ftp.stor(new FileInputStream(new File(localName)), remoteName);
-		} catch (Exception e) {
-			e.printStackTrace();
-			success = false;
-		}
-		
-        if (!success) {
-        	EventLog.log(EventLog.SEV_WARN, "Failed FTP transfer local file '" + 
-        			localName + "' to remote file '" + remoteName + "'");
-        } else {
-        	EventLog.log(EventLog.SEV_INFO, "Successful FTP transfer local file '" + 
-        			localName + "' to remote file '" + remoteName + "'");
-        }
-	}
-	
-	private static void ftpDeleteFile(SimpleFTP ftp, String remoteName) {
-		try {
-			ftp.delete(remoteName);
-        	EventLog.log(EventLog.SEV_INFO,
-					"Successful FTP delete remote file '" + remoteName + "'");
-		} catch (Exception e) {
-        	EventLog.log(EventLog.SEV_WARN, "Failed FTP delete remote file '" + 
-        			remoteName + "': " + e.getMessage());
-		}
-	}
-
-	private static void ftpRenameFile(SimpleFTP ftp, String oldName, String newName) {
-		try {
-			ftp.rename(oldName, newName);
-        	EventLog.log(EventLog.SEV_INFO, "Successful FTP rename remote file from '" + 
-        			oldName + "' to '" + newName + "'");
-		} catch (Exception e) {
-        	EventLog.log(EventLog.SEV_WARN, "Failed FTP rename remote file from '" + 
-        			oldName + "' to '" + newName + "': " + e.getMessage());
-		}
-	}
-
-	private static void localDeleteFile(String fname)
-	{
-		try {
-			File f = new File(fname);
-			if (!f.delete()) {
-				throw new IOException("Delete Failed.");
-			}
-        	EventLog.log(EventLog.SEV_INFO, "Deleted local file '" + 
-        			fname + "'.");
-		} catch (Exception e) {
-        	EventLog.log(EventLog.SEV_WARN, "Failed delete local file '" + 
-        			fname + "': " + e.getMessage());
-		}
-	}
 }
 

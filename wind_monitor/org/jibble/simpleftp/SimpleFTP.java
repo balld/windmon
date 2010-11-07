@@ -10,7 +10,7 @@ a commercial license is also provided. Full license information can be
 found at http://www.jibble.org/licenses/
 
 $Author: david $
-$Id: SimpleFTP.java,v 1.1 2010/11/07 03:04:51 david Exp $
+$Id: SimpleFTP.java,v 1.2 2010/11/07 20:54:32 david Exp $
 
 ********************************************************************************
 
@@ -93,6 +93,9 @@ public class SimpleFTP {
         if (!response.startsWith("230 ")) {
             throw new IOException("SimpleFTP was unable to log in with the supplied password: " + response);
         }
+        
+        // Set to ascii by default.
+        ascii();
         
         // Now logged in.
     }
@@ -217,6 +220,7 @@ public class SimpleFTP {
      */
     public synchronized boolean bin() throws IOException {
         sendLine("TYPE I");
+        binary = true;
         String response = readLine();
         return (response.startsWith("200 "));
     }
@@ -229,6 +233,7 @@ public class SimpleFTP {
      */
     public synchronized boolean ascii() throws IOException {
         sendLine("TYPE A");
+        binary = false;
         String response = readLine();
         return (response.startsWith("200 "));
     }
@@ -290,9 +295,18 @@ public class SimpleFTP {
         return line;
     }
     
+    public synchronized boolean isConnected() {
+		return ( socket != null && !socket.isInputShutdown());
+    }
+    
+    public synchronized boolean isBinary() {
+    	return binary;
+    }
+    
     private Socket socket = null;
     private BufferedReader reader = null;
     private BufferedWriter writer = null;
+    private boolean binary = false;
     
     private static boolean DEBUG = false;
     
