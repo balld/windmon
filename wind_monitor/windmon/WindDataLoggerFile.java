@@ -37,6 +37,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
 	private WindDataLoggerSet currentSet;
 	private WindDataLoggerSet lastSet;
+	
 	private Timer timer;
 	
 	private long analysisInterval; // Hold data in memory (ms)
@@ -85,7 +86,8 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
     // Live Update Members
     private long lastLiveUpdateTime = 0;
-    private float maxSpeedSinceLastUpdate = 0.0;
+    private float maxSpeedSinceLastUpdate = 0.0f;
+    private float maxSpeedSinceLastUpdateAngle = 0.0f;
 
     private DecimalFormat df = new DecimalFormat("0.0");
     private DecimalFormat dfc = new DecimalFormat("000");
@@ -255,13 +257,8 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
         
         
 		// If timer exists, reset it
-		if ( timer != null )
-		{
-			timer.cancel();
-			timer = new Timer();
-            timer.schedule(this,
-                           new Date(System.currentTimeMillis() + recordInterval),
-                           recordInterval);
+		if ( timer != null ) {
+			assertTimer(true);
 		}
 		
 		// Reset the dial size
@@ -281,48 +278,42 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
             return;
         }
         
-        if ( currentSet == null)
-		{
+        if ( currentSet == null) {
 			currentSet = new WindDataLoggerSet();
 			currentSet.reset(System.currentTimeMillis());
 		}
 
-		// Start timer on receipt of message
-		if ( timer == null )
-		{
-			long actualInterval = recordInterval;
-			if (ftpLiveUpdate) {
-				actualInterval = Math.min(actualInterval, ftpLiveUpdateInterval);
-			}
-			timer = new Timer();
-            timer.schedule(this,
-                    new Date(System.currentTimeMillis() + actualInterval),
-                    actualInterval);
-		}
-
 		synchronized(currentSet)
 		{
-			currentSet.logData(e.getWindSpeed(),
-					e.getWindAngle());
+			currentSet.logData(e.getWindSpeed(), e.getWindAngle());
+			if (ftpLiveUpdate && e.getWindSpeed() > maxSpeedSinceLastUpdate) {
+				maxSpeedSinceLastUpdate = e.getWindSpeed();
+				maxSpeedSinceLastUpdateAngle = e.getWindAngle();
+			}
 		}
+
+		// Start timer on receipt of message
+        assertTimer(false);
 	}
 	
 	public void run()
 	{
+		long timeNow = System.currentTimeMillis();
 		//
 		// Live Update
 		//
-		if (liveUpdate) {
-			float speed = e.getWindSpeed();
-			long timeNow = System.currentTimeMillis();
-			if (speed > maxSpeedSinceLastUpdate) {
-				maxSpeedSinceLastUpdate = speed;
-			}
+		if (ftpLiveUpdate) {
 			if (timeNow - lastLiveUpdateTime > ftpLiveUpdateInterval) {
+				float updateSpeed = 0.0f;
+				float updateAngle = 0.0f;
+				synchronized(currentSet) {
+					updateSpeed = maxSpeedSinceLastUpdate;
+					updateAngle = maxSpeedSinceLastUpdateAngle;
+					lastLiveUpdateTime = timeNow;
+					maxSpeedSinceLastUpdate = 0;
+				}
 				// TODO - Do live update
-				
-				lastLiveUpdateTime = timeNow;
-				maxSpeedSinceLastUpdate = 0;
+				EventLog.log(EventLog.SEV_INFO, "Live Update: Speed=" + updateSpeed + ", Angle=" + updateAngle);
 			}
 		}
 
@@ -330,14 +321,14 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		//
 		// Periodic plot update
 		//
-		if ( currentSet != null )
+		if ( currentSet != null 
+			 && timeNow - currentSet.startPeriod > recordInterval)
 		{
             // Minimum synchronised block on currentSet. We copy data,
             // reset and then release it so that we can continue to log
-            // incoming readings whilst we processing data.
-			synchronized(currentSet)
-			{
-				currentSet.setEndPeriod(System.currentTimeMillis());
+            // incoming readings whilst processing data.
+			synchronized(currentSet) {
+				currentSet.setEndPeriod(timeNow);
 				lastSet = (WindDataLoggerSet) currentSet.clone();
 				currentSet.reset(lastSet.getEndPeriod()+1);
 			}
@@ -557,5 +548,23 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
         plotter.plotData( data );
 	}
 
+
+
+	private synchronized void assertTimer(boolean reset) {
+		// Start timer on receipt of message
+		if ( timer == null || reset)
+		{
+			long timeNow = System.currentTimeMillis();
+			long actualInterval = recordInterval;
+			if (ftpLiveUpdate) {
+				actualInterval = Math.min(actualInterval, ftpLiveUpdateInterval);
+				lastLiveUpdateTime = timeNow;
+			}
+			if (timer == null) {
+				timer = new Timer();
+			}
+            timer.schedule(this, new Date(timeNow + actualInterval), actualInterval);
+		}
+	}
 }
 
