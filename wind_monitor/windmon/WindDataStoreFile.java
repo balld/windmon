@@ -21,7 +21,7 @@ import java.util.Vector;
  * start time of the file. 
  */
 public class WindDataStoreFile implements WindDataStore {
-	// These settins affect the number of files created. Currently every hour.
+	// These settings affect the number of files created. Currently every hour.
 	private static final String DATE_FMT = "yyyyMMddHHz";
 	private static final long   FILE_INTERVAL = 3600000; // 1 hour
 	
@@ -73,7 +73,7 @@ public class WindDataStoreFile implements WindDataStore {
 		}
 	}
 
-	public Vector getWindDataRecords(long start, long end)
+	public Vector<WindDataRecord> getWindDataRecords(long start, long end)
 	{
 		return getWindDataRecords(start, end, true);
 	}
@@ -81,8 +81,8 @@ public class WindDataStoreFile implements WindDataStore {
 	/* (non-Javadoc)
 	 * @see windmon.WindDataStore#getWindDataRecords(long, long)
 	 */
-	public Vector getWindDataRecords(long start, long end, boolean includeNull) {
-		Vector records = new Vector();
+	public Vector<WindDataRecord> getWindDataRecords(long start, long end, boolean includeNull) {
+		Vector<WindDataRecord> records = new Vector<WindDataRecord>();
 		long curr = start;
 		
 		while (curr <= end)

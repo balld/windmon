@@ -15,10 +15,8 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
 import java.util.Date;
@@ -45,8 +43,6 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     
 	long nextMidnight;
 	
-	private boolean storeDataToFile = true;
-    
     private GregorianCalendar calendar = null;
     private SimpleDateFormat fnameDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
     private SimpleDateFormat labelDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm z");
@@ -54,7 +50,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     
     private WindDataRecord dayMax = null;
     
-    private Vector dataRecords;
+    private Vector<WindDataRecord> dataRecords;
     private WindDataPlotter plotter;
     private Ticker ticker;
     
@@ -110,7 +106,6 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		
 		this.plotter = plotter;
         this.ticker = ticker;
-        this.storeDataToFile = storeDataToFile;
         
         if ( ticker != null )
         {
@@ -150,7 +145,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		/* Fetch data back to the earlier of last midnight or analysis start */
 		long dataFetchStart = Math.min(lastMidnight, analysisStart);
 
-		Vector archData = null;
+		Vector<WindDataRecord> archData = null;
 		if ( store != null )
 		{
 			archData = store.getWindDataRecords(dataFetchStart, now, false);
@@ -162,7 +157,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		}
 		else
 		{
-			dataRecords = new Vector();
+			dataRecords = new Vector<WindDataRecord>();
 		}
 		
 		int i = 0;
@@ -232,24 +227,16 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
         	Utils.createDirectoryIfNotExists(uploadDir);
         }
 
-		if ( webOutput == true )
-		{
+		if ( webOutput == true ) {
 			File path = new File(uploadDir);
-			if ( path.exists())
-			{
-				if ( !path.isDirectory() )
-				{
+			if ( path.exists())	{
+				if ( !path.isDirectory() )	{
 					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' exists but is not a directory");
 				}
-			}
-			else
-			{
-				if ( path.mkdirs() != true )
-				{
+			} else {
+				if ( path.mkdirs() != true ) {
 					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' could not be created");
-				}
-				else
-				{
+				} else {
 					EventLog.log(EventLog.SEV_INFO, "Upload directory '" + uploadDir + "' created");
 				}
 			}
@@ -303,7 +290,8 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		// Live Update
 		//
 		if (ftpLiveUpdate) {
-			if (timeNow - lastLiveUpdateTime > ftpLiveUpdateInterval) {
+			long liveElapsed = timeNow - lastLiveUpdateTime;
+			if (liveElapsed >= ftpLiveUpdateInterval) {
 				float updateSpeed = 0.0f;
 				float updateAngle = 0.0f;
 				synchronized(currentSet) {
@@ -314,6 +302,30 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 				}
 				// TODO - Do live update
 				EventLog.log(EventLog.SEV_INFO, "Live Update: Speed=" + updateSpeed + ", Angle=" + updateAngle);
+
+				String fnameDate = fnameDateFormat.format(new Date(timeNow));
+                String localFname = uploadDir + "/" + fnameDate + "_live.csv";
+                String remoteFnameTmp = fnameDate + "_live.tmp";
+    			String updateDate = labelDateFormat.format(new Date(timeNow));
+				
+                try	{
+                	PrintWriter pw = new PrintWriter(
+                			new FileWriter(localFname, false));
+                	pw.println(updateDate + "," 
+                			   + df.format(updateSpeed) + ","
+                			   + dfc.format(updateAngle));
+                	pw.close();
+				} catch (Exception e) {
+                	EventLog.log(EventLog.SEV_ERROR,
+                			"Could not write file '" + localFname + "': " + e.getMessage());
+				}
+
+				ftpQueue.addTask(FTPTask.createSendTask(localFname, remoteFnameTmp, false));
+            	ftpQueue.addTask(FTPTask.createRemoteDeleteTask(ftpRemoteNameLiveUpdate));
+            	ftpQueue.addTask(FTPTask.createRenameTask(remoteFnameTmp, ftpRemoteNameLiveUpdate));
+            	ftpQueue.addTask(FTPTask.createLocalDeleteTask(localFname));
+			} else {
+				EventLog.log(EventLog.SEV_DEBUG, "Live Update: Timer expired but no ready. Elapsed=" + liveElapsed);				
 			}
 		}
 
@@ -322,7 +334,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		// Periodic plot update
 		//
 		if ( currentSet != null 
-			 && timeNow - currentSet.startPeriod > recordInterval)
+			 && timeNow - currentSet.startPeriod >= recordInterval)
 		{
             // Minimum synchronised block on currentSet. We copy data,
             // reset and then release it so that we can continue to log
@@ -465,30 +477,6 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 rg.genReport( templatePathname, txtfname);
                 
                 
-                // And now set the trigger file to indicate files ready for
-				// upload
-                try
-				{
-                	String tmpname = triggerfname + ".tmp";
-                	PrintWriter pw = new PrintWriter(
-                			new FileWriter(triggerfname, false));
-                	pw.println(speedfname);
-                	pw.println(anglefname);
-                	pw.println(dialfname);
-                	pw.println(txtfname);
-                	pw.close();
-                	
-                	File tmpFile = new File(tmpname);
-                	File triggerFile = new File(triggerfname);
-                	// This rename is atomic action which indicates all files
-					// are ready
-                	tmpFile.renameTo(triggerFile);
-				}
-                catch (Exception e)
-				{
-                	EventLog.log(EventLog.SEV_ERROR,
-                			"Could not write file '" + triggerfname + "'");
-				}
                 
                 if (ftpUpload) {
                 	//
@@ -525,6 +513,32 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                     	ftpQueue.addTask(FTPTask.createLocalDeleteTask(triggerfname));
                 	}
                 }
+                
+                if (webOutput) {
+                    // And now set the trigger file to indicate files ready for
+    				// any external application to upload to a website or other
+                	// (we no longer need them).
+                    try
+    				{
+                    	String tmpname = triggerfname + ".tmp";
+                    	PrintWriter pw = new PrintWriter(
+                    			new FileWriter(triggerfname, false));
+                    	pw.println(speedfname);
+                    	pw.println(anglefname);
+                    	pw.println(dialfname);
+                    	pw.println(txtfname);
+                    	pw.close();
+                    	
+                    	File tmpFile = new File(tmpname);
+                    	File triggerFile = new File(triggerfname);
+                    	// This rename is atomic action which indicates all files
+    					// are ready
+                    	tmpFile.renameTo(triggerFile);
+    				} catch (Exception e) {
+                    	EventLog.log(EventLog.SEV_ERROR,
+                    			"Could not write file '" + triggerfname + "'");
+    				}
+                }
             }
 		}
 	}
@@ -550,6 +564,10 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
 
 
+	/**
+	 * It timer does not exist, create and start it. If timer does exist
+	 * reset it (only if reset == true)
+	 */
 	private synchronized void assertTimer(boolean reset) {
 		// Start timer on receipt of message
 		if ( timer == null || reset)
@@ -557,7 +575,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 			long timeNow = System.currentTimeMillis();
 			long actualInterval = recordInterval;
 			if (ftpLiveUpdate) {
-				actualInterval = Math.min(actualInterval, ftpLiveUpdateInterval);
+				actualInterval = Utils.gcd(actualInterval, ftpLiveUpdateInterval);
 				lastLiveUpdateTime = timeNow;
 			}
 			if (timer == null) {
