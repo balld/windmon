@@ -1,3 +1,13 @@
+/*
+ * Marconi SC Live Wind Data
+ *
+ * Copyright 2010, David Ball
+ *
+ * Licensed under the GPLv3 licence. See <http://www.gnu.org/licenses/>.
+ */
+ 
+ 
+ 
 /*******************************************************************************
  * Work out the path to this script so we can load associated files such as
  * images that should be in the same folder.
@@ -27,7 +37,7 @@ var mvFrameIntervalMs = 100;  /* 10 fps */
 
 var mvFileRetryIntervalMs = 2000; /* 2 seconds. */
 
-var mvDataFile = "testfile3.php";
+var mvDataFile = "live_update.php";
 
 /*******************************************************************************
  * VARIABLES
@@ -132,7 +142,7 @@ function stateChange() {
                         retryFile();
                     }
                 } else {
-                    log("Invalid data header.");
+                    log("Invalid data header: '" + mvArrReadings[0] + "'");
                     retryFile();
                 }
             } else {
@@ -371,7 +381,7 @@ function initTimeTextDiv(pd) {
 
 function initWeather()
 {
-    var mvDivLog = document.getElementById('log_messages');
+    mvDivLog = document.getElementById('log_messages');
     var divWeather = document.getElementById('weather');
 
     if ( divWeather != null )
@@ -451,6 +461,3 @@ function initWeather()
 
 
 window.onload = initWeather;
-
-
-
