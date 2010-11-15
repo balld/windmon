@@ -46,7 +46,8 @@ public class WindMonitor extends JPanel implements ActionListener
     
     private JMenuItem screenModeMenuItem;
 
-    
+    private FTPTaskQueue ftpQueue = null;
+   
     private JPopupMenu popup;
     
     public WindMonitor()
@@ -169,6 +170,28 @@ public class WindMonitor extends JPanel implements ActionListener
         nmea.addWindDataListener(wdl);
         nmea.addWindDataListener(wdt);
 
+
+        boolean ftpUpload = Config.getParamAsBoolean("FTPUploadToWebYN", false);
+        boolean ftpLiveUpdate = Config.getParamAsBoolean("FTPLiveUpdateYN", false);
+    	String ftpHost = null;
+    	String ftpUser = null;
+    	String ftpPassword = null;
+    	String ftpRemoteDirectory = null;
+        
+        if (ftpUpload || ftpLiveUpdate) {
+        	// FTP fields are mandatory if FTP upload is enabled.
+        	ftpHost = Config.getParamAsString("FTPHost");
+        	ftpUser = Config.getParamAsString("FTPUser");
+        	ftpPassword = Config.getParamAsString("FTPPassword");
+        	ftpRemoteDirectory = Config.getParamAsString("FTPRemoteDirectory", ".");
+			this.ftpQueue = new FTPTaskQueue(ftpHost, ftpUser, ftpPassword, ftpRemoteDirectory);
+        }
+        
+        if (ftpLiveUpdate) {
+        	WindDataLiveUpdate lu = new WindDataLiveUpdate(ftpQueue);
+        	nmea.addWindDataListener(lu);
+        }
+        
         /*
          * Original code logged wind data direct from the NMEA link.
          * To aid stability, logging of data can be moved to external process,
@@ -177,14 +200,13 @@ public class WindMonitor extends JPanel implements ActionListener
         String logMode = Config.getParamAsString("LogMode", "live");
         if ( logMode.compareToIgnoreCase("DB") == 0 )
         {
-        	/* TODO */
-        	WindDataLoggerMySql logger = new WindDataLoggerMySql(plotter, tick);
+			WindDataLoggerMySql logger = new WindDataLoggerMySql(plotter, tick);
         	/* Gets data from DB, so we don't register this logger as
         	 * a WindDataListener */
         }
         else if ( logMode.compareToIgnoreCase("file") == 0 )
         {
-        	WindDataLoggerFile logger = new WindDataLoggerFile(plotter, tick, true);
+        	WindDataLoggerFile logger = new WindDataLoggerFile(plotter, tick, true, ftpQueue);
         	nmea.addWindDataListener(logger);
         }
         else /* ( logMode == "live") */
@@ -194,7 +216,7 @@ public class WindMonitor extends JPanel implements ActionListener
             	EventLog.log(EventLog.SEV_INFO, "Unrecognised LogMode '" +
                         logMode + "'. Using 'live'");
         	}
-        	WindDataLoggerFile logger = new WindDataLoggerFile(plotter, tick, false);
+        	WindDataLoggerFile logger = new WindDataLoggerFile(plotter, tick, false, ftpQueue);
         	nmea.addWindDataListener(logger);
         }
         

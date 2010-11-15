@@ -19,9 +19,10 @@ public class FTPTask {
 
 	private static final int CMD_NOT_SET       = 0;
 	private static final int CMD_SEND          = 1;
-	private static final int CMD_RENAME        = 2;
+	private static final int CMD_REMOTE_RENAME = 2;
 	private static final int CMD_REMOTE_DELETE = 3;
-	private static final int CMD_LOCAL_DELETE  = 4;
+	private static final int CMD_LOCAL_RENAME  = 4;
+	private static final int CMD_LOCAL_DELETE  = 5;
 	
 	private int command = CMD_NOT_SET;
 	private Object arg1 = null;
@@ -29,7 +30,7 @@ public class FTPTask {
 	private Object arg3 = null;
 
 	/**
-	 *  Private constructor. Don't call directly, instatntiate with createFTPTask method. 
+	 *  Private constructor. Don't call directly, instantiate with createFTPTask method. 
 	 */
 	private FTPTask() {
 		super();
@@ -49,8 +50,9 @@ public class FTPTask {
         
 		switch (command) {
 		    case CMD_SEND:          result = executeSend(ftp); break;
-		    case CMD_RENAME:        result = executeRename(ftp); break;
+		    case CMD_REMOTE_RENAME: result = executeRemoteRename(ftp); break;
 		    case CMD_REMOTE_DELETE: result = executeRemoteDelete(ftp); break;
+		    case CMD_LOCAL_RENAME:  result = executeLocalRename(ftp); break;
 		    case CMD_LOCAL_DELETE:  result = executeLocalDelete(ftp); break;
 		    default: EventLog.log(EventLog.SEV_ERROR, "Unknown FTP task type: " + command); break;
 		}
@@ -62,12 +64,16 @@ public class FTPTask {
 		return new FTPTask(CMD_SEND, localFile, remoteFile, new Boolean(binMode));
 	}
 
-	public static FTPTask createRenameTask(String fromFile, String toFile) {
-		return new FTPTask(CMD_RENAME, fromFile, toFile, null);
+	public static FTPTask createRemoteRenameTask(String fromFile, String toFile) {
+		return new FTPTask(CMD_REMOTE_RENAME, fromFile, toFile, null);
 	}
 
 	public static FTPTask createRemoteDeleteTask(String remoteFile) {
 		return new FTPTask(CMD_REMOTE_DELETE, remoteFile, null, null);
+	}
+
+	public static FTPTask createLocalRenameTask(String fromFile, String toFile) {
+		return new FTPTask(CMD_LOCAL_RENAME, fromFile, toFile, null);
 	}
 
 	public static FTPTask createLocalDeleteTask(String localFile) {
@@ -103,7 +109,7 @@ public class FTPTask {
 		return true;
 	}
 	
-	private boolean executeRename(SimpleFTP ftp) {
+	private boolean executeRemoteRename(SimpleFTP ftp) {
 		String fromFile = (String) arg1;
 		String toFile = (String) arg2;
 		
@@ -132,6 +138,28 @@ public class FTPTask {
 		}
 		return true;
 	}
+
+	
+	private boolean executeLocalRename(SimpleFTP ftp) {
+		String fromFile = (String) arg1;
+		String toFile = (String) arg2;
+
+		try {
+        	File f1 = new File(fromFile);
+        	File f2 = new File(toFile);
+        	// This rename is atomic action which indicates all files
+			// are ready
+        	f1.renameTo(f2);
+        	EventLog.log(EventLog.SEV_INFO, "Renamed local file '" + 
+        			fromFile + "' to '" + toFile + "'.");
+		} catch (Exception e) {
+        	EventLog.log(EventLog.SEV_ERROR, "Failed rename local file '" + 
+        			fromFile + "' to '" + toFile + "'.");
+        	return false;
+		}
+		return true;
+	}
+	
 	
 	private boolean executeLocalDelete(SimpleFTP ftp) {
 		String localFile = (String)arg1;

@@ -65,25 +65,10 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     private boolean webOutput = true;
     private String initTickerText;
     private String templatePathname;
-    private boolean ftpUpload = false;
-    private String ftpHost;
-    private String ftpUser;
-    private String ftpPassword;
-    private String ftpRemoteDirectory;
     private String ftpRemoteNameDial;
     private String ftpRemoteNameSpeed;
     private String ftpRemoteNameAngle;
     private String ftpRemoteNameReport;
-    
-    private String ftpRemoteNameLiveUpdate;
-    private boolean ftpLiveUpdate = false;
-    private long ftpLiveUpdateInterval = 0;
-    
-
-    // Live Update Members
-    private long lastLiveUpdateTime = 0;
-    private float maxSpeedSinceLastUpdate = 0.0f;
-    private float maxSpeedSinceLastUpdateAngle = 0.0f;
 
     private DecimalFormat df = new DecimalFormat("0.0");
     private DecimalFormat dfc = new DecimalFormat("000");
@@ -96,13 +81,10 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     
     
 	
-	public WindDataLoggerFile (WindDataPlotter plotter, Ticker ticker, boolean storeDataToFile)
+	public WindDataLoggerFile (WindDataPlotter plotter, Ticker ticker, boolean storeDataToFile, FTPTaskQueue ftp)
 	{
+		this.ftpQueue = ftp;
 		readConfig();
-		
-		if (ftpUpload || ftpLiveUpdate) {
-			this.ftpQueue = new FTPTaskQueue(ftpHost, ftpUser, ftpPassword, ftpRemoteDirectory);
-		}
 		
 		this.plotter = plotter;
         this.ticker = ticker;
@@ -199,50 +181,18 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
         initTickerText = Config.getParamAsString("InitialTickerText", "WindMonitor (c) David Ball 2006");
         templatePathname = Config.getParamAsString("ReportTemplate");
         
-        ftpUpload = Config.getParamAsBoolean("FTPUploadToWebYN", false);
-        ftpLiveUpdate = Config.getParamAsBoolean("FTPLiveUpdateYN", false);
-        
-        if (ftpUpload || ftpLiveUpdate) {
-        	// FTP fields are mandatory if FTP upload is enabled.
-        	ftpHost = Config.getParamAsString("FTPHost");
-        	ftpUser = Config.getParamAsString("FTPUser");
-        	ftpPassword = Config.getParamAsString("FTPPassword");
-        	ftpRemoteDirectory = Config.getParamAsString("FTPRemoteDirectory", ".");
-        }
-        
-        if (ftpUpload) {
+        if (ftpQueue != null) {
             ftpRemoteNameDial = Config.getParamAsString("FTPRemoteNameDial", "dial.png");
             ftpRemoteNameSpeed = Config.getParamAsString("FTPRemoteNameSpeed", "speed.png");
             ftpRemoteNameAngle = Config.getParamAsString("FTPRemoteNameAngle", "angle.png");
             ftpRemoteNameReport = Config.getParamAsString("FTPRemoteNameReport", "report.html");
         }
         
-        if (ftpLiveUpdate) {
-        	ftpRemoteNameLiveUpdate = Config.getParamAsString("FTPRemoteNameLiveUpdate", "live.txt");
-        	ftpLiveUpdateInterval = Config.getParamAsLong("FTPLiveUpdateIntervalSec", 10)*1000;
-        }
-        
-        if (webOutput || ftpUpload) {
+        if (webOutput || ftpQueue != null) {
     		uploadDir = Config.getParamAsString("WindLogUploadDirectory", "/tmp/");
         	Utils.createDirectoryIfNotExists(uploadDir);
         }
-
-		if ( webOutput == true ) {
-			File path = new File(uploadDir);
-			if ( path.exists())	{
-				if ( !path.isDirectory() )	{
-					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' exists but is not a directory");
-				}
-			} else {
-				if ( path.mkdirs() != true ) {
-					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' could not be created");
-				} else {
-					EventLog.log(EventLog.SEV_INFO, "Upload directory '" + uploadDir + "' created");
-				}
-			}
-		}
-        
-        
+       
 		// If timer exists, reset it
 		if ( timer != null ) {
 			assertTimer(true);
@@ -273,10 +223,6 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		synchronized(currentSet)
 		{
 			currentSet.logData(e.getWindSpeed(), e.getWindAngle());
-			if (ftpLiveUpdate && e.getWindSpeed() > maxSpeedSinceLastUpdate) {
-				maxSpeedSinceLastUpdate = e.getWindSpeed();
-				maxSpeedSinceLastUpdateAngle = e.getWindAngle();
-			}
 		}
 
 		// Start timer on receipt of message
@@ -286,49 +232,6 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 	public void run()
 	{
 		long timeNow = System.currentTimeMillis();
-		//
-		// Live Update
-		//
-		if (ftpLiveUpdate) {
-			long liveElapsed = timeNow - lastLiveUpdateTime;
-			if (liveElapsed >= ftpLiveUpdateInterval) {
-				float updateSpeed = 0.0f;
-				float updateAngle = 0.0f;
-				synchronized(currentSet) {
-					updateSpeed = maxSpeedSinceLastUpdate;
-					updateAngle = maxSpeedSinceLastUpdateAngle;
-					lastLiveUpdateTime = timeNow;
-					maxSpeedSinceLastUpdate = 0;
-				}
-				// TODO - Do live update
-				EventLog.log(EventLog.SEV_INFO, "Live Update: Speed=" + updateSpeed + ", Angle=" + updateAngle);
-
-				String fnameDate = fnameDateFormat.format(new Date(timeNow));
-                String localFname = uploadDir + "/" + fnameDate + "_live.csv";
-                String remoteFnameTmp = fnameDate + "_live.tmp";
-    			String updateDate = labelDateFormat.format(new Date(timeNow));
-				
-                try	{
-                	PrintWriter pw = new PrintWriter(
-                			new FileWriter(localFname, false));
-                	pw.println(updateDate + "," 
-                			   + df.format(updateSpeed) + ","
-                			   + dfc.format(updateAngle));
-                	pw.close();
-				} catch (Exception e) {
-                	EventLog.log(EventLog.SEV_ERROR,
-                			"Could not write file '" + localFname + "': " + e.getMessage());
-				}
-
-				ftpQueue.addTask(FTPTask.createSendTask(localFname, remoteFnameTmp, false));
-            	ftpQueue.addTask(FTPTask.createRemoteDeleteTask(ftpRemoteNameLiveUpdate));
-            	ftpQueue.addTask(FTPTask.createRenameTask(remoteFnameTmp, ftpRemoteNameLiveUpdate));
-            	ftpQueue.addTask(FTPTask.createLocalDeleteTask(localFname));
-			} else {
-				EventLog.log(EventLog.SEV_DEBUG, "Live Update: Timer expired but no ready. Elapsed=" + liveElapsed);				
-			}
-		}
-
 
 		//
 		// Periodic plot update
@@ -422,7 +325,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     					"Today's peak windspeed " + df.format(dayMax.getMaxSpeed()) + " knots (F" + Utils.speedToBeaufort(dayMax.getMaxSpeed()) + ") recorded at " + maxWindDate);
             }
 			
-            if ( webOutput || ftpUpload)
+            if ( webOutput || ftpQueue != null)
             {
                 // Draw dial image to bdg
                 dial.setWindAngle(rec.getAveAngle());
@@ -478,7 +381,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 
                 
                 
-                if (ftpUpload) {
+                if (ftpQueue != null) {
                 	//
                 	// GUI to upload files to FTP site.
                 	//
@@ -499,10 +402,10 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 	ftpQueue.addTask(FTPTask.createRemoteDeleteTask(ftpRemoteNameAngle));
                 	ftpQueue.addTask(FTPTask.createRemoteDeleteTask(ftpRemoteNameReport));
 
-                	ftpQueue.addTask(FTPTask.createRenameTask(remDialfname, ftpRemoteNameDial));
-                	ftpQueue.addTask(FTPTask.createRenameTask(remSpeedfname, ftpRemoteNameSpeed));
-                	ftpQueue.addTask(FTPTask.createRenameTask(remAnglefname, ftpRemoteNameAngle));
-                	ftpQueue.addTask(FTPTask.createRenameTask(remTxtfname, ftpRemoteNameReport));
+                	ftpQueue.addTask(FTPTask.createRemoteRenameTask(remDialfname, ftpRemoteNameDial));
+                	ftpQueue.addTask(FTPTask.createRemoteRenameTask(remSpeedfname, ftpRemoteNameSpeed));
+                	ftpQueue.addTask(FTPTask.createRemoteRenameTask(remAnglefname, ftpRemoteNameAngle));
+                	ftpQueue.addTask(FTPTask.createRemoteRenameTask(remTxtfname, ftpRemoteNameReport));
                 	
             		// Don't need to keep web files if Web Output parameter is not set.
                 	if (!webOutput) {
@@ -510,7 +413,6 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                     	ftpQueue.addTask(FTPTask.createLocalDeleteTask(speedfname));
                     	ftpQueue.addTask(FTPTask.createLocalDeleteTask(anglefname));
                     	ftpQueue.addTask(FTPTask.createLocalDeleteTask(txtfname));
-                    	ftpQueue.addTask(FTPTask.createLocalDeleteTask(triggerfname));
                 	}
                 }
                 
@@ -528,12 +430,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                     	pw.println(dialfname);
                     	pw.println(txtfname);
                     	pw.close();
-                    	
-                    	File tmpFile = new File(tmpname);
-                    	File triggerFile = new File(triggerfname);
-                    	// This rename is atomic action which indicates all files
-    					// are ready
-                    	tmpFile.renameTo(triggerFile);
+                    	ftpQueue.addTask(FTPTask.createLocalRenameTask(tmpname, triggerfname));
     				} catch (Exception e) {
                     	EventLog.log(EventLog.SEV_ERROR,
                     			"Could not write file '" + triggerfname + "'");
@@ -573,15 +470,10 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		if ( timer == null || reset)
 		{
 			long timeNow = System.currentTimeMillis();
-			long actualInterval = recordInterval;
-			if (ftpLiveUpdate) {
-				actualInterval = Utils.gcd(actualInterval, ftpLiveUpdateInterval);
-				lastLiveUpdateTime = timeNow;
-			}
 			if (timer == null) {
 				timer = new Timer();
 			}
-            timer.schedule(this, new Date(timeNow + actualInterval), actualInterval);
+            timer.schedule(this, new Date(timeNow + recordInterval), recordInterval);
 		}
 	}
 }
