@@ -1,7 +1,6 @@
 /*
  * Marconi SC Live Wind Data
- * $Id: liveupdate.js,v 1.3 2010/11/15 22:04:39 david Exp $
- 
+ * $Id: liveupdate.js,v 1.4 2010/11/15 22:05:00 david Exp $
  *
  * Copyright 2010, David Ball
  *
