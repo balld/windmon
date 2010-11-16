@@ -1,6 +1,6 @@
 /*
  * Marconi SC Live Wind Data
- * $Id: liveupdate.js,v 1.4 2010/11/15 22:05:00 david Exp $
+ * $Id: liveupdate.js,v 1.5 2010/11/16 00:26:22 david Exp $
  *
  * Copyright 2010, David Ball
  *
@@ -38,7 +38,7 @@ var mvFrameIntervalMs = 100;  /* 10 fps */
 
 var mvFileRetryIntervalMs = 2000; /* 2 seconds. */
 
-var mvDataFile = "live_update.php";
+var mvDataFile = "http://www.marconi-sc.org.uk/WeatherStation/live_update.php";
 
 /*******************************************************************************
  * VARIABLES
@@ -110,6 +110,14 @@ if (mvXmlHttp == null && mvMSHttpInitFailed == false ) {
 /*******************************************************************************
  * FUNCTIONS
  ******************************************************************************/
+function log(s)
+{
+	var txt=document.createTextNode((new Date()).toLocaleString() + " : " + s + "\n");
+    if (mvDivLog) {
+        mvDivLog.appendChild(txt)
+    }
+}
+
 
 function toRadians(pDeg) {
     return (Math.PI * pDeg / 180.0)
@@ -328,13 +336,6 @@ function animate() {
     }
 }
 
-
-function log(s)
-{
-    if (mvDivLog) {
-        mvDivLog.innerHTML=s;
-    }
-}
 
 function initDiv(pd)
 {
