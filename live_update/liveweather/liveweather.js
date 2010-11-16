@@ -1,6 +1,6 @@
 /*
  * Marconi SC Live Wind Data
- * $Id: liveweather.js,v 1.1 2010/11/16 00:31:50 david Exp $
+ * $Id: liveweather.js,v 1.2 2010/11/16 01:26:23 david Exp $
  *
  * Copyright 2010, David Ball
  *
@@ -39,6 +39,8 @@ var mvFrameIntervalMs = 100;  /* 10 fps */
 var mvFileRetryIntervalMs = 2000; /* 2 seconds. */
 
 var mvDataFile = "http://www.marconi-sc.org.uk/WeatherStation/live_update.php";
+// var mvDataFile = "live_update.php";
+
 
 /*******************************************************************************
  * VARIABLES
@@ -51,6 +53,8 @@ var mvArrReadings = null; // Array();
 var mvCtxDir = null;
 var mvCtxSpeed = null;
 
+var mvTextDivWidth = 0;
+var mvTextDivHeight = 0;
 var mvWidth = 0;
 var mvHeight = 0;
 var mvInterval = null;
@@ -148,15 +152,15 @@ function stateChange() {
                         animate();
                     } else {
                         log("No new data available.");
-                        retryFile();
+                        retryFile(0);
                     }
                 } else {
                     log("Invalid data header: '" + mvArrReadings[0] + "'");
-                    retryFile();
+                    retryFile(0);
                 }
             } else {
                 log("Invalid or empty data file.");
-                retryFile();
+                retryFile(0);
             }
         } else {
             log("State change whilst still processing last file.");
@@ -240,7 +244,7 @@ function draw(tm, speed, angle) {
     mvCtxDir.fill();
     mvCtxDir.restore();
     
-    mvDivDirText.innerHTML = roundNumber(angle,0) + "&deg;";
+    mvDivDirText.innerHTML = "Direction: " + roundNumber(angle,0) + "&deg;";
 
 
     /*
@@ -266,7 +270,7 @@ function draw(tm, speed, angle) {
     mvCtxSpeed.fill();
     mvCtxSpeed.restore();
 
-    mvDivSpeedText.innerHTML = roundNumber(speed,0) + "kts";
+    mvDivSpeedText.innerHTML = "Speed: " + roundNumber(speed,0) + "kts";
 }
 
 
@@ -337,46 +341,55 @@ function animate() {
 }
 
 
-function initDiv(pd)
+function initDialDiv(pd)
 {
     pd.style.position = "absolute";
     pd.style.top = 0;
     pd.style.left = 0;
     pd.style.width = mvWidth;
-    pd.style.height = mvWidth;
+    pd.style.height = mvHeight;
 }
+
+function initTextDiv(pd) {
+    pd.style.position = "absolute";
+    pd.style.bottom = 0;
+    pd.style.left = 0;
+    pd.style.width = mvTextDivWidth;
+    pd.style.height = mvTextDivHeight;
+}
+
 
 function initDirTextDiv(pd) {
     pd.style.position = "absolute";
-    pd.style.bottom = mvWidth/100;
-    pd.style.right = mvWidth/50;
+    pd.style.top = mvTextDivWidth/100;
+    pd.style.left = mvTextDivWidth/50;
     pd.style.fontFamily = '"Arial", sans-serif';
-    pd.style.fontSize = (mvWidth / 17) + 'px';
+    pd.style.fontSize = (mvTextDivHeight / 3) + 'px';
 }
 
 
 function initSpeedTextDiv(pd) {
     pd.style.position = "absolute";
-    pd.style.bottom = mvWidth/100;
-    pd.style.left = mvWidth/50;
+    pd.style.bottom = mvTextDivWidth/100;
+    pd.style.left = mvTextDivWidth/50;
     pd.style.fontFamily = '"Arial", sans-serif';
-    pd.style.fontSize = (mvWidth / 17) + 'px';
+    pd.style.fontSize = (mvTextDivHeight / 3) + 'px';
 }
 
 function initDateTextDiv(pd) {
     pd.style.position = "absolute";
-    pd.style.top = mvWidth/100;
-    pd.style.left = mvWidth/50;
+    pd.style.top = mvTextDivWidth/100;
+    pd.style.right = mvTextDivWidth/50;
     pd.style.fontFamily = '"Arial", sans-serif';
-    pd.style.fontSize = (mvWidth / 17) + 'px';
+    pd.style.fontSize = (mvTextDivHeight / 3) + 'px';
 }
 
 function initTimeTextDiv(pd) {
     pd.style.position = "absolute";
-    pd.style.top = mvWidth/100;
-    pd.style.right = mvWidth/50;
+    pd.style.bottom = mvTextDivWidth/100;
+    pd.style.right = mvTextDivWidth/50;
     pd.style.fontFamily = '"Arial", sans-serif';
-    pd.style.fontSize = (mvWidth / 17) + 'px';
+    pd.style.fontSize = (mvTextDivHeight / 3) + 'px';
 }
 
 
@@ -390,41 +403,56 @@ function initWeather()
     {
         log ('Have weather div');
 
-        divWeather.innerHTML='<img src="' + mvScriptDir + 'bezel_image.png" style="vertical-align:middle; height:100%">';
+        var divWidth = parseInt(divWeather.style.width);
+        var divHeight = parseInt(divWeather.style.height);
+        
+        mvTextDivHeight = divWidth / 5;
+        mvTextDivWidth = divWidth;
+        
+        mvWidth = divWidth;
+        mvHeight = mvWidth;
+        
+        divWeather.style.height = mvTextDivHeight + mvHeight;
 
-        mvWidth = parseInt(divWeather.style.width);
-        mvHeight = parseInt(divWeather.style.height);
-
+        var divDial = document.createElement('div');
         var divDirImage = document.createElement('div');
         var divCanvasDir = document.createElement('div');
         var divSpeedImage = document.createElement('div');
         var divCanvasSpeed = document.createElement('div');
         
-        initDiv(divDirImage);
-        initDiv(divCanvasDir);
-        initDiv(divSpeedImage);
-        initDiv(divCanvasSpeed);
+        initDialDiv(divDial);
+        initDialDiv(divDirImage);
+        initDialDiv(divCanvasDir);
+        initDialDiv(divSpeedImage);
+        initDialDiv(divCanvasSpeed);
 
-        divWeather.appendChild(divDirImage);
-        divWeather.appendChild(divCanvasDir);
-        divWeather.appendChild(divSpeedImage);
-        divWeather.appendChild(divCanvasSpeed);
-
+        divDial.innerHTML='<img src="' + mvScriptDir + 'bezel_image.png" style="vertical-align:middle; height:100%">';
+        divDial.appendChild(divDirImage);
+        divDial.appendChild(divCanvasDir);
+        divDial.appendChild(divSpeedImage);
+        divDial.appendChild(divCanvasSpeed);
+        divWeather.appendChild(divDial);
+        
+        var divText = document.createElement('div');
+        initTextDiv(divText);
+        divText.innerHTML='<img src="' + mvScriptDir + 'bezel_image.png" style="width:100%; height:100%">';
+        divWeather.appendChild(divText);
+        
         mvDivDirText = document.createElement('div');
         initDirTextDiv(mvDivDirText);
-        divWeather.appendChild(mvDivDirText);
+        divText.appendChild(mvDivDirText);
 
         mvDivSpeedText = document.createElement('div');
         initSpeedTextDiv(mvDivSpeedText);
-        divWeather.appendChild(mvDivSpeedText);
+        divText.appendChild(mvDivSpeedText);
 
         mvDivDateText = document.createElement('div');
         initDateTextDiv(mvDivDateText);
-        divWeather.appendChild(mvDivDateText);
+        divText.appendChild(mvDivDateText);
 
         mvDivTimeText = document.createElement('div');
         initTimeTextDiv(mvDivTimeText);
-        divWeather.appendChild(mvDivTimeText);
+        divText.appendChild(mvDivTimeText);
 
 
         divDirImage.innerHTML='<img src="' + mvScriptDir + 'dir_image.png" style="vertical-align:middle; height:100%">';
@@ -460,6 +488,5 @@ function initWeather()
     }
     fetchData();
 }
-
 
 window.onload = initWeather;
