@@ -1,6 +1,6 @@
 /*
  * Marconi SC Live Wind Data
- * $Id: liveupdate.js,v 1.1 2010/11/16 00:28:25 david Exp $
+ * $Id: liveweather.js,v 1.1 2010/11/16 00:31:50 david Exp $
  *
  * Copyright 2010, David Ball
  *
@@ -384,7 +384,7 @@ function initTimeTextDiv(pd) {
 function initWeather()
 {
     mvDivLog = document.getElementById('log_messages');
-    var divWeather = document.getElementById('weather');
+    var divWeather = document.getElementById('live_weather');
 
     if ( divWeather != null )
     {
