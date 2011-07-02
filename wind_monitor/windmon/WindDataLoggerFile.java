@@ -236,8 +236,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		//
 		// Periodic plot update
 		//
-		if ( currentSet != null 
-			 && timeNow - currentSet.startPeriod >= recordInterval)
+		if ( currentSet != null )
 		{
             // Minimum synchronised block on currentSet. We copy data,
             // reset and then release it so that we can continue to log

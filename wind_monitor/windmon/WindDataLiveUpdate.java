@@ -93,8 +93,7 @@ public class WindDataLiveUpdate extends TimerTask implements WindDataListener {
 	{
 		long timeNow = System.currentTimeMillis();
 
-		if ( currentSet != null 
-			 && timeNow - currentSet.startPeriod >= ftpLiveUpdateInterval)
+		if ( currentSet != null )
 		{
             // Minimum synchronised block on currentSet. We copy data,
             // reset and then release it so that we can continue to log
@@ -111,6 +110,8 @@ public class WindDataLiveUpdate extends TimerTask implements WindDataListener {
 			if ( rec.getNumReadings() > 0 ) {
 				// Add records to the set of records.
 				dataRecords.add(rec);
+            	EventLog.log(EventLog.SEV_DEBUG,
+            			     "Adding live update record number " + dataRecords.size() + ". Contains " + rec.getNumReadings() + " readings.");
 			}
 			
 			// If we he defined number of readings. Create and upload the file.

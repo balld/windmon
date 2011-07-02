@@ -224,14 +224,6 @@ public class WindDial extends JPanel implements WindDataListener {
         
         // Create Graphics2D object for advanced rendering.
         Graphics2D g2 = (Graphics2D) g;
-
-        // Indicates frmae re-draw
-//        g2.setColor(Color.GREEN);
-//        if ( toggle )
-//        {
-//            g2.fillRect(0,0,20,20);
-//        }
-//        toggle = !toggle;
         
         // Obtain the current size of this component
         Dimension size = getSize();
@@ -567,7 +559,7 @@ public class WindDial extends JPanel implements WindDataListener {
                                      - 90.0 - s_zero_angle, -360.0 + 2.0*s_zero_angle,
                                      Arc2D.OPEN );
         
-        // Caclulate number of degrees deflection per wind-speed knot.
+        // Calculate number of degrees deflection per wind-speed knot.
         double deg_per_k = (360.0 - (2.0 * s_zero_angle))/max_speed;
         // Create temporary graphics object to apply transforms
         Graphics2D temp_g = (Graphics2D) s_dial_g.create();
@@ -688,7 +680,7 @@ public class WindDial extends JPanel implements WindDataListener {
         s_dial_g.setColor(scale_col);
         TextLayout tl1 = new TextLayout("knots",
                                         scale_font,
-                                        temp_g.getFontRenderContext());
+                                        s_dial_g.getFontRenderContext());
         tl1.draw(s_dial_g,
                  (float) (centre.x - tl1.getBounds().getCenterX()),
                  (float) (centre.y + s_digit_offset - tl1.getBounds().getHeight()));
@@ -696,7 +688,7 @@ public class WindDial extends JPanel implements WindDataListener {
         s_dial_g.setColor(scale_col);
         TextLayout tl2 = new TextLayout("Beaufort",
                                         scale_font,
-                                        temp_g.getFontRenderContext());
+                                        s_dial_g.getFontRenderContext());
         tl2.draw(s_dial_g,
                  (float) (centre.x - tl2.getBounds().getCenterX()),
                  (float) (centre.y + s_bdigit_offset - tl2.getBounds().getHeight()));
