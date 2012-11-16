@@ -17,9 +17,10 @@ import javax.swing.JLabel;
  * Subclass of JLabel that applies antialiasing by default when drawing.
  */
 public class SmoothLabel extends JLabel {
-
     
-    /**
+	private static final long serialVersionUID = 1L;
+
+	/**
      * 
      */
     public SmoothLabel() {

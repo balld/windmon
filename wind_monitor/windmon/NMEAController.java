@@ -3,7 +3,8 @@
  */
 package windmon;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author BallD
@@ -23,7 +24,7 @@ public class NMEAController implements Runnable {
     private NMEALink link = null;
     private long retryInterval = 0;
     
-    private Vector listeners = new Vector();
+    private List<WindDataListener> listeners = new ArrayList<WindDataListener>();
     
     private NMEAController (NMEALink link)
     {

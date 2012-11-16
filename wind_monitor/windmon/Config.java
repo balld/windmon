@@ -20,7 +20,7 @@ public class Config {
 	private static final String filename = "windmon.cfg";
 	private static final String homeDirVar="%HOME%";
 	private static final String homeDir = System.getProperties().getProperty("user.home", "/");
-	private static Hashtable params;
+	private static Hashtable<String,String> params;
 	
 	private Config()
 	{
@@ -29,7 +29,7 @@ public class Config {
 	public static void loadConfig()
 	{
 		BufferedReader br;
-		params = new Hashtable();
+		params = new Hashtable<String,String>();
         // String homeDir = System.getProperties().getProperty("user.home", "/");
         String path = homeDir + "/" + filename;
         EventLog.log(EventLog.SEV_INFO, "Config file is '" + path + "'");

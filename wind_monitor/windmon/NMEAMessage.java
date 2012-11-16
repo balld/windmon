@@ -4,7 +4,8 @@
  */
 package windmon;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author BallD
@@ -27,8 +28,6 @@ public class NMEAMessage
     
     // When true, message content is believed valid and correct.
     private boolean valid = false;
-    // When true, message string requires update to match parameters.
-    private boolean reform = true;
     
     // Constructor for standard message from parts
     public NMEAMessage(String talkerID, String sentenceID, String fields[])
@@ -88,7 +87,7 @@ public class NMEAMessage
     private boolean parseString(String str)
     {
         int i=0;
-        Vector vflds = new Vector();
+        List<String> vflds = new ArrayList<String>();
         
         // Check for "$" in first character
         if ( str.length() <= 0 || str.charAt(0) != '$')
@@ -168,12 +167,12 @@ public class NMEAMessage
                 }
             } while ( i >= 0 );
         }
-        fields = new String[vflds.size()];
-        vflds.copyInto(fields);
+        fields = (String[]) vflds.toArray(new String[vflds.size()]);
         return true;
     }
 
-    private void reset()
+    @SuppressWarnings("unused")
+	private void reset()
     {
         fields = null;
         proprietary = false;

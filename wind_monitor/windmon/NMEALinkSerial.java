@@ -33,8 +33,10 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
 	
     private String portName;
     private int baudRate;
-    private int flowControlIn;
-    private int flowControlOut;
+    @SuppressWarnings("unused")
+	private int flowControlIn;
+    @SuppressWarnings("unused")
+	private int flowControlOut;
     private int databits;
     private int stopbits;
     private int parity;

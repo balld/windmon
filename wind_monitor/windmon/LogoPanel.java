@@ -20,7 +20,9 @@ import javax.swing.JPanel;
  */
 public class LogoPanel extends JPanel
 {
-    private static int border_width = 5;
+	private static final long serialVersionUID = 1L;
+	
+	private static int border_width = 5;
     private Image      logo = null;
     private Image      logo_text = null;
 

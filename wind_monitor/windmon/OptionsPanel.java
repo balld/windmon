@@ -15,7 +15,9 @@ import java.awt.event.*;
  */
 public class OptionsPanel extends JPanel implements ActionListener
 {
-    private NMEAController nmea = null;
+	private static final long serialVersionUID = 1L;
+	
+	private NMEAController nmea = null;
     private static final int fieldSize = 5;
     private static final String defaultFieldText = "Not Set"; 
     

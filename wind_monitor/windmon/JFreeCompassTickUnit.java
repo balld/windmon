@@ -14,7 +14,8 @@ import org.jfree.chart.axis.NumberTickUnit;
  * points in place of degrees.
  */
 public class JFreeCompassTickUnit extends NumberTickUnit {
-	
+	private static final long serialVersionUID = 1L;
+
 	private static final String[] COMPASS_POINTS_22_5 = {
 			"  N", //   0.0
 			"NNE", //  22.5
@@ -45,7 +46,6 @@ public class JFreeCompassTickUnit extends NumberTickUnit {
 	
 	public java.lang.String valueToString(double value)
 	{
-		double cval = 0;
 		String label = null;
 		
 		// Value may be outside 0 - 359.9999 degrees. Calculate modulo

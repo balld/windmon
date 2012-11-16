@@ -10,7 +10,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.RenderingHints;
 import java.text.DecimalFormat;
 
 import javax.swing.BorderFactory;
@@ -26,26 +25,19 @@ import javax.swing.border.BevelBorder;
  * digital-style numercical display.
  */
 public class WindDigits2 extends JPanel implements WindDataListener {
+	private static final long serialVersionUID = 1L;
 
-//    private static final Dimension ps = new Dimension(300,300);
+	//    private static final Dimension ps = new Dimension(300,300);
     private static int l_font_size = 120;
     private static int s_font_size = 20;
-    
-    private static int line_spacing = 20;
-    private static int alignment = 25;
     
     // Repaint on every n wind data events
     private static final int sample_interval = 10;
     private int sample_count = sample_interval;
 
-    private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
-    private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
-    private boolean anti_alias = true;
-    
     private Font b_font = null;
     private Font l_font = null;
     private Font s_font = null;
-    private Font deg_font = new Font("serif", Font.PLAIN, 56);
     
     // Labels
     private SmoothLabel label_kts, label_deg, label_beauf, label_comp;

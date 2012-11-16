@@ -6,12 +6,16 @@
  */
 package windmon;
 
-import javax.swing.JPanel;
-import java.awt.*;
-import java.awt.font.*;
-// import java.awt.geom.*;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.font.TextLayout;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+
+import javax.swing.JPanel;
 
 
 /**
@@ -27,7 +31,6 @@ public class DigitalClock extends JPanel implements Runnable {
 	private static final long serialVersionUID = 3588190825599838664L;
 	private static final Dimension ps = new Dimension(525,30);
     private static int l_font_size = 48;
-    private static int s_font_size = 24;
 
     // Check for update every second
     private static final long sleepAmount = 1000;
@@ -38,15 +41,12 @@ public class DigitalClock extends JPanel implements Runnable {
     
     private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
     private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
-    private boolean anti_alias = true;
     
     private Font b_font = null;
     private Font l_font = null;
-    private Font s_font = null;
     
     
     private long now = -1;
-    private long last = -1;
 
     private Thread thread = null;
     
@@ -55,9 +55,6 @@ public class DigitalClock extends JPanel implements Runnable {
         setDoubleBuffered(true);
         b_font = Utils.getFont("LCD-N___.TTF");
         l_font = b_font.deriveFont(Font.PLAIN, l_font_size);
-        s_font = b_font.deriveFont(Font.PLAIN, s_font_size);
-        
-        last = System.currentTimeMillis();
     }
 
     

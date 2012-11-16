@@ -18,8 +18,6 @@ public class NMEALinkSocket implements NMEALink, Runnable
     private String host = null;
     private Socket nmeaSocket = null;
     
-    private boolean openFlag = false;
-    
     private InputStream is = null;
     private BufferedReader br = null;
     private PrintStream ps = null;

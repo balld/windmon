@@ -6,6 +6,13 @@
  */
 package windmon;
 
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -14,20 +21,12 @@ import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.lang.reflect.Array;
-import java.util.Date;
-import java.util.Vector;
-// import java.sql.*;
 
 import org.jfree.chart.ChartUtilities;
 
@@ -57,7 +56,7 @@ public class WindDataLoggerMySql extends TimerTask {
 
 	private WindDataRecord dayMax = null;
 
-	private Vector dataRecords;
+	private List<WindDataRecord> dataRecords;
 	private WindDataPlotter plotter;
 	private Ticker ticker;
 
@@ -317,7 +316,7 @@ public class WindDataLoggerMySql extends TimerTask {
 
 	WindDataRecord[] selectWindData(long from)
 	{
-		Vector dataVec = new Vector();
+		List<WindDataRecord> dataVec = new ArrayList<WindDataRecord>();
 		
 		String fromDTM = mySqlDTMFormat.format(new Date(from));
 
@@ -340,10 +339,7 @@ public class WindDataLoggerMySql extends TimerTask {
 			EventLog.log(EventLog.SEV_ERROR, "Exception selecting wind plot data. " + e);
 			return null;
 		}
-
-		WindDataRecord data[] = (WindDataRecord[]) Array.newInstance(WindDataRecord.class,
-				dataVec.size());
-		dataVec.copyInto(data);
+		WindDataRecord data[] = (WindDataRecord[]) dataVec.toArray(new WindDataRecord[dataVec.size()]);
 		
 		return data;
 	}
@@ -524,9 +520,7 @@ public class WindDataLoggerMySql extends TimerTask {
 	 */
 	public void setPlotter(WindDataPlotter plotter) {
 		this.plotter = plotter;
-		WindDataRecord data[] = (WindDataRecord[]) Array.newInstance(WindDataRecord.class,
-				dataRecords.size());
-		dataRecords.copyInto(data);
+		WindDataRecord data[] = (WindDataRecord[]) dataRecords.toArray(new WindDataRecord[dataRecords.size()]);
 
 		plotter.plotData( data );
 	}

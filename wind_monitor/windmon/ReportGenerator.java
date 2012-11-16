@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author david
@@ -36,7 +37,7 @@ public class ReportGenerator {
 	public static final String DAY_PEAK_TM  = "day_peak_tm";
 	
 	/* Hold data values */
-	private static HashMap map = new HashMap();
+	private static Map<String,String> map = new HashMap<String,String>();
 	
 	/**
 	 * 

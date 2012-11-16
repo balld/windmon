@@ -10,9 +10,10 @@ import java.awt.Rectangle;
 import java.io.File;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -69,7 +70,7 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 	private NumberAxis angleBearingAxis;
     
     // Need to store number Axis and update
-    private Vector numberAxisVec = new Vector();
+    private List<NumberAxis> numberAxisVec = new ArrayList<NumberAxis>();
 
     public WindDataPlotterJFreeChart()
     {
@@ -411,14 +412,15 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
         numberAxisVec.add(na);
     }
     
-    private void removeNumberAxis(NumberAxis na)
+    @SuppressWarnings("unused")
+	private void removeNumberAxis(NumberAxis na)
     {
         numberAxisVec.remove(na);
     }
     
     private void setNumberAxisUpperBound(double d)
     {
-        Iterator iter = numberAxisVec.iterator();
+        Iterator<NumberAxis> iter = numberAxisVec.iterator();
         while ( iter.hasNext() )
         {
             ((NumberAxis) iter.next()).setUpperBound(d);

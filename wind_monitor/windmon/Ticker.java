@@ -16,6 +16,7 @@ import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.swing.JPanel;
 
@@ -29,8 +30,9 @@ import javax.swing.JPanel;
  * repeats over again in a continuous loop.
  */
 public class Ticker extends JPanel implements Runnable {
+	private static final long serialVersionUID = 1L;
 
-    private static final Dimension ps = new Dimension(400,30);
+	private static final Dimension ps = new Dimension(400,30);
     private static int l_font_size = 25;
 
     // Check for update every second
@@ -48,13 +50,11 @@ public class Ticker extends JPanel implements Runnable {
     
     private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
     private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
-    private boolean anti_alias = true;
     
     private Font b_font = null;
     private Font l_font = null;
     
     private long now = -1;
-    private long last = -1;
 
     private String    text = "Set some text please! This is just some dummy text that I have entered to show how this ticker display will work. Hum dee hum dee hum";
     private Image     textImg = null;
@@ -63,8 +63,8 @@ public class Ticker extends JPanel implements Runnable {
     
     private Thread thread = null;
     
-    private HashMap stringsMap = new HashMap();
-    private Iterator stringsItr = null;
+    private Map<Object,String> stringsMap = new HashMap<Object,String>();
+    private Iterator<String> stringsItr = null;
     
     public Ticker()
     {
@@ -73,8 +73,6 @@ public class Ticker extends JPanel implements Runnable {
 
         b_font = Utils.getFont("LCD-N___.TTF");
         l_font = b_font.deriveFont(Font.PLAIN, l_font_size);
-        
-        last = System.currentTimeMillis();
     }
 
     public void readConfig()

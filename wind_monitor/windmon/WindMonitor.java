@@ -200,7 +200,7 @@ public class WindMonitor extends JPanel implements ActionListener
         String logMode = Config.getParamAsString("LogMode", "live");
         if ( logMode.compareToIgnoreCase("DB") == 0 )
         {
-			WindDataLoggerMySql logger = new WindDataLoggerMySql(plotter, tick);
+			new WindDataLoggerMySql(plotter, tick);
         	/* Gets data from DB, so we don't register this logger as
         	 * a WindDataListener */
         }
@@ -238,7 +238,7 @@ public class WindMonitor extends JPanel implements ActionListener
     
     public static void main(String args[])
     {
-    	WindMonitor wm = new WindMonitor();
+    	new WindMonitor();
     }
     
     // Handle actions from popup menu items

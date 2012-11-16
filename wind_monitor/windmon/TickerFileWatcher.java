@@ -66,7 +66,6 @@ public class TickerFileWatcher implements Runnable {
         Thread me = Thread.currentThread();
         boolean opened = false;
 
-        long lastIntervalNum = 0;
         while (thread == me)
         {
             if ( filename != null && ticker != null )

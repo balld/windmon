@@ -18,7 +18,10 @@ import javax.swing.border.*;
  */
 public class TestApp extends JWindow
 {
-    private static int WIDTH = 850, HEIGHT = 600;
+    private static final long serialVersionUID = 1L;
+    
+	@SuppressWarnings("unused")
+	private static int WIDTH = 850, HEIGHT = 600;
     
     public TestApp()
     {
@@ -58,7 +61,6 @@ public class TestApp extends JWindow
         Border border = BorderFactory.createBevelBorder(BevelBorder.LOWERED,
                 new Color(100, 100, 255),
                 new Color(50, 50, 128));
-        Insets insets = new Insets(5,5,5,5);
 
         WindDial wd = new WindDial();
         wd.setBorder(border);
@@ -71,6 +73,6 @@ public class TestApp extends JWindow
     
     public static void main(String args[])
     {
-    	TestApp wm = new TestApp();
+    	new TestApp();
     }
 }
