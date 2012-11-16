@@ -9,14 +9,11 @@ Since the GPL may be too restrictive for use in a proprietary application,
 a commercial license is also provided. Full license information can be
 found at http://www.jibble.org/licenses/
 
-$Author: david $
-$Id: SimpleFTP.java,v 1.2 2010/11/07 20:54:32 david Exp $
-
 ********************************************************************************
 
 Extended by David Ball, 2010
 
-Added method to rename and delete remote files.
+Added methods to rename and delete remote files.
 
 */
 
