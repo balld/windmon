@@ -1,21 +1,8 @@
-/*
- * Created on 09-Feb-2005
- */
 package windmon;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author BallD
- *
- * Singleton (sort of!) class that controls connection to the NMEA masthead 
- * device.
- * Reads messages from the specified NMEALink and dispatches them to registered
- * listeners.
- * Also provides methods to send (write) a limited set of commands to the NMEA 
- * device via the link.
- */
 public class NMEAController implements Runnable {
 
 	private static NMEAController instance = null;
@@ -211,9 +198,7 @@ public class NMEAController implements Runnable {
     
     protected void dispatchWindDataEvent(float angle, float speed)
     {
-        WindDataEvent wde = new WindDataEvent();
-        wde.setWindAngle(angle);
-        wde.setWindSpeed(speed);
+        WindDataEvent wde = new WindDataEvent(speed, angle);
         for (int i = 0; i < listeners.size(); i++)
         {
             ((WindDataListener)listeners.get(i)).windDataEventReceived(wde);

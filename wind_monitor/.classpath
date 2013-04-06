@@ -2,5 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path=""/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/usr/share/java/RXTXcomm.jar"/>
+	<classpathentry kind="lib" path="jars/JFree/jcommon-1.0.17.jar"/>
+	<classpathentry kind="lib" path="jars/JFree/jfreechart-1.0.14.jar"/>
 	<classpathentry kind="output" path=""/>
 </classpath>

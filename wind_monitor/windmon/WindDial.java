@@ -1,17 +1,27 @@
-/*
- * Created on 30-Jan-2005
- */
 package windmon;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import java.awt.*;
-import java.awt.geom.*;
-import java.awt.image.BufferedImage;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Transparency;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
+import java.awt.image.BufferedImage;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 /**
  * @author David Ball
@@ -224,6 +234,14 @@ public class WindDial extends JPanel implements WindDataListener {
         
         // Create Graphics2D object for advanced rendering.
         Graphics2D g2 = (Graphics2D) g;
+
+        // Indicates frmae re-draw
+//        g2.setColor(Color.GREEN);
+//        if ( toggle )
+//        {
+//            g2.fillRect(0,0,20,20);
+//        }
+//        toggle = !toggle;
         
         // Obtain the current size of this component
         Dimension size = getSize();

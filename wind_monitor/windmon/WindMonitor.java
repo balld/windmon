@@ -1,25 +1,29 @@
-/*
- * @(#)WindMonitor.java	0.1 26/01/2005
- * 
- * Copyright (c) 2005 David Ball All Rights Reserved.
- * 
- */
-
-/*
- * @(#)WeatherMonitor.java	0.1 26/01/2005
- */
-
-
 package windmon;
 
-import java.awt.*;
-import java.awt.event.*;
-// import java.awt.font.TextLayout;
-// import java.awt.font.FontRenderContext;
-// import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.BorderFactory;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JWindow;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 
 
 /**

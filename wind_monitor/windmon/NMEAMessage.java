@@ -1,18 +1,8 @@
-/*
- * Created on 08-Feb-2005
- *
- */
 package windmon;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author BallD
- *
- * Encapsulates an NMEA message. Currently supports only message types required
- * for the Autonnic Masthead unit.
- */
 public class NMEAMessage
 {
     public static char PROPRIETARY_CHAR = 'P';

@@ -1,32 +1,28 @@
 package windmon;
 
-import java.awt.*;
-import java.awt.event.*;
-// import java.awt.font.TextLayout;
-// import java.awt.font.FontRenderContext;
-// import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import javax.swing.*;
-import javax.swing.border.*;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JWindow;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 
-
-/**
- * @author David Ball
- * 
- * Wind Monitor Test Harness Application.
- * 
- */
 public class TestApp extends JWindow
 {
-    private static final long serialVersionUID = 1L;
-    
-	@SuppressWarnings("unused")
-	private static int WIDTH = 850, HEIGHT = 600;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
     
     public TestApp()
     {
-    	// If using JFrame then set title.
-//        super("Wind Monitor");
         getAccessibleContext().setAccessibleDescription(
                                               "Wind Monitoring Application");
 

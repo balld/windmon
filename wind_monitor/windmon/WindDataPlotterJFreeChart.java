@@ -1,6 +1,3 @@
-/*
- * Created on Aug 29, 2005
- */
 package windmon;
 
 import java.awt.Color;
@@ -8,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.io.File;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,15 +29,11 @@ import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 
-
-
-/**
- * @author david
- *
- * Implementation of WindDataPlotter that uses the org.jfree.chart package.
- */
 public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter {
 
+    /**
+	 * 
+	 */
 	private static final long serialVersionUID = 6044692530650948455L;
 	public static final int COL_SCHEME_BLACK  = 1;
     public static final int COL_SCHEME_BLUE  = 2;
@@ -89,14 +81,16 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
         setPreferredSize(new Dimension(500, 300));
 
         speedDataset = new TimeSeriesCollection();
-        speedDataset.setDomainIsPointsInTime(true);
+        // TODO - Delete line below when sure not needed.
+        // speedDataset.setDomainIsPointsInTime(true);
         angleDataset = new TimeSeriesCollection();
-        angleDataset.setDomainIsPointsInTime(true);
+        // TODO - Delete line below when sure not needed.
+        // angleDataset.setDomainIsPointsInTime(true);
 
-		min = new TimeSeries("Min", Second.class);
-		ave = new TimeSeries("Ave", Second.class);
-		max = new TimeSeries("Max", Second.class);
-		angle = new TimeSeries("Direction", Second.class);
+		min = new TimeSeries("Min");
+		ave = new TimeSeries("Ave");
+		max = new TimeSeries("Max");
+		angle = new TimeSeries("Direction");
 
         speedDataset.addSeries(max);
         speedDataset.addSeries(ave);
@@ -151,6 +145,7 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 	 * @see windmon.WindDataPlotter#plotData(windmon.WindDataRecord[])
 	 */
 	public void plotData(WindDataRecord[] records) {
+		// TODO Auto-generated method stub
 		updateDatasets(records);
         // this.repaint();
 	}
@@ -246,9 +241,9 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 		XYItemRenderer r = plot.getRenderer();
 		if (r instanceof XYLineAndShapeRenderer) {
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
-			renderer.setDefaultShapesVisible(false);
-			renderer.setDefaultShapesFilled(false);
-			renderer.setDefaultLinesVisible(true);
+			renderer.setBaseShapesVisible(false);
+			renderer.setBaseShapesFilled(false);
+			renderer.setBaseLinesVisible(true);
 		}
  
 		speedTimeAxis = (DateAxis) plot.getDomainAxis();
@@ -316,11 +311,11 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 		XYItemRenderer ar = a_plot.getRenderer();
 		if (ar instanceof XYLineAndShapeRenderer) {
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) ar;
-			renderer.setDefaultShapesVisible(true);
-			renderer.setDefaultShapesFilled(false);
-			renderer.setDefaultLinesVisible(false);
+			renderer.setBaseShapesVisible(true);
+			renderer.setBaseShapesFilled(false);
+			renderer.setBaseLinesVisible(false);
             renderer.setSeriesShape(0, new Rectangle(-1, -1, 2, 2), false);
-            renderer.setSeriesVisibleInLegend(new Boolean(false), false);
+            renderer.setBaseSeriesVisibleInLegend(new Boolean(false), false);
 		}
  
 		angleTimeAxis = (DateAxis) a_plot.getDomainAxis();
@@ -360,18 +355,6 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 		}
 	}
 	
-	public void writeSpeedPlotPNG(OutputStream os, int width, int height)
-	{
-		try
-		{
-			ChartUtilities.writeChartAsPNG(os, imageSpeedChart, width, height);
-		}
-		catch (Exception e)
-		{
-			EventLog.log(EventLog.SEV_ERROR, "Could write speed chart to output stream.");
-			e.printStackTrace();
-		}
-	}
 
 	public void writeAnglePlotPNG(String fname, int width, int height)
 	{
@@ -392,21 +375,7 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 			EventLog.log(EventLog.SEV_ERROR, "Could not rename image to '" + fname + "'");
 		}
 	}
-
-	public void writeAnglePlotPNG(OutputStream os, int width, int height)
-	{
-		try
-		{
-			ChartUtilities.writeChartAsPNG(os, imageAngleChart, width, height);
-		}
-		catch (Exception e)
-		{
-			EventLog.log(EventLog.SEV_ERROR, "Could not write anlge chart to output stream");
-			e.printStackTrace();
-		}
-	}
-	
-	
+    
     private void addNumberAxis(NumberAxis na)
     {
         numberAxisVec.add(na);

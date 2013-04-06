@@ -1,17 +1,5 @@
-/*
- * Created on Jul 31, 2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package windmon;
 
-/**
- * @author david
- *
- * Dummy implementation of NMEALink that just generates test data. For testing.
- * Does not actually connect to anything!  
- */
 public class NMEALinkStub implements NMEALink
 {
     // Flag indicating whether link is open

@@ -1,21 +1,15 @@
-/*
- * Created on Sep 2, 2005
- */
 package windmon;
 
 import java.text.NumberFormat;
 
 import org.jfree.chart.axis.NumberTickUnit;
 
-/**
- * @author david
- *
- * Implements a custom Y-axis for JFreeChart that displays compass
- * points in place of degrees.
- */
 public class JFreeCompassTickUnit extends NumberTickUnit {
+	
+	/**
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
-
 	private static final String[] COMPASS_POINTS_22_5 = {
 			"  N", //   0.0
 			"NNE", //  22.5

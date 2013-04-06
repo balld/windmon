@@ -1,16 +1,5 @@
-/*
- * Created on 25-Aug-2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package windmon;
 
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.GregorianCalendar;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -18,19 +7,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.lang.reflect.Array;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Vector;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.jfree.chart.ChartUtilities;
-// import org.jibble.simpleftp.simpleftp.SimpleFTP;
 
-/**
- * @author David
- * 
- * TODO To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Style - Code Templates
- */
 public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 
 	private WindDataLoggerSet currentSet;
@@ -50,7 +37,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     
     private WindDataRecord dayMax = null;
     
-    private Vector<WindDataRecord> dataRecords;
+    private List<WindDataRecord> dataRecords;
     private WindDataPlotter plotter;
     private Ticker ticker;
     
@@ -74,7 +61,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
     private DecimalFormat dfc = new DecimalFormat("000");
     
     // Report Generator
-    private ReportGenerator rg = new ReportGenerator();
+    ReportGenerator rg = new ReportGenerator();
     
     private FTPTaskQueue ftpQueue = null;
     
@@ -127,7 +114,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		/* Fetch data back to the earlier of last midnight or analysis start */
 		long dataFetchStart = Math.min(lastMidnight, analysisStart);
 
-		Vector<WindDataRecord> archData = null;
+		List<WindDataRecord> archData = null;
 		if ( store != null )
 		{
 			archData = store.getWindDataRecords(dataFetchStart, now, false);
@@ -139,7 +126,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 		}
 		else
 		{
-			dataRecords = new Vector<WindDataRecord>();
+			dataRecords = new ArrayList<WindDataRecord>();
 		}
 		
 		int i = 0;
@@ -152,10 +139,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 			}
 			if ( rec.getEndTime() < analysisStart )
 			{
-				/*
-				 * Delete this record now as it is not within the analysis
-				 * period
-				 */
+				/* Delete this record now as it is not within the analysis period */
 				dataRecords.remove(i);
 			}
             else
@@ -163,9 +147,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 i++;
             }
 		}
-        WindDataRecord data[] = (WindDataRecord[]) Array.newInstance(WindDataRecord.class,
-                dataRecords.size());
-        dataRecords.copyInto(data);
+        WindDataRecord data[] = (WindDataRecord[]) dataRecords.toArray(new WindDataRecord[dataRecords.size()]);
 
         plotter.plotData( data );
 	}
@@ -263,7 +245,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 					nextMidnight = calendar.getTimeInMillis();
 				}
 			}
-			// Else check for new max today
+			// Else check for new max today 
 			else if ( dayMax == null || rec.getMaxSpeed() > dayMax.getMaxSpeed())
 			{
 				dayMax = rec;
@@ -292,9 +274,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 				EventLog.log(EventLog.SEV_DEBUG, "Removed : " + ob);
 			}
 			
-			WindDataRecord data[] = (WindDataRecord[]) Array.newInstance(WindDataRecord.class,
-					dataRecords.size());
-			dataRecords.copyInto(data);
+			WindDataRecord data[] = (WindDataRecord[]) dataRecords.toArray(new WindDataRecord[dataRecords.size()]);
 
 			plotter.plotData( data );
 
@@ -451,9 +431,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 	 */
 	public void setPlotter(WindDataPlotter plotter) {
 		this.plotter = plotter;
-        WindDataRecord data[] = (WindDataRecord[]) Array.newInstance(WindDataRecord.class,
-                dataRecords.size());
-        dataRecords.copyInto(data);
+        WindDataRecord data[] = (WindDataRecord[]) dataRecords.toArray(new WindDataRecord[dataRecords.size()]);
 
         plotter.plotData( data );
 	}

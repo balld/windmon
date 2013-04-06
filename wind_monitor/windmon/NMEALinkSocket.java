@@ -1,17 +1,12 @@
-/*
- * Created on Jul 31, 2005
- */
 package windmon;
 
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.Socket;
 
-/**
- * @author david
- *
- * Implementation of NMEALink that connects to the NMEA device via 
- * TCP/IP socket connection to with an intermediate server process.
- */
 public class NMEALinkSocket implements NMEALink, Runnable
 {
     private int portNum = -1;

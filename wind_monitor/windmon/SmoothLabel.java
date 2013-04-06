@@ -1,6 +1,3 @@
-/*
- * Created on 12-Feb-2006
- */
 package windmon;
 
 import java.awt.Graphics;
@@ -10,16 +7,13 @@ import java.awt.RenderingHints;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 
-
-/**
- * @author david
- *
- * Subclass of JLabel that applies antialiasing by default when drawing.
- */
 public class SmoothLabel extends JLabel {
-    
-	private static final long serialVersionUID = 1L;
 
+    
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/**
      * 
      */

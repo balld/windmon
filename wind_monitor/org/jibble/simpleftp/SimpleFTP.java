@@ -190,7 +190,8 @@ public class SimpleFTP {
         
         sendLine("STOR " + filename);
         
-        Socket dataSocket = new Socket(ip, port);
+        @SuppressWarnings("resource")
+		Socket dataSocket = new Socket(ip, port);
         
         response = readLine();
         if (!response.startsWith("150 ") && !response.startsWith("125 ")) {

@@ -1,23 +1,13 @@
-/*
- * Created on Aug 28, 2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package windmon;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.text.FieldPosition;
-/**
- * @author david
- *
- * Basic application logging implementation. Writes to messages to a file.
- */
+
 public class EventLog {
 	
 	public static final int SEV_DEBUG = 1;

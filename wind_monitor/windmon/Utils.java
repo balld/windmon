@@ -1,23 +1,31 @@
 package windmon;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.net.URL;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.MediaTracker;
+import java.awt.Shape;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLClassLoader;
 
 import javax.swing.JTextPane;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-
-/**
- * @author David Ball
- * 
- * This class is never instantiated, but provides some useful
- * static utility methods.
- */
 
 public class Utils {
 
@@ -160,8 +168,8 @@ public class Utils {
      * @return boolean value, true if left button is down.
      */
     public static boolean isLeftButton(MouseEvent ev) {
-        return ((ev.getModifiers() & MouseEvent.BUTTON1_MASK) 
-                == MouseEvent.BUTTON1_MASK);
+        return ((ev.getModifiers() & InputEvent.BUTTON1_MASK) 
+                == InputEvent.BUTTON1_MASK);
     }
     
     /**
@@ -171,8 +179,8 @@ public class Utils {
      * @return boolean value, true if middle button is down.
      */
     public static boolean isMiddleButton(MouseEvent ev) {
-        return ((ev.getModifiers() & MouseEvent.BUTTON2_MASK) 
-                == MouseEvent.BUTTON2_MASK);
+        return ((ev.getModifiers() & InputEvent.BUTTON2_MASK) 
+                == InputEvent.BUTTON2_MASK);
     }
     
     /**
@@ -182,8 +190,8 @@ public class Utils {
      * @return boolean value, true if right button is down.
      */
     public static boolean isRightButton(MouseEvent ev) {
-        return ((ev.getModifiers() & MouseEvent.BUTTON3_MASK) 
-                == MouseEvent.BUTTON3_MASK);
+        return ((ev.getModifiers() & InputEvent.BUTTON3_MASK) 
+                == InputEvent.BUTTON3_MASK);
     }
     
     /**

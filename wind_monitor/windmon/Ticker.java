@@ -1,9 +1,3 @@
-/*
- * Created on 31-Jan-2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package windmon;
 
 import java.awt.Dimension;
@@ -21,17 +15,12 @@ import java.util.Map;
 import javax.swing.JPanel;
 
 
-/**
- * @author BallD
- *
- * UI component that implements a 'ticker' scrolling text display.
- * Mutliple strings can be added and updated, identified by a string key.
- * Ticker displays each string in the collection (HashMap) in turn, then
- * repeats over again in a continuous loop.
- */
 public class Ticker extends JPanel implements Runnable {
-	private static final long serialVersionUID = 1L;
 
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private static final Dimension ps = new Dimension(400,30);
     private static int l_font_size = 25;
 

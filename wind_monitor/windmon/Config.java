@@ -6,10 +6,10 @@
  */
 package windmon;
 
-import java.util.Hashtable;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.BufferedReader;
+import java.util.Hashtable;
 
 /**
  * @author David

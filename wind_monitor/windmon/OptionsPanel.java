@@ -1,22 +1,26 @@
-/*
- * Created on 10-Feb-2005
- */
 package windmon;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-/**
- * @author BallD
- *
- * UI panel that enables the user to input and send NMEA commands that configure
- * the Autonnic masthead unit.
- */
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+
 public class OptionsPanel extends JPanel implements ActionListener
 {
+    /**
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
-	
 	private NMEAController nmea = null;
     private static final int fieldSize = 5;
     private static final String defaultFieldText = "Not Set"; 

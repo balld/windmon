@@ -1,9 +1,3 @@
-/*
- * Created on 31-Jan-2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package windmon;
 
 import java.awt.Dimension;
@@ -17,18 +11,12 @@ import java.util.Date;
 
 import javax.swing.JPanel;
 
-
-/**
- * @author BallD
- *
- * A digital clock.
- */
 public class DigitalClock extends JPanel implements Runnable {
 
     /**
 	 * 
 	 */
-	private static final long serialVersionUID = 3588190825599838664L;
+	private static final long serialVersionUID = 1L;
 	private static final Dimension ps = new Dimension(525,30);
     private static int l_font_size = 48;
 

@@ -1,25 +1,17 @@
-/*
- * Created on Sep 3, 2005
- */
 package windmon;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Vector;
+import java.util.List;
 
-/**
- * @author david
- *
- * Implements a WindDataStore using a simple file-based system.
- * Data is divided into one file per hour, and filenames are set based on the
- * start time of the file. 
- */
 public class WindDataStoreFile implements WindDataStore {
 	// These settings affect the number of files created. Currently every hour.
 	private static final String DATE_FMT = "yyyyMMddHHz";
@@ -73,7 +65,7 @@ public class WindDataStoreFile implements WindDataStore {
 		}
 	}
 
-	public Vector<WindDataRecord> getWindDataRecords(long start, long end)
+	public List<WindDataRecord> getWindDataRecords(long start, long end)
 	{
 		return getWindDataRecords(start, end, true);
 	}
@@ -81,8 +73,8 @@ public class WindDataStoreFile implements WindDataStore {
 	/* (non-Javadoc)
 	 * @see windmon.WindDataStore#getWindDataRecords(long, long)
 	 */
-	public Vector<WindDataRecord> getWindDataRecords(long start, long end, boolean includeNull) {
-		Vector<WindDataRecord> records = new Vector<WindDataRecord>();
+	public List<WindDataRecord> getWindDataRecords(long start, long end, boolean includeNull) {
+		List<WindDataRecord> records = new ArrayList<WindDataRecord>();
 		long curr = start;
 		
 		while (curr <= end)
@@ -99,38 +91,47 @@ public class WindDataStoreFile implements WindDataStore {
 					return null;
 				}
 				long fileEnd = fileStart + FILE_INTERVAL;
-			try
-			{
-				BufferedReader br = new BufferedReader(new FileReader(path + "/" + fn));
-				String ln;
-				while ( (ln = br.readLine()) != null)
+				BufferedReader br = null;
+				try
 				{
-					WindDataRecord rec = WindDataRecord.parse(ln);
-					if ( rec != null )
+					br = new BufferedReader(new FileReader(path + "/" + fn));
+					String ln;
+					while ( (ln = br.readLine()) != null)
 					{
-						curr = rec.getEndTime();
-						if ( curr > end )
+						WindDataRecord rec = WindDataRecord.parse(ln);
+						if ( rec != null )
 						{
-							break;
-						}
-						else if ( curr < start )
-						{
-							continue;
-						}
-						else if ( includeNull == false && rec.getNumReadings() == 0 )
-						{
-							continue;
-						}
-						else
-						{
-							records.add(rec);
+							curr = rec.getEndTime();
+							if ( curr > end )
+							{
+								break;
+							}
+							else if ( curr < start )
+							{
+								continue;
+							}
+							else if ( includeNull == false && rec.getNumReadings() == 0 )
+							{
+								continue;
+							}
+							else
+							{
+								records.add(rec);
+							}
 						}
 					}
 				}
-			}
 			catch (Exception e)
 			{
 				EventLog.log(EventLog.SEV_WARN, "Could not read log file '" + path + "/" + fn + "'");
+			} finally {
+				if (br != null) {
+					try {
+						br.close();
+					} catch (IOException e) {
+						// Ignore
+					}
+				}
 			}
 			// file finished, set current time to end time of file.
 			curr = fileEnd;

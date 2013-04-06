@@ -1,9 +1,3 @@
-/*
- * Created on 25-Aug-2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package windmon;
 
 import java.awt.Dimension;
@@ -30,14 +24,6 @@ import java.util.TimerTask;
 
 import org.jfree.chart.ChartUtilities;
 
-// import com.mysql.jdbc.ResultSet;
-
-/**
- * @author David
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 public class WindDataLoggerMySql extends TimerTask {
 
 	private Timer timer;
@@ -283,7 +269,7 @@ public class WindDataLoggerMySql extends TimerTask {
 	
 	WindDataRecord selectDayMax(long t)
 	{
-		String lastMidnight = mySqlDateFormat.format(new Date(t)) + " 00:00:00";
+		String lastMidnight = mySqlDateFormat.format(t) + " 00:00:00";
 		WindDataRecord rec = null;
 
 		try
@@ -339,6 +325,7 @@ public class WindDataLoggerMySql extends TimerTask {
 			EventLog.log(EventLog.SEV_ERROR, "Exception selecting wind plot data. " + e);
 			return null;
 		}
+
 		WindDataRecord data[] = (WindDataRecord[]) dataVec.toArray(new WindDataRecord[dataVec.size()]);
 		
 		return data;
