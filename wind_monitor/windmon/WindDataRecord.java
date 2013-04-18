@@ -1,17 +1,8 @@
-/*
- * Created on 25-Aug-2005
- */
 package windmon;
 
 import java.text.DecimalFormat;
 import java.util.StringTokenizer;
 
-/**
- * @author David
- *
- * Encapsulates wind data recorded over a specific period. Class includes
- * methods to convert record to/from readable text format.
- */
 public class WindDataRecord {
 	private static final String recordType = "W1";
 	
