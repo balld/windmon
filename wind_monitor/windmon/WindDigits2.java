@@ -1,9 +1,3 @@
-/*
- * Created on 31-Jan-2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package windmon;
 
 import java.awt.BorderLayout;
@@ -17,16 +11,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
+public class WindDigits2 extends JPanel implements WindDataListener {
 
 /**
- * @author David Ball
- *
- * Graphical UI component that displays wind speed and direction on  
- * digital-style numercical display.
- */
-public class WindDigits2 extends JPanel implements WindDataListener {
+	 * 
+	 */
 	private static final long serialVersionUID = 1L;
-
 	//    private static final Dimension ps = new Dimension(300,300);
     private static int l_font_size = 120;
     private static int s_font_size = 20;
@@ -34,7 +24,7 @@ public class WindDigits2 extends JPanel implements WindDataListener {
     // Repaint on every n wind data events
     private static final int sample_interval = 10;
     private int sample_count = sample_interval;
-
+    
     private Font b_font = null;
     private Font l_font = null;
     private Font s_font = null;
