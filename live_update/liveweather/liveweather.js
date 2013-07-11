@@ -1,6 +1,6 @@
 /*
  * Marconi SC Live Wind Data
- * $Id: liveweather.js,v 1.3 2012/11/16 01:05:15 david Exp $
+ * $Id: liveweather.js,v 1.4 2013/07/11 01:34:06 david Exp $
  *
  * Copyright 2010, David Ball
  *
@@ -38,7 +38,7 @@ var mvFrameIntervalMs = 100;  /* 10 fps */
 
 var mvFileRetryIntervalMs = 2000; /* 2 seconds. */
 
-var mvDataFile = "http://www.marconi-sc.org.uk/WeatherStation/live_update.php";
+var mvDataFile = "http://www.marconi-sc.org.uk/weatherstation/live_update.txt";
 // var mvDataFile = "live_update.php";
 
 
@@ -207,7 +207,7 @@ function fetchData() {
     {
         /* Use POST not GET to avoid caching problems in IE. */
         log("Fetching data file '" + mvDataFile + "'.");
-        mvXmlHttp.open("POST", mvDataFile, true);
+        mvXmlHttp.open("GET", mvDataFile, true);
         mvXmlHttp.onreadystatechange=stateChange;
         mvXmlHttp.send(null);
     }
