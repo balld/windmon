@@ -13,6 +13,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -34,6 +35,7 @@ import javax.swing.border.EmptyBorder;
  */
 public class WindMonitor extends JPanel implements ActionListener
 {
+	Logger logger = Logger.getLogger(WindMonitor.class.getName());
 	private static final long serialVersionUID = 0;
 	
 	private final String actionCommandQuit = "Quit";
@@ -153,8 +155,8 @@ public class WindMonitor extends JPanel implements ActionListener
         if ( connectionType.compareToIgnoreCase("socket") == 0 )
         {
         	link = new NMEALinkSocket(
-        			Config.getParamAsString("NMEADefaultServerHost", "localhost"),
-					Config.getParamAsInt("NMEADefaultServerPort", 2468));
+        			Config.getParamAsString("SocketConnectionHost", "localhost"),
+					Config.getParamAsInt("SocketConnectionPort", 2468));
         }
         else if ( connectionType.compareToIgnoreCase("serial") == 0 )
         {
@@ -166,11 +168,16 @@ public class WindMonitor extends JPanel implements ActionListener
         }
         else
         {
-        	EventLog.log(EventLog.SEV_INFO, "Unrecognised connection type '" +
+        	logger.info("Unrecognised connection type '" +
         			                          connectionType + "'. Using stub");
             link = new NMEALinkStub();
         }
-        NMEAController nmea = NMEAController.getCreateInstance(link);
+        
+        NMEASocketServer ss = null;
+        if (Config.getParamAsBoolean("SocketServerEnabledYN", false)) {
+        	ss = new NMEASocketServer(Config.getParamAsInt("SocketServerPort", 2468));
+        }
+        NMEAController nmea = NMEAController.getCreateInstance(link, ss);
         nmea.addWindDataListener(wdl);
         nmea.addWindDataListener(wdt);
 
@@ -217,7 +224,7 @@ public class WindMonitor extends JPanel implements ActionListener
         {
         	if ( logMode.compareToIgnoreCase("live") != 0 )
         	{
-            	EventLog.log(EventLog.SEV_INFO, "Unrecognised LogMode '" +
+            	logger.info("Unrecognised LogMode '" +
                         logMode + "'. Using 'live'");
         	}
         	WindDataLoggerFile logger = new WindDataLoggerFile(plotter, tick, false, ftpQueue);
@@ -249,7 +256,7 @@ public class WindMonitor extends JPanel implements ActionListener
     public void actionPerformed(ActionEvent e)
     {
     	String cmd = e.getActionCommand();
-    	EventLog.log(EventLog.SEV_INFO, "Menu action: " + cmd);
+    	logger.info("Menu action: " + cmd);
     	if ( cmd.equalsIgnoreCase(actionCommandQuit) )
     	{
     		System.exit(0);

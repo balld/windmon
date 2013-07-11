@@ -12,12 +12,14 @@ import java.util.Enumeration;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 /**
  * @author David
  * 
  */
 public class WindDataLiveUpdate extends TimerTask implements WindDataListener {
+	private static final Logger logger = Logger.getLogger(WindDataLiveUpdate.class.getName());
 
 	private WindDataLoggerSet currentSet;
 	private WindDataLoggerSet lastSet;
@@ -110,7 +112,7 @@ public class WindDataLiveUpdate extends TimerTask implements WindDataListener {
 			if ( rec.getNumReadings() > 0 ) {
 				// Add records to the set of records.
 				dataRecords.add(rec);
-            	EventLog.log(EventLog.SEV_DEBUG,
+            	logger.finest(
             			     "Adding live update record number " + dataRecords.size() + ". Contains " + rec.getNumReadings() + " readings.");
 			}
 			
@@ -137,7 +139,7 @@ public class WindDataLiveUpdate extends TimerTask implements WindDataListener {
                 	}
                 	pw.close();
 				} catch (Exception e) {
-                	EventLog.log(EventLog.SEV_ERROR,
+                	logger.severe(
                 			"Could not write file '" + localFname + "': " + e.getMessage());
 				}
 

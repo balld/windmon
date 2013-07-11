@@ -15,10 +15,12 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import org.jfree.chart.ChartUtilities;
 
 public class WindDataLoggerFile extends TimerTask implements WindDataListener {
+	private static final Logger logger = Logger.getLogger(WindDataLoggerFile.class.getName());
 
 	private WindDataLoggerSet currentSet;
 	private WindDataLoggerSet lastSet;
@@ -264,14 +266,14 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
 				store.storeWindDataRecord(rec);
 			}
 			
-			EventLog.log(EventLog.SEV_DEBUG, "Saved : " + rec);
+			logger.finest("Saved : " + rec);
 			
 			// Only store data records going back for the configured period.
 			long minTime = lastSet.getEndPeriod() - analysisInterval;
 			while ( dataRecords.size() > 0 && ((WindDataRecord)dataRecords.get(0)).getEndTime() < minTime)
 			{
 				Object ob = dataRecords.remove(0);
-				EventLog.log(EventLog.SEV_DEBUG, "Removed : " + ob);
+				logger.finest("Removed : " + ob);
 			}
 			
 			WindDataRecord data[] = (WindDataRecord[]) dataRecords.toArray(new WindDataRecord[dataRecords.size()]);
@@ -351,7 +353,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                 }
                 catch (Exception e)
                 {
-                    EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + dialfname + "'");
+                    logger.severe("Could not write image '" + dialfname + "'");
                 }
                 
 
@@ -411,7 +413,7 @@ public class WindDataLoggerFile extends TimerTask implements WindDataListener {
                     	pw.close();
                     	ftpQueue.addTask(FTPTask.createLocalRenameTask(tmpname, triggerfname));
     				} catch (Exception e) {
-                    	EventLog.log(EventLog.SEV_ERROR,
+                    	logger.severe(
                     			"Could not write file '" + triggerfname + "'");
     				}
                 }

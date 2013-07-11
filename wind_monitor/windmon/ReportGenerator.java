@@ -6,8 +6,10 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class ReportGenerator {
+	private static final Logger logger = Logger.getLogger(ReportGenerator.class.getName());
 
     /* Custom Tags */
     public static final String TAG_PREFIX    = "<windmon.";
@@ -57,7 +59,7 @@ public class ReportGenerator {
         }
         catch (Exception e)
         {
-            EventLog.log(EventLog.SEV_ERROR, "Unable to open template file '" + templatePathname + "'");
+            logger.severe("Unable to open template file '" + templatePathname + "'");
             e.printStackTrace();
             return;
         }
@@ -71,7 +73,7 @@ public class ReportGenerator {
         }
         catch (Exception e)
         {
-            EventLog.log(EventLog.SEV_ERROR, "Unable to open output report file '" + reportPathname + "'");
+            logger.severe("Unable to open output report file '" + reportPathname + "'");
             e.printStackTrace();
             /* Close template file */
             try
@@ -80,7 +82,7 @@ public class ReportGenerator {
             }
             catch (Exception e2)
             {
-                EventLog.log(EventLog.SEV_ERROR, "Error closing template '" + templatePathname + "'");
+                logger.severe("Error closing template '" + templatePathname + "'");
                 e2.printStackTrace();
             }
             return;
@@ -105,7 +107,7 @@ public class ReportGenerator {
                         if ( j < i )
                         {
                             /* Problem - could not find closing tag */
-                            EventLog.log(EventLog.SEV_WARN, "Incomlpete tag ignored in template file '" + templatePathname + "' at line " + lineNum + " character " + i);
+                            logger.warning( "Incomlpete tag ignored in template file '" + templatePathname + "' at line " + lineNum + " character " + i);
                             /* Force move to next line */
                             i = -1;
                         }
@@ -119,7 +121,7 @@ public class ReportGenerator {
                             if ( value == null )
                             {
                                 /* Problem - no data specified for tag */
-                                EventLog.log(EventLog.SEV_WARN, "No data for tag " + tag + " in template file '" + templatePathname + "' at line " + lineNum + " character " + i);
+                                logger.warning( "No data for tag " + tag + " in template file '" + templatePathname + "' at line " + lineNum + " character " + i);
                                 /* Just skip - leave tag in file */
                             }
                             else
@@ -136,7 +138,7 @@ public class ReportGenerator {
         }
         catch (Exception e)
         {
-            EventLog.log(EventLog.SEV_ERROR, "Error writing report '" + reportPathname + "' from template '" + templatePathname + "'");
+            logger.severe("Error writing report '" + reportPathname + "' from template '" + templatePathname + "'");
             e.printStackTrace();
             /* Don't return from method. Must close files below */
         }
@@ -148,7 +150,7 @@ public class ReportGenerator {
         }
         catch (Exception e)
         {
-            EventLog.log(EventLog.SEV_ERROR, "Error closing report '" + reportPathname + "' and template '" + templatePathname + "'");
+            logger.severe("Error closing report '" + reportPathname + "' and template '" + templatePathname + "'");
             e.printStackTrace();
             return;
         }

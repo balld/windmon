@@ -7,9 +7,13 @@ import java.io.PrintStream;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class EventLog {
-	
+	private static final Logger logger = Logger.getLogger(EventLog.class.getName());
 	public static final int SEV_DEBUG = 1;
 	public static final int SEV_INFO  = 2;
 	public static final int SEV_WARN  = 3;
@@ -32,7 +36,7 @@ public class EventLog {
 	
 	private static int logLevel = SEV_DEBUG;
 	
-	public static void log(int sev, String msg)
+	public static void log_old(int sev, String msg)
 	{
 		if ( sev >= logLevel)
 		{
@@ -122,24 +126,35 @@ public class EventLog {
 			else
 			{
 				AppLogDirectory = null;
-				EventLog.log(EventLog.SEV_FATAL,
-						     "AppLogDirectory '" + s + "' exists but is not a directory");
+				logger.severe("AppLogDirectory '" + s + "' exists but is not a directory");
+				System.exit(1);
 			}
 		}
 		else
 		{
 			if ( path.mkdirs() == true )
 			{
-				EventLog.log(EventLog.SEV_INFO,
-					     "AppLogDirectory '" + s + "' created");
+				logger.info("AppLogDirectory '" + s + "' created");
 				AppLogDirectory = s;
 			}
 			else {
 				AppLogDirectory = null;
-				EventLog.log(EventLog.SEV_FATAL,
-					     "AppLogDirectory '" + s + "' could not be created");
+				logger.severe("AppLogDirectory '" + s + "' could not be created");
+				System.exit(1);
 			}				
 		}
+		try {
+			FileHandler handler = new FileHandler(AppLogDirectory + "/windmon.log", 1024000, 5, true);
+	        handler.setFormatter(new SimpleFormatter());
+	        Logger topLevelLogger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	        topLevelLogger.addHandler(handler);
+	        topLevelLogger.setLevel(Level.INFO);
+	        // topLevelLogger.setUseParentHandlers(false);
+	        logger.info("Logging to '" + AppLogDirectory + "'");
+		} catch (Exception e) {
+			logger.warning("Failed to set up logging to log directory: " + e.getMessage());
+		}
+		
 	}
 	
 	public static int getLogLevel()

@@ -11,11 +11,13 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.swing.JPanel;
 
 
 public class Ticker extends JPanel implements Runnable {
+	private static final Logger logger = Logger.getLogger(Ticker.class.getName());
 
     /**
 	 * 
@@ -72,7 +74,7 @@ public class Ticker extends JPanel implements Runnable {
     
     public void setVisible(boolean b)
     {
-        EventLog.log(EventLog.SEV_DEBUG, "Ticker setVisible: " + b);
+        logger.finest("Ticker setVisible: " + b);
         super.setVisible(b);
         if ( b == true )
         {

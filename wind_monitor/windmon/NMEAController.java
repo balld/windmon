@@ -2,20 +2,24 @@ package windmon;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class NMEAController implements Runnable {
+	private static final Logger logger = Logger.getLogger(NMEAController.class.getName());
 
 	private static NMEAController instance = null;
 	private final double MAX_NMEA_PERIOD = 2.0;
     private Thread thread = null;
     private NMEALink link = null;
+    private NMEASocketServer server = null;
     private long retryInterval = 0;
     
     private List<WindDataListener> listeners = new ArrayList<WindDataListener>();
     
-    private NMEAController (NMEALink link)
+    private NMEAController (NMEALink link, NMEASocketServer server)
     {
         this.link = link;
+        this.server = server;
         instance = this;
         this.configure();
     }
@@ -29,11 +33,11 @@ public class NMEAController implements Runnable {
     	return instance;
     }
     
-    public static NMEAController getCreateInstance(NMEALink link)
+    public static NMEAController getCreateInstance(NMEALink link, NMEASocketServer server)
     {
     	if (instance == null)
     	{
-    		instance = new NMEAController(link);
+    		instance = new NMEAController(link, server);
     	}
     	return instance;
     }
@@ -44,6 +48,9 @@ public class NMEAController implements Runnable {
         	thread = new Thread(this);
             thread.setPriority(Thread.MIN_PRIORITY);
             thread.start();
+        }
+        if (server != null) {
+        	server.start();
         }
     }
 
@@ -62,7 +69,7 @@ public class NMEAController implements Runnable {
 
         while (thread == me && link != null)
         {
-        	EventLog.log(EventLog.SEV_INFO, "Checking for connection...");
+        	logger.info("Checking for connection...");
         	while (!link.isOpen())
         	{
         		if ( !link.open() )
@@ -72,7 +79,7 @@ public class NMEAController implements Runnable {
         		        dispatchWindDataEvent(-1.0f, -1.0f);
                         display_cleared = true;
                     }
-                	EventLog.log(EventLog.SEV_INFO, "Link not opened. Will retry...");
+                	logger.info("Link not opened. Will retry...");
         			Utils.justSleep(retryInterval);
         		}
         	}
@@ -90,6 +97,9 @@ public class NMEAController implements Runnable {
         		{
         		    dispatchWindDataEvent(Float.parseFloat(msg.getField(0)),
         		                          Float.parseFloat(msg.getField(2)));
+        		    if (server != null) {
+        		    	server.sendMessage(msg);
+        		    }
         		}
         	} while (msg != null );
 	        dispatchWindDataEvent(-1.0f, -1.0f);

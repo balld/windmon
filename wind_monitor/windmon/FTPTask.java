@@ -7,8 +7,9 @@ package windmon;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.logging.Logger;
 
-import org.jibble.simpleftp.SimpleFTP;
+import net.ball1.windmon.ftp.FTPClient;
 
 /**
  * @author David
@@ -16,6 +17,7 @@ import org.jibble.simpleftp.SimpleFTP;
  * Representation of a single FTP task, e.g. send a file.
  */
 public class FTPTask {
+	private static final Logger logger = Logger.getLogger(FTPTask.class.getName());
 
 	private static final int CMD_NOT_SET       = 0;
 	private static final int CMD_SEND          = 1;
@@ -45,7 +47,7 @@ public class FTPTask {
 		this.arg3 = arg3;
 	}
 	
-	public boolean executeTask(SimpleFTP ftp) {
+	public boolean executeTask(FTPClient ftp) {
         boolean result = false;
         
 		switch (command) {
@@ -54,7 +56,7 @@ public class FTPTask {
 		    case CMD_REMOTE_DELETE: result = executeRemoteDelete(ftp); break;
 		    case CMD_LOCAL_RENAME:  result = executeLocalRename(ftp); break;
 		    case CMD_LOCAL_DELETE:  result = executeLocalDelete(ftp); break;
-		    default: EventLog.log(EventLog.SEV_ERROR, "Unknown FTP task type: " + command); break;
+		    default: logger.severe("Unknown FTP task type: " + command); break;
 		}
 		
 		return result;
@@ -80,7 +82,7 @@ public class FTPTask {
 		return new FTPTask(CMD_LOCAL_DELETE, localFile, null, null);
 	}
 
-	private boolean executeSend(SimpleFTP ftp) {
+	private boolean executeSend(FTPClient ftp) {
 		String localFile = (String)arg1;
 		String remoteFile = (String)arg2;
 		boolean binary = ((Boolean)arg3).booleanValue();
@@ -98,10 +100,10 @@ public class FTPTask {
 			if (!ftp.stor(new FileInputStream(new File(localFile)), remoteFile)) {
 				throw new IOException("Command returned failure.");
 			}
-        	EventLog.log(EventLog.SEV_INFO, "Successful FTP transfer local file '" + 
+        	logger.info("Successful FTP transfer local file '" + 
         			localFile + "' to remote file '" + remoteFile + "'");
 		} catch (Exception e) {
-        	EventLog.log(EventLog.SEV_ERROR, "Failed FTP transfer local file '" + 
+        	logger.severe("Failed FTP transfer local file '" + 
         			localFile + "' to remote file '" + remoteFile + "': " + e.getMessage());
         	return false;
 		}
@@ -109,30 +111,30 @@ public class FTPTask {
 		return true;
 	}
 	
-	private boolean executeRemoteRename(SimpleFTP ftp) {
+	private boolean executeRemoteRename(FTPClient ftp) {
 		String fromFile = (String) arg1;
 		String toFile = (String) arg2;
 		
 		try {
 			ftp.rename(fromFile, toFile);
-        	EventLog.log(EventLog.SEV_INFO, "Successful FTP rename remote file from '" + 
+        	logger.info("Successful FTP rename remote file from '" + 
         			fromFile + "' to '" + toFile + "'");
 		} catch (Exception e) {
-        	EventLog.log(EventLog.SEV_ERROR, "Failed FTP rename remote file from '" + 
+        	logger.severe("Failed FTP rename remote file from '" + 
         			fromFile + "' to '" + toFile + "': " + e.getMessage());
         	return false;
 		}
 		return true;
 	}
 	
-	private boolean executeRemoteDelete(SimpleFTP ftp) {
+	private boolean executeRemoteDelete(FTPClient ftp) {
         String remoteFile = (String)arg1;
 		try {
 			ftp.delete(remoteFile);
-        	EventLog.log(EventLog.SEV_INFO,
+        	logger.info(
 					"Successful FTP delete remote file '" + remoteFile + "'");
 		} catch (Exception e) {
-        	EventLog.log(EventLog.SEV_ERROR, "Failed FTP delete remote file '" + 
+        	logger.severe("Failed FTP delete remote file '" + 
         			remoteFile + "': " + e.getMessage());
         	return false;
 		}
@@ -140,7 +142,7 @@ public class FTPTask {
 	}
 
 	
-	private boolean executeLocalRename(SimpleFTP ftp) {
+	private boolean executeLocalRename(FTPClient ftp) {
 		String fromFile = (String) arg1;
 		String toFile = (String) arg2;
 
@@ -150,10 +152,10 @@ public class FTPTask {
         	// This rename is atomic action which indicates all files
 			// are ready
         	f1.renameTo(f2);
-        	EventLog.log(EventLog.SEV_INFO, "Renamed local file '" + 
+        	logger.info("Renamed local file '" + 
         			fromFile + "' to '" + toFile + "'.");
 		} catch (Exception e) {
-        	EventLog.log(EventLog.SEV_ERROR, "Failed rename local file '" + 
+        	logger.severe("Failed rename local file '" + 
         			fromFile + "' to '" + toFile + "'.");
         	return false;
 		}
@@ -161,7 +163,7 @@ public class FTPTask {
 	}
 	
 	
-	private boolean executeLocalDelete(SimpleFTP ftp) {
+	private boolean executeLocalDelete(FTPClient ftp) {
 		String localFile = (String)arg1;
 
 		try {
@@ -169,10 +171,10 @@ public class FTPTask {
 			if (!f.delete()) {
 				throw new IOException("Delete Failed.");
 			}
-        	EventLog.log(EventLog.SEV_INFO, "Deleted local file '" + 
+        	logger.info("Deleted local file '" + 
         			localFile + "'.");
 		} catch (Exception e) {
-        	EventLog.log(EventLog.SEV_ERROR, "Failed delete local file '" + 
+        	logger.severe("Failed delete local file '" + 
         			localFile + "': " + e.getMessage());
         	return false;
 		}

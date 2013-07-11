@@ -4,12 +4,13 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
 
 public class GenDialImageFiles {
-
+	private static final Logger logger = Logger.getLogger(GenDialImageFiles.class.getName());
 	private static final int dialWidth = 200;
 	
 	/**
@@ -44,7 +45,7 @@ public class GenDialImageFiles {
 		}
 		catch (Exception e)
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + fname + "'");
+			logger.severe("Could not write image '" + fname + "'");
 			e.printStackTrace();
 			System.exit(1);
 		}

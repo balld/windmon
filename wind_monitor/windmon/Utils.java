@@ -21,6 +21,7 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.logging.Logger;
 
 import javax.swing.JTextPane;
 import javax.swing.text.MutableAttributeSet;
@@ -29,6 +30,8 @@ import javax.swing.text.StyledDocument;
 
 public class Utils {
 
+	private static final Logger logger = Logger.getLogger(Utils.class.getName());
+	
     private static final int beaufort[] = {
             0,  // F0
             3,  // F1
@@ -485,18 +488,15 @@ public class Utils {
     		if (path.isDirectory()) {
     			return true;
     		} else {
-    			EventLog.log(EventLog.SEV_ERROR,
-    					"Path '" + s + "' exists but is not a directory");
+    			logger.severe("Path '" + s + "' exists but is not a directory");
     			return false;
     		}
     	} else {
     		if ( path.mkdirs() == true ) {
-    			EventLog.log(EventLog.SEV_INFO,
-    					"Directory '" + s + "' created");
+    			logger.info("Directory '" + s + "' created");
     			return true;
     		} else {
-    			EventLog.log(EventLog.SEV_FATAL,
-    					"Direcory '" + s + "' could not be created");
+    			logger.severe("Direcory '" + s + "' could not be created");
     			return false;
     		}				
     	}

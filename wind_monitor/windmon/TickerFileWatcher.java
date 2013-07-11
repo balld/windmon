@@ -2,9 +2,11 @@ package windmon;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.logging.Logger;
 
 
 public class TickerFileWatcher implements Runnable {
+	private static final Logger logger = Logger.getLogger(TickerFileWatcher.class.getName());
 
     private long sleepAmount = 25;
     private String filename = null;
@@ -65,7 +67,7 @@ public class TickerFileWatcher implements Runnable {
                 }
                 catch (Exception e)
                 {
-                    EventLog.log(EventLog.SEV_ERROR, "Unable to open ticker file '" + filename + "'");
+                    logger.severe("Unable to open ticker file '" + filename + "'");
                     e.printStackTrace();
                     opened = false;
                 }
@@ -92,12 +94,12 @@ public class TickerFileWatcher implements Runnable {
                     }
                     catch (Exception e)
                     {
-                        EventLog.log(EventLog.SEV_ERROR, "Unable to read ticker file '" + filename + "'");
+                        logger.severe("Unable to read ticker file '" + filename + "'");
                         e.printStackTrace();
                     }
                     // Write text to ticker.
                     ticker.setText(this, buff.toString());
-                    EventLog.log(EventLog.SEV_DEBUG, "Updated ticker from file '" + filename + "'");
+                    logger.finest("Updated ticker from file '" + filename + "'");
                 }
             }
             try {

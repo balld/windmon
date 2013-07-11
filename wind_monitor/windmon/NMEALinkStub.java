@@ -1,7 +1,11 @@
 package windmon;
 
+import java.util.logging.Logger;
+
 public class NMEALinkStub implements NMEALink
 {
+	private static final Logger logger = Logger.getLogger(NMEALinkStub.class.getName());
+	
     // Flag indicating whether link is open
     private boolean openFlag = false;
 
@@ -48,13 +52,13 @@ public class NMEALinkStub implements NMEALink
     {
         if ( openFlag != true )
         {
-            EventLog.log(EventLog.SEV_DEBUG ,"Opened stub link");
+            logger.finest("Opened stub link");
             openFlag = true;
             return true;
         }
         else
         {
-            EventLog.log(EventLog.SEV_ERROR ,"Can't open stub link. Already open");
+            logger.severe("Can't open stub link. Already open");
             return false;
         }
     }
@@ -63,13 +67,13 @@ public class NMEALinkStub implements NMEALink
     {
         if ( openFlag == true )
         {
-            EventLog.log(EventLog.SEV_DEBUG ,"Closed stub link");
+            logger.finest("Closed stub link");
             openFlag = false;
             return true;
         }
         else
         {
-            EventLog.log(EventLog.SEV_ERROR ,"Can't close stub link. Not open");
+            logger.severe("Can't close stub link. Not open");
             return false;
         }
     }
@@ -134,7 +138,7 @@ public class NMEALinkStub implements NMEALink
     public void sendNMEAMessage(NMEAMessage msg)
     {
         // Nowhere to send message so output to log
-        EventLog.log(EventLog.SEV_INFO ,"Stub sending : " + msg);
+        logger.info("Stub sending : " + msg);
     }
     
     public boolean isOpen()

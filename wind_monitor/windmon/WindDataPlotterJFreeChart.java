@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -30,6 +31,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 
 public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter {
+	private static final Logger logger = Logger.getLogger(WindDataPlotterJFreeChart.class.getName());
 
     /**
 	 * 
@@ -181,7 +183,7 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
             
             if ( records[i].getMaxSpeed() > maxSpeed )
                 maxSpeed = records[i].getMaxSpeed();
-//            EventLog.log(EventLog.SEV_DEBUG, "Added data item :" + records[i]);
+//            logger.finest("Added data item :" + records[i]);
         }
 			
         setNumberAxisUpperBound(maxSpeed * 1.10);
@@ -344,14 +346,14 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 		}
 		catch (Exception e)
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Could not create image file '" + fname + "'");
+			logger.severe("Could not create image file '" + fname + "'");
 			e.printStackTrace();
 		}
 
 		File file = new File(fname);
 		if ( tmpfile.renameTo(file) != true )
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Could not rename image to '" + fname + "'");
+			logger.severe("Could not rename image to '" + fname + "'");
 		}
 	}
 	
@@ -365,14 +367,14 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 		}
 		catch (Exception e)
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Could not create image file '" + fname + "'");
+			logger.severe("Could not create image file '" + fname + "'");
 			e.printStackTrace();
 		}
 
 		File file = new File(fname);
 		if ( tmpfile.renameTo(file) != true )
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Could not rename image to '" + fname + "'");
+			logger.severe("Could not rename image to '" + fname + "'");
 		}
 	}
     

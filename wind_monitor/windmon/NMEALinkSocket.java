@@ -6,9 +6,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 public class NMEALinkSocket implements NMEALink, Runnable
 {
+	private static final Logger logger = Logger.getLogger(NMEALinkSocket.class.getName());
     private int portNum = -1;
     private String host = null;
     private Socket nmeaSocket = null;
@@ -70,7 +72,7 @@ public class NMEALinkSocket implements NMEALink, Runnable
 			}
     		catch (Exception e)
 			{
-    			EventLog.log(EventLog.SEV_ERROR, "Could not open socket to " +
+    			logger.severe("Could not open socket to " +
     					host + " on port " + portNum + " : " +
 						e.getMessage());
 //    			e.printStackTrace();
@@ -82,7 +84,7 @@ public class NMEALinkSocket implements NMEALink, Runnable
     	if ( isOpen() )
     	{
 //    		this.start();
-			EventLog.log(EventLog.SEV_INFO, "Opened socket to " +
+			logger.info("Opened socket to " +
 					host + " on port " + portNum + " : ");
     		return true;
     	}
@@ -113,7 +115,7 @@ public class NMEALinkSocket implements NMEALink, Runnable
         ps = null;
         is = null;
         br = null;
-		EventLog.log(EventLog.SEV_INFO, "Closed socket to " +
+		logger.info("Closed socket to " +
 				host + " on port " + portNum + " : ");
         return true;
     }
@@ -127,12 +129,12 @@ public class NMEALinkSocket implements NMEALink, Runnable
             {
             	throw new IOException("Null string read");
             }
-//            EventLog.log(EventLog.SEV_DEBUG, "Read " + cmd);
+//            logger.finest("Read " + cmd);
             return new NMEAMessage(cmd);
         }
         catch (Exception e)
         {
-            EventLog.log(EventLog.SEV_ERROR ,"Exception reading NMEA message: " +
+            logger.severe("Exception reading NMEA message: " +
                                e.getMessage());
             // Primitive stuff, but if read fails we assume socket lost.
             this.close();

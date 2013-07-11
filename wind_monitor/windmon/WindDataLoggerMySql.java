@@ -21,10 +21,13 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import org.jfree.chart.ChartUtilities;
 
 public class WindDataLoggerMySql extends TimerTask {
+	
+	private static final Logger logger = Logger.getLogger(WindDataLoggerMySql.class.getName());
 
 	private Timer timer;
 
@@ -95,7 +98,8 @@ public class WindDataLoggerMySql extends TimerTask {
 		}
 		catch (ClassNotFoundException e)
 		{
-			EventLog.log(EventLog.SEV_FATAL, "Could not load database driver class '" + dbClassName + "'");
+			logger.severe("Could not load database driver class '" + dbClassName + "'");
+			System.exit(1);
 		}
 
 		// Read config - also connects to database and starts update timer
@@ -134,18 +138,20 @@ public class WindDataLoggerMySql extends TimerTask {
 			{
 				if ( !path.isDirectory() )
 				{
-					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' exists but is not a directory");
+					logger.severe("Upload directory '" + uploadDir + "' exists but is not a directory");
+					System.exit(1);
 				}
 			}
 			else
 			{
 				if ( path.mkdirs() != true )
 				{
-					EventLog.log(EventLog.SEV_FATAL, "Upload directory '" + uploadDir + "' could not be created");
+					logger.severe("Upload directory '" + uploadDir + "' could not be created");
+					System.exit(1);
 				}
 				else
 				{
-					EventLog.log(EventLog.SEV_INFO, "Upload directory '" + uploadDir + "' created");
+					logger.info("Upload directory '" + uploadDir + "' created");
 				}
 			}
 		}
@@ -202,7 +208,7 @@ public class WindDataLoggerMySql extends TimerTask {
 		}
 		catch (SQLException e)
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Unable to connect database '" + connectionString  + " " + e);
+			logger.severe("Unable to connect database '" + connectionString  + " " + e);
 			con = null;
 		}
 	}
@@ -222,19 +228,19 @@ public class WindDataLoggerMySql extends TimerTask {
 			}
 			else
 			{
-				EventLog.log(EventLog.SEV_ERROR, "No data selecting update date/time from database.");
+				logger.severe("No data selecting update date/time from database.");
 				return -1;
 			}
 			rs.close ();
 			s.close ();
 		} catch ( SQLException e)
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Exception selecting update date/time from database. " + e);
+			logger.severe("Exception selecting update date/time from database. " + e);
 			return -1;
 		}
 		catch ( ParseException e)
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Exception parsing update date/time from database. " + e);
+			logger.severe("Exception parsing update date/time from database. " + e);
 			return -1;
 		}
 
@@ -260,7 +266,7 @@ public class WindDataLoggerMySql extends TimerTask {
 			rec.setAveAngle(rs.getFloat("Ave_angle"));
 		} catch ( SQLException e)
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Exception building wind data record from database result set. " + e);
+			logger.severe("Exception building wind data record from database result set. " + e);
 			return null;
 		}
 		return rec;
@@ -286,14 +292,14 @@ public class WindDataLoggerMySql extends TimerTask {
 			}
 			else
 			{
-				EventLog.log(EventLog.SEV_ERROR, "No data selecting day max from database.");
+				logger.severe("No data selecting day max from database.");
 				return null;
 			}
 			rs.close ();
 			s.close ();
 		} catch ( SQLException e)
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Exception selecting day max from database. " + e);
+			logger.severe("Exception selecting day max from database. " + e);
 			return null;
 		}
 
@@ -322,7 +328,7 @@ public class WindDataLoggerMySql extends TimerTask {
 			s.close ();
 		} catch ( SQLException e)
 		{
-			EventLog.log(EventLog.SEV_ERROR, "Exception selecting wind plot data. " + e);
+			logger.severe("Exception selecting wind plot data. " + e);
 			return null;
 		}
 
@@ -339,7 +345,7 @@ public class WindDataLoggerMySql extends TimerTask {
 			connectDB();
 			if ( con == null )
 			{
-				EventLog.log(EventLog.SEV_ERROR, "Database not connected. Can not plot data");
+				logger.severe("Database not connected. Can not plot data");
 				return;
 			}
 		}
@@ -363,7 +369,7 @@ public class WindDataLoggerMySql extends TimerTask {
 		if ( data.length == 0 )
 		{
 			// No data, so exit
-			EventLog.log(EventLog.SEV_ERROR, "No data fromdatabase in range to plot.");
+			logger.severe("No data fromdatabase in range to plot.");
 			return;
 		}
 
@@ -378,7 +384,7 @@ public class WindDataLoggerMySql extends TimerTask {
 		if ( (dayMax = selectDayMax(rec.getStartTime())) == null )
 		{
 			// No max record
-			EventLog.log(EventLog.SEV_ERROR, "Failed to get max wind data. Skipping plot.");
+			logger.severe("Failed to get max wind data. Skipping plot.");
 			return;
 		}
 
@@ -431,7 +437,7 @@ public class WindDataLoggerMySql extends TimerTask {
 			}
 			catch (Exception e)
 			{
-				EventLog.log(EventLog.SEV_ERROR, "Could not write image '" + dialfname + "'");
+				logger.severe("Could not write image '" + dialfname + "'");
 			}
 
 			// Set report values - these are substituted into the upload report template
@@ -473,7 +479,7 @@ public class WindDataLoggerMySql extends TimerTask {
 			}
 			catch (Exception e)
 			{
-				EventLog.log(EventLog.SEV_ERROR,
+				logger.severe(
 						"Could not write file '" + triggerfname + "'");
 			}
 		}

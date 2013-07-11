@@ -14,9 +14,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.TooManyListenersException;
+import java.util.logging.Logger;
 
 public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
 
+	private static final Logger logger = Logger.getLogger(NMEALinkSerial.class.getName());
 	
     private String portName;
     private int baudRate;
@@ -40,7 +42,8 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	this.portName = Config.getParamAsString("NMEASerialPort");
     	if ( portName == null )
     	{
-    		EventLog.log(EventLog.SEV_FATAL, "Serial port name not configured");
+    		logger.severe("Serial port name not configured");
+    		System.exit(1);
     	}
     	/*
     	 * Could take the following settings from config file, but hard code
@@ -67,13 +70,13 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
                 {
                     throw new IOException("Null string read");
                 }
-//                EventLog.log(EventLog.SEV_DEBUG, "Read '" + cmd + "' (" + cmd.length() + " characters)");
+//                logger.finest("Read '" + cmd + "' (" + cmd.length() + " characters)");
             } while ( cmd.length() <= 0 );
             return new NMEAMessage(cmd);
         }
         catch (Exception e)
         {
-            EventLog.log(EventLog.SEV_ERROR ,"Exception reading NMEA message: " +
+            logger.severe("Exception reading NMEA message: " +
                                e.getMessage());
             // Primitive stuff, but if read fails we assume socket lost.
             this.close();
@@ -108,7 +111,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
             portId = 
                 CommPortIdentifier.getPortIdentifier(portName);
         } catch (NoSuchPortException e) {
-            EventLog.log(EventLog.SEV_ERROR, "Could not identify port " + portName);
+            logger.severe("Could not identify port " + portName);
             sPort = null;
             return false;
         }
@@ -120,11 +123,11 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
         try {
             sPort = (SerialPort)portId.open("WeatherView", 30000);
         } catch (PortInUseException e) {
-        	EventLog.log(EventLog.SEV_ERROR, "Could not open port [in use] " + portName);
+        	logger.severe("Could not open port [in use] " + portName);
             sPort = null;
             return false;
         } catch (Exception e) {
-            EventLog.log(EventLog.SEV_ERROR, "Could not open port [error] " + portName);
+            logger.severe("Could not open port [error] " + portName);
             e.printStackTrace();
             sPort = null;
             return false;
@@ -138,7 +141,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	    		this.stopbits,
 					this.parity);
     	} catch (UnsupportedCommOperationException e) {
-    		EventLog.log(EventLog.SEV_ERROR, "Could not configure port " + portName);
+    		logger.severe("Could not configure port " + portName);
     	    sPort.close();
     	    sPort = null;
     	    return false;
@@ -152,7 +155,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     					this.stopbits,
     					this.parity);
     		} catch (UnsupportedCommOperationException e2) {
-    			EventLog.log(EventLog.SEV_ERROR, "Could not configure port " + portName);
+    			logger.severe("Could not configure port " + portName);
     			sPort.close();
     			sPort = null;
     			return false;
@@ -166,7 +169,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	    is = sPort.getInputStream();
     	    br = new BufferedReader(new InputStreamReader(is));
     	} catch (IOException e) {
-    		EventLog.log(EventLog.SEV_ERROR, "Could not create i/o streams for " + portName +
+    		logger.severe("Could not create i/o streams for " + portName +
     	                       ": " + e.getMessage());
     	    sPort.close();
     	    sPort = null;
@@ -183,7 +186,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	    // sPort.enableReceiveFraming((int) '\n');
     	} catch (UnsupportedCommOperationException e)
     	{
-    		EventLog.log(EventLog.SEV_ERROR, "Unsupported serial port command: " +
+    		logger.severe("Unsupported serial port command: " +
     	                       e.getMessage());
     	}
     	
@@ -191,7 +194,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	    sPort.addEventListener(this);
     	} catch (TooManyListenersException e) {
     	    sPort.close();
-    	    EventLog.log(EventLog.SEV_ERROR, "Failed to add port event listener: " +
+    	    logger.severe("Failed to add port event listener: " +
     	                       e.getMessage());
     	}
     	return true;

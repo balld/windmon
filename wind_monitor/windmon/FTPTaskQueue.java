@@ -5,8 +5,10 @@ package windmon;
 
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.logging.Logger;
 
-import org.jibble.simpleftp.SimpleFTP;
+import net.ball1.windmon.ftp.FTPClient;
+import net.ball1.windmon.ftp.FTPClientImplApache;
 
 /**
  * @author David
@@ -14,10 +16,11 @@ import org.jibble.simpleftp.SimpleFTP;
  * Asynchronous FTP client. Tasks are queued and then executed in the order submitted.
  */
 public class FTPTaskQueue implements Runnable {
+	private static final Logger logger = Logger.getLogger(FTPTaskQueue.class.getName());
 	
 	private ArrayBlockingQueue<FTPTask> queue = new ArrayBlockingQueue<FTPTask>(128);
     private Thread thread = null;
-    private SimpleFTP ftp = null;
+    private FTPClient ftp = null;
     
     private String ftpHost;
     private String ftpUser;
@@ -42,7 +45,7 @@ public class FTPTaskQueue implements Runnable {
 				throw new IllegalStateException("Queue add failed.");
 			}
 		} catch (Exception e) {
-        	EventLog.log(EventLog.SEV_ERROR, "Failed to add FTP task to queue: " + e.getMessage());
+        	logger.severe("Failed to add FTP task to queue: " + e.getMessage());
 		}
 		
 		if (thread == null) {
@@ -91,7 +94,7 @@ public class FTPTaskQueue implements Runnable {
         			task.executeTask(ftp);
         		} else {
         			Utils.justSleep(1000);
-            		EventLog.log(EventLog.SEV_WARN, "FTP connection down. Clearing queue.");
+            		logger.warning( "FTP connection down. Clearing queue.");
             		queue.clear();
         		}
         	}
@@ -104,7 +107,8 @@ public class FTPTaskQueue implements Runnable {
     	boolean connected = false;
     	
     	if (ftp == null) {
-    		ftp = new SimpleFTP();
+//    		ftp = new FTPClientImplJibble();
+    		ftp = new FTPClientImplApache();
     	}
 
     	if (ftp.isConnected()) {
@@ -119,10 +123,10 @@ public class FTPTaskQueue implements Runnable {
     			throw new IOException("Could not change to remote directory '" + ftpRemoteDirectory + "'.");
     		}
 
-    		EventLog.log(EventLog.SEV_INFO, "Opened FTP connection to '" + 
+    		logger.info("Opened FTP connection to '" + 
     				ftpHost + "' directory '" + ftpRemoteDirectory + "' as user '" + ftpUser +"'.");
     	} catch (Exception e) {
-    		EventLog.log(EventLog.SEV_ERROR, "Could not open FTP connection to '" + 
+    		logger.severe("Could not open FTP connection to '" + 
     				ftpHost + "' as user '" + ftpUser +"': " + e.getMessage());
     		if (connected) {
     			try {

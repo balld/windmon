@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Hashtable;
+import java.util.logging.Logger;
 
 /**
  * @author David
@@ -17,6 +18,7 @@ import java.util.Hashtable;
  * Load configuration files and access individual parameters.
  */
 public class Config {
+	private static final Logger logger = Logger.getLogger(Config.class.getName());
 	private static final String filename = "windmon.cfg";
 	private static final String homeDirVar="%HOME%";
 	private static final String homeDir = System.getProperties().getProperty("user.home", "/");
@@ -32,12 +34,12 @@ public class Config {
 		params = new Hashtable<String,String>();
         // String homeDir = System.getProperties().getProperty("user.home", "/");
         String path = homeDir + "/" + filename;
-        EventLog.log(EventLog.SEV_INFO, "Config file is '" + path + "'");
+        logger.info("Config file is '" + path + "'");
 
         try {
 			br = new BufferedReader(new FileReader(path));
 		} catch (FileNotFoundException e1) {
-            EventLog.log(EventLog.SEV_WARN, "Unable to open config file '" + path + "' - will try default settings.");
+            logger.warning("Unable to open config file '" + path + "' - will try default settings.");
             br = null;
 		}
 		
@@ -48,7 +50,8 @@ public class Config {
 	        try {
 				br = new BufferedReader(new FileReader(path));
 			} catch (FileNotFoundException e1) {
-	            EventLog.log(EventLog.SEV_FATAL, "Unable to open default config file " + path);
+	            logger.severe("Unable to open default config file " + path);
+	            System.exit(1);
 			}
 			
 		}
@@ -98,12 +101,12 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
 		{
-			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+			logger.info(param + " = " + ob);
 			return Integer.parseInt((String) ob);
 		}
 	}
@@ -113,13 +116,13 @@ public class Config {
         Object ob = params.get(param);
         if ( ob == null )
         {
-            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
-            /* Not reached */
+            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+            System.exit(1);
             return 0;
         }
         else
         {
-            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            logger.info(param + " = " + ob);
             return Integer.parseInt((String) ob);
         }
 	}
@@ -129,12 +132,12 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
 		{
-			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+			logger.info(param + " = " + ob);
 			return Long.parseLong((String) ob);
 		}
 	}
@@ -144,13 +147,13 @@ public class Config {
         Object ob = params.get(param);
         if ( ob == null )
         {
-            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
-            /* Not reached */
+            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+            System.exit(1);
             return 0;
         }
         else
         {
-            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            logger.info(param + " = " + ob);
             return Long.parseLong((String) ob);
         }
 	}
@@ -160,12 +163,12 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
 		{
-			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+			logger.info(param + " = " + ob);
 			return Float.parseFloat((String) ob);
 		}
 	}
@@ -175,13 +178,13 @@ public class Config {
         Object ob = params.get(param);
         if ( ob == null )
         {
-            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
-            /* Not reached */
-            return 0;
+            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+            System.exit(1);
+            return 0.0f;
         }
         else
         {
-            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            logger.info(param + " = " + ob);
             return Float.parseFloat((String) ob);
         }
 	}
@@ -191,12 +194,12 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
 		{
-			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+			logger.info(param + " = " + ob);
 			return Double.parseDouble((String) ob);
 		}
 	}
@@ -206,13 +209,13 @@ public class Config {
         Object ob = params.get(param);
         if ( ob == null )
         {
-            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
-            /* Not reached */
-            return 0;
+            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+            System.exit(1);
+            return 0.0;
         }
         else
         {
-            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            logger.info(param + " = " + ob);
             return Double.parseDouble((String) ob);
         }
 	}
@@ -222,12 +225,12 @@ public class Config {
 		Object ob = params.get(param);
 		if ( ob == null )
 		{
-			EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
 			return dflt;
 		}
 		else
 		{
-			EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+			logger.info(param + " = " + ob);
 			return ((String) ob);
 		}
 	}
@@ -237,13 +240,13 @@ public class Config {
         Object ob = params.get(param);
         if ( ob == null )
         {
-            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
-            /* Not reached */
+            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+            System.exit(1);
             return null;
         }
         else
         {
-            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            logger.info(param + " = " + ob);
             return (String) ob;
         }
 	}
@@ -253,12 +256,12 @@ public class Config {
         Object ob = params.get(param);
         if ( ob == null )
         {
-            EventLog.log(EventLog.SEV_WARN, "Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+            logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
             return dflt;
         }
         else
         {
-            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            logger.info(param + " = " + ob);
             
             String str = (String) ob;
             if ( str.equalsIgnoreCase("Y"))
@@ -277,13 +280,13 @@ public class Config {
         Object ob = params.get(param);
         if ( ob == null )
         {
-            EventLog.log(EventLog.SEV_FATAL, "Configuration parameter '" + param + "' not found. Mandatory.");
-            /* Not reached */
+            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+            System.exit(1);
             return false;
         }
         else
         {
-            EventLog.log(EventLog.SEV_INFO, param + " = " + ob);
+            logger.info(param + " = " + ob);
             
             String str = (String) ob;
             if ( str.equalsIgnoreCase("Y"))
