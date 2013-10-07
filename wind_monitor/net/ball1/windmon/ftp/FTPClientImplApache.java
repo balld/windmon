@@ -101,7 +101,7 @@ public class FTPClientImplApache implements FTPClient {
 
 	@Override
 	public boolean isConnected() {
-		return apacheFtp.isConnected();
+		return apacheFtp.isConnected() && apacheFtp.isAvailable();
 	}
 
 	@Override

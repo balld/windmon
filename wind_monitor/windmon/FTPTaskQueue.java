@@ -91,7 +91,9 @@ public class FTPTaskQueue implements Runnable {
         	
         	if (task != null) {
         		if (verifyConnection()) {
-        			task.executeTask(ftp);
+        			if (!task.executeTask(ftp)) {
+        			  reset();
+        			}
         		} else {
         			Utils.justSleep(1000);
             		logger.warning( "FTP connection down. Clearing queue.");
@@ -102,6 +104,13 @@ public class FTPTaskQueue implements Runnable {
         thread = null;
     }
 
+    
+	private void reset() {
+	  logger.info("Resetting the FTP connection");
+	  try {ftp.disconnect();} catch (IOException e) {/* Ignore */}
+	  ftp = null;
+	}
+	
 	
 	private boolean verifyConnection() {
     	boolean connected = false;
@@ -112,7 +121,9 @@ public class FTPTaskQueue implements Runnable {
     	}
 
     	if (ftp.isConnected()) {
-    		return true;
+    	  return true;
+    	} else {
+    	  try {ftp.disconnect();} catch (IOException e) {/* Ignore */}
     	}
     	
     	try {
