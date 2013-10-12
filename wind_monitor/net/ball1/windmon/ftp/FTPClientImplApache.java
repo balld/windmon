@@ -18,6 +18,7 @@ public class FTPClientImplApache implements FTPClient {
 		FTPClientConfig config = new FTPClientConfig();
 		apacheFtp = new org.apache.commons.net.ftp.FTPClient();
 		apacheFtp.configure(config);
+		apacheFtp.setDefaultTimeout(30000);
 	}
 
 	@Override

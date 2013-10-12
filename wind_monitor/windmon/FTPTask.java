@@ -49,7 +49,7 @@ public class FTPTask {
 	
 	public boolean executeTask(FTPClient ftp) {
         boolean result = false;
-        
+        logger.info("Executing FTP command: " + command);
 		switch (command) {
 		    case CMD_SEND:          result = executeSend(ftp); break;
 		    case CMD_REMOTE_RENAME: result = executeRemoteRename(ftp); break;
