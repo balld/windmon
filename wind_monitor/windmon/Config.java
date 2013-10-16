@@ -18,285 +18,282 @@ import java.util.logging.Logger;
  * Load configuration files and access individual parameters.
  */
 public class Config {
-	private static final Logger logger = Logger.getLogger(Config.class.getName());
-	private static final String filename = "windmon.cfg";
-	private static final String homeDirVar="%HOME%";
-	private static final String homeDir = System.getProperties().getProperty("user.home", "/");
-	private static Hashtable<String,String> params;
-	
-	private Config()
-	{
-	}
-		
-	public static void loadConfig()
-	{
-		BufferedReader br;
-		params = new Hashtable<String,String>();
-        // String homeDir = System.getProperties().getProperty("user.home", "/");
-        String path = homeDir + "/" + filename;
-        logger.info("Config file is '" + path + "'");
+  private static final Logger logger = Logger.getLogger(Config.class.getName());
+  private static final String filename = "windmon.cfg";
+  private static final String homeDirVar="%HOME%";
+  private static final String homeDir = System.getProperties().getProperty("user.home", "/");
+  private static Hashtable<String,String> params;
 
-        try {
-			br = new BufferedReader(new FileReader(path));
-		} catch (FileNotFoundException e1) {
-            logger.warning("Unable to open config file '" + path + "' - will try default settings.");
-            br = null;
-		}
-		
-		if ( br == null )
-		{
-			/* No config file found - use default file */
-	        path = "config/" + filename;
-	        try {
-				br = new BufferedReader(new FileReader(path));
-			} catch (FileNotFoundException e1) {
-	            logger.severe("Unable to open default config file " + path);
-	            System.exit(1);
-			}
-			
-		}
+  private Config()
+  {
+  }
 
-		
-		try
-		{
-			String ln;
-			while ( (ln = br.readLine()) != null)
-			{
-				// Remove any text after '#'
-				int i = ln.indexOf('#');
-				if ( i >= 0 )
-				{
-					ln = ln.substring(0, i).trim();
-				}
-				else
-				{
-					ln = ln.trim();
-				}
-				int j = ln.indexOf('=');
-				if ( j > 0 ) // Need at least one character before '='
-				{
-					String key = ln.substring(0, j);
-					String value = doSubs(ln.substring(j+1, ln.length()));
-					params.put(key,value);
-				}
-			}
-			br.close();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-		// System.out.println(params.toString());
-	}
-	
-	public static String doSubs(String s)
-	{
-		String res = null;
-		res = s.replace(homeDirVar, homeDir);
-		return res;
-	}
-
-	public static int getParamAsInt(String param, int dflt)
-	{
-		Object ob = params.get(param);
-		if ( ob == null )
-		{
-			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
-			return dflt;
-		}
-		else
-		{
-			logger.info(param + " = " + ob);
-			return Integer.parseInt((String) ob);
-		}
-	}
-
-	public static int getParamAsInt(String param)
-	{
-        Object ob = params.get(param);
-        if ( ob == null )
-        {
-            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
-            System.exit(1);
-            return 0;
-        }
-        else
-        {
-            logger.info(param + " = " + ob);
-            return Integer.parseInt((String) ob);
-        }
-	}
-	
-	public static long getParamAsLong(String param, long dflt)
-	{
-		Object ob = params.get(param);
-		if ( ob == null )
-		{
-			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
-			return dflt;
-		}
-		else
-		{
-			logger.info(param + " = " + ob);
-			return Long.parseLong((String) ob);
-		}
-	}
-
-	public static long getParamAsLong(String param)
-	{
-        Object ob = params.get(param);
-        if ( ob == null )
-        {
-            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
-            System.exit(1);
-            return 0;
-        }
-        else
-        {
-            logger.info(param + " = " + ob);
-            return Long.parseLong((String) ob);
-        }
-	}
-	
-	public static float getParamAsFloat(String param, float dflt)
-	{
-		Object ob = params.get(param);
-		if ( ob == null )
-		{
-			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
-			return dflt;
-		}
-		else
-		{
-			logger.info(param + " = " + ob);
-			return Float.parseFloat((String) ob);
-		}
-	}
-
-	public static float getParamAsFloat(String param)
-	{
-        Object ob = params.get(param);
-        if ( ob == null )
-        {
-            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
-            System.exit(1);
-            return 0.0f;
-        }
-        else
-        {
-            logger.info(param + " = " + ob);
-            return Float.parseFloat((String) ob);
-        }
-	}
-	
-	public static double getParamAsDouble(String param, double dflt)
-	{
-		Object ob = params.get(param);
-		if ( ob == null )
-		{
-			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
-			return dflt;
-		}
-		else
-		{
-			logger.info(param + " = " + ob);
-			return Double.parseDouble((String) ob);
-		}
-	}
-
-	public static double getParamAsDouble(String param)
-	{
-        Object ob = params.get(param);
-        if ( ob == null )
-        {
-            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
-            System.exit(1);
-            return 0.0;
-        }
-        else
-        {
-            logger.info(param + " = " + ob);
-            return Double.parseDouble((String) ob);
-        }
-	}
-	
-	public static String getParamAsString(String param, String dflt)
-	{
-		Object ob = params.get(param);
-		if ( ob == null )
-		{
-			logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
-			return dflt;
-		}
-		else
-		{
-			logger.info(param + " = " + ob);
-			return ((String) ob);
-		}
-	}
-	
-	public static String getParamAsString(String param)
-	{
-        Object ob = params.get(param);
-        if ( ob == null )
-        {
-            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
-            System.exit(1);
-            return null;
-        }
-        else
-        {
-            logger.info(param + " = " + ob);
-            return (String) ob;
-        }
-	}
-
-    public static boolean getParamAsBoolean(String param, boolean dflt)
-    {
-        Object ob = params.get(param);
-        if ( ob == null )
-        {
-            logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
-            return dflt;
-        }
-        else
-        {
-            logger.info(param + " = " + ob);
-            
-            String str = (String) ob;
-            if ( str.equalsIgnoreCase("Y"))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+  public static void loadConfig()
+  {
+    BufferedReader br = null;
+    params = new Hashtable<String,String>();
+    String configPaths[] = {
+        homeDir + "/" + filename,
+        "config/" + filename
+    };
+    
+    for (String path: configPaths) {
+      try {
+        br = new BufferedReader(new FileReader(path));
+      } catch (FileNotFoundException e1) {
+        logger.info("No configuration file at '" + path + "'");
+      }
+      if (br != null) {
+        logger.info("Found configuration file '" + path + "'");
+        break;
+      }
     }
     
-    public static boolean getParamAsBoolean(String param)
-    {
-        Object ob = params.get(param);
-        if ( ob == null )
+    if (br == null) {
+      logger.severe("Could not load configuration. Terminating.");
+      System.exit(1);
+    }
+    
+    
+    try {
+      String ln;
+      while ( (ln = br.readLine()) != null)
+      {
+        // Remove any text after '#'
+        int i = ln.indexOf('#');
+        if ( i >= 0 )
         {
-            logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
-            System.exit(1);
-            return false;
+          ln = ln.substring(0, i).trim();
         }
         else
         {
-            logger.info(param + " = " + ob);
-            
-            String str = (String) ob;
-            if ( str.equalsIgnoreCase("Y"))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+          ln = ln.trim();
         }
+        int j = ln.indexOf('=');
+        if ( j > 0 ) // Need at least one character before '='
+        {
+          String key = ln.substring(0, j);
+          String value = doSubs(ln.substring(j+1, ln.length()));
+          params.put(key,value);
+        }
+      }
+      br.close();
     }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+    }
+    // System.out.println(params.toString());
+  }
+
+  public static String doSubs(String s)
+  {
+    String res = null;
+    res = s.replace(homeDirVar, homeDir);
+    return res;
+  }
+
+  public static int getParamAsInt(String param, int dflt)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+      return dflt;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return Integer.parseInt((String) ob);
+    }
+  }
+
+  public static int getParamAsInt(String param)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+      System.exit(1);
+      return 0;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return Integer.parseInt((String) ob);
+    }
+  }
+
+  public static long getParamAsLong(String param, long dflt)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+      return dflt;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return Long.parseLong((String) ob);
+    }
+  }
+
+  public static long getParamAsLong(String param)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+      System.exit(1);
+      return 0;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return Long.parseLong((String) ob);
+    }
+  }
+
+  public static float getParamAsFloat(String param, float dflt)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+      return dflt;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return Float.parseFloat((String) ob);
+    }
+  }
+
+  public static float getParamAsFloat(String param)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+      System.exit(1);
+      return 0.0f;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return Float.parseFloat((String) ob);
+    }
+  }
+
+  public static double getParamAsDouble(String param, double dflt)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+      return dflt;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return Double.parseDouble((String) ob);
+    }
+  }
+
+  public static double getParamAsDouble(String param)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+      System.exit(1);
+      return 0.0;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return Double.parseDouble((String) ob);
+    }
+  }
+
+  public static String getParamAsString(String param, String dflt)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+      return dflt;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return ((String) ob);
+    }
+  }
+
+  public static String getParamAsString(String param)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+      System.exit(1);
+      return null;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+      return (String) ob;
+    }
+  }
+
+  public static boolean getParamAsBoolean(String param, boolean dflt)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.warning("Configuration parameter '" + param + "' not found. Defaulted to " + dflt);
+      return dflt;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+
+      String str = (String) ob;
+      if ( str.equalsIgnoreCase("Y"))
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+  }
+
+  public static boolean getParamAsBoolean(String param)
+  {
+    Object ob = params.get(param);
+    if ( ob == null )
+    {
+      logger.severe("Configuration parameter '" + param + "' not found. Mandatory.");
+      System.exit(1);
+      return false;
+    }
+    else
+    {
+      logger.info(param + " = " + ob);
+
+      String str = (String) ob;
+      if ( str.equalsIgnoreCase("Y"))
+      {
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+  }
 }

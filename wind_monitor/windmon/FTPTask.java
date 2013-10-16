@@ -18,15 +18,18 @@ import net.ball1.windmon.ftp.FTPClient;
  */
 public class FTPTask {
 	private static final Logger logger = Logger.getLogger(FTPTask.class.getName());
-
-	private static final int CMD_NOT_SET       = 0;
-	private static final int CMD_SEND          = 1;
-	private static final int CMD_REMOTE_RENAME = 2;
-	private static final int CMD_REMOTE_DELETE = 3;
-	private static final int CMD_LOCAL_RENAME  = 4;
-	private static final int CMD_LOCAL_DELETE  = 5;
 	
-	private int command = CMD_NOT_SET;
+	private static enum Command {
+
+	  CMD_NOT_SET,
+	  CMD_SEND,
+	  CMD_REMOTE_RENAME,
+	  CMD_REMOTE_DELETE,
+	  CMD_LOCAL_RENAME,
+	  CMD_LOCAL_DELETE;
+	}
+	
+	private Command command = Command.CMD_NOT_SET;
 	private Object arg1 = null;
 	private Object arg2 = null;
 	private Object arg3 = null;
@@ -39,7 +42,7 @@ public class FTPTask {
 	}
 
 	
-	private FTPTask(int cmd, Object arg1, Object arg2, Object arg3) {
+	private FTPTask(Command cmd, Object arg1, Object arg2, Object arg3) {
 		super();
 		this.command = cmd;
 		this.arg1 = arg1;
@@ -63,23 +66,23 @@ public class FTPTask {
 	}
 
 	public static FTPTask createSendTask(String localFile, String remoteFile, boolean binMode) {
-		return new FTPTask(CMD_SEND, localFile, remoteFile, new Boolean(binMode));
+		return new FTPTask(Command.CMD_SEND, localFile, remoteFile, new Boolean(binMode));
 	}
 
 	public static FTPTask createRemoteRenameTask(String fromFile, String toFile) {
-		return new FTPTask(CMD_REMOTE_RENAME, fromFile, toFile, null);
+		return new FTPTask(Command.CMD_REMOTE_RENAME, fromFile, toFile, null);
 	}
 
 	public static FTPTask createRemoteDeleteTask(String remoteFile) {
-		return new FTPTask(CMD_REMOTE_DELETE, remoteFile, null, null);
+		return new FTPTask(Command.CMD_REMOTE_DELETE, remoteFile, null, null);
 	}
 
 	public static FTPTask createLocalRenameTask(String fromFile, String toFile) {
-		return new FTPTask(CMD_LOCAL_RENAME, fromFile, toFile, null);
+		return new FTPTask(Command.CMD_LOCAL_RENAME, fromFile, toFile, null);
 	}
 
 	public static FTPTask createLocalDeleteTask(String localFile) {
-		return new FTPTask(CMD_LOCAL_DELETE, localFile, null, null);
+		return new FTPTask(Command.CMD_LOCAL_DELETE, localFile, null, null);
 	}
 
 	private boolean executeSend(FTPClient ftp) {

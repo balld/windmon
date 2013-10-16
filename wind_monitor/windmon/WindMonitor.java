@@ -61,7 +61,7 @@ public class WindMonitor extends JPanel implements ActionListener
     	super();
     	Config.loadConfig();
     	EventLog.setAppLogDirectory(Config.getParamAsString("AppLogDirectory"));
-    	EventLog.setLogLevelAsString(Config.getParamAsString("AppLogLevel", "DEBUG"));
+    	EventLog.setLogLevel(Config.getParamAsString("AppLogLevel", "FINE"));
         
         setLayout(new BorderLayout(5,5));
         setBorder(new EmptyBorder(5,5,5,5));

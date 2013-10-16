@@ -86,6 +86,10 @@ public class FTPTaskQueue implements Runnable {
     Thread me = Thread.currentThread();
     while (thread == me) {
       try {
+        if (queue.isEmpty()) {
+          // Looks like we could be idle for a while. Close the FTP connection
+          reset();
+        }
         task = queue.take();
       } catch (Exception e) {
         continue;
@@ -97,7 +101,7 @@ public class FTPTaskQueue implements Runnable {
         while (i <= FTP_RETRIES && !success) {
           i++;
           if (verifyConnection()) {
-            success = task.executeTask(ftp);
+            success = FTPTaskCallable.executeFtpTask(ftp, task);
           }
           if (!success) {
             reset();
@@ -114,7 +118,7 @@ public class FTPTaskQueue implements Runnable {
 
 
   private void reset() {
-    logger.info("Resetting the FTP connection");
+    logger.info("Clearing the FTP connection");
     try {ftp.disconnect();} catch (IOException e) {/* Ignore */}
     ftp = null;
   }

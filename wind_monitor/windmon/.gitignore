@@ -42,3 +42,5 @@
 /TickerFileWatcher.class
 /FTPTaskQueue$CallableTask.class
 /LogFormatter.class
+/FTPTaskCallable.class
+/FTPTask$Command.class
