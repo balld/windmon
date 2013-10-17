@@ -770,8 +770,10 @@ public class WindDial extends JPanel implements WindDataListener {
         jf.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {System.exit(0);}
             public void windowDeiconified(WindowEvent e) { 
+              // Ignore
             }
             public void windowIconified(WindowEvent e) { 
+              // Ignore
             }
         });
 

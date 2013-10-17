@@ -38,12 +38,12 @@ public class JFreeCompassTickUnit extends NumberTickUnit {
 		this(size, NumberFormat.getNumberInstance());
 	}
 	
-	public java.lang.String valueToString(double value)
+	public java.lang.String valueToString(double valueIn)
 	{
 		String label = null;
 		
 		// Value may be outside 0 - 359.9999 degrees. Calculate modulo
-		value = value % 360.0;
+		double value = valueIn % 360.0;
 		// If value was <0, will also need to move into positive range
 		if ( value < 0.0 )
 			value += 360.0;

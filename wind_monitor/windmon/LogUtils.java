@@ -6,11 +6,29 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class EventLog {
-  private static final Logger logger = Logger.getLogger(EventLog.class.getName());
+/**
+ * Util methods to set up logging.
+ * @author David
+ *
+ */
+public class LogUtils {
+  private static final Logger logger = Logger.getLogger(LogUtils.class.getName());
+  
+  /**
+   * Basic initialisation of logging. 
+   */
+  public static void initLog() {
+    //
+    // Set formatter on default handler(s)
+    //
+    for (Handler h: Logger.getLogger("").getHandlers()) {
+      h.setFormatter(new LogFormatter());
+    }
+  }
 
   /**
-   * @param s
+   * Set the logging level.
+   * @param s Valid java.util.logging log level as string
    */
   public static void setLogLevel (String s)
   {
@@ -23,7 +41,8 @@ public class EventLog {
   }
 
   /**
-   * @param l
+   * Set the logging level
+   * @param l The level
    */
   public static void setLogLevel (Level l)
   {
@@ -31,13 +50,17 @@ public class EventLog {
   }
   
   /**
-   * @return
+   * @return The current logging level
    */
   public static Level getLogLevel() {
     return Logger.getLogger("").getLevel();
   }
 
 
+  /**
+   * Set the directory into which log files will be written.
+   * @param s The directory. Created if not existing.
+   */
   public static void setAppLogDirectory(String s)
   {
     String appLogDirectory = null;
@@ -70,13 +93,6 @@ public class EventLog {
     }
     try {
       Logger topLevelLogger = Logger.getLogger("");
-      //
-      // Set formatter on default handler(s)
-      //
-      for (Handler h: topLevelLogger.getHandlers()) {
-        h.setFormatter(new LogFormatter());
-      }
-
       //
       // Create file handler
       //

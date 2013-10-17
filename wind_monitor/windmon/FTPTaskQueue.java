@@ -75,6 +75,7 @@ public class FTPTaskQueue implements Runnable {
       try {
         ftp.disconnect();
       } catch (Exception e) {
+        // Ignore
       }
     }
     ftp = null;
@@ -156,6 +157,7 @@ public class FTPTaskQueue implements Runnable {
           ftp.disconnect();
           connected = false;
         } catch (Exception e2) {
+          // Ignore
         }
       }
     }

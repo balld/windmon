@@ -190,9 +190,8 @@ public class WindDataLoggerMySql extends TimerTask {
 			{
 				con.close();
 			}
-			catch ( SQLException e)
-			{
-
+			catch ( SQLException e) {
+			  // Ignore
 			}
 		}
 		String connectionString =	"jdbc:mysql://" + dbHost + "/" + db;
@@ -275,7 +274,7 @@ public class WindDataLoggerMySql extends TimerTask {
 	
 	WindDataRecord selectDayMax(long t)
 	{
-		String lastMidnight = mySqlDateFormat.format(t) + " 00:00:00";
+		String lastMidnight = mySqlDateFormat.format(Long.valueOf(t)) + " 00:00:00";
 		WindDataRecord rec = null;
 
 		try

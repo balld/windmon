@@ -24,8 +24,12 @@ public class Config {
   private static final String homeDir = System.getProperties().getProperty("user.home", "/");
   private static Hashtable<String,String> params;
 
+  /**
+   * Do not instantiate. 
+   */
   private Config()
   {
+    // Empty
   }
 
   public static void loadConfig()

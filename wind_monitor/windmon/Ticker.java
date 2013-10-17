@@ -123,7 +123,7 @@ public class Ticker extends JPanel implements Runnable {
             }
             try {
                 Thread.sleep(sleepAmount);
-            } catch (InterruptedException e) { }
+            } catch (InterruptedException e) { /* Ignore */ }
         }
         thread = null;
     }

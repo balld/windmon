@@ -317,7 +317,7 @@ public class WindDataPlotterJFreeChart extends JPanel implements WindDataPlotter
 			renderer.setBaseShapesFilled(false);
 			renderer.setBaseLinesVisible(false);
             renderer.setSeriesShape(0, new Rectangle(-1, -1, 2, 2), false);
-            renderer.setBaseSeriesVisibleInLegend(new Boolean(false), false);
+            renderer.setBaseSeriesVisibleInLegend(false, false);
 		}
  
 		angleTimeAxis = (DateAxis) a_plot.getDomainAxis();

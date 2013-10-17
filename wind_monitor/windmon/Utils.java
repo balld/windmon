@@ -458,9 +458,9 @@ public class Utils {
         return ("" + f);
     }
     
-    public static String angleToCompass(double angle)
+    public static String angleToCompass(double angleIn)
     {
-        angle = angle % 360.0;
+        double angle = angleIn % 360.0;
         if ( angle < 22.5 )
             return "N ";
         else if ( angle < 67.5 )

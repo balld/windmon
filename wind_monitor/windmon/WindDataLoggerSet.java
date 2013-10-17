@@ -28,9 +28,9 @@ public class WindDataLoggerSet implements Cloneable{
 	{
 	}
 
-	public void reset(long startPeriod)
+	public void reset(long startPeriodIn)
 	{
-		this.startPeriod = startPeriod;
+		this.startPeriod = startPeriodIn;
 		endPeriod = Long.MAX_VALUE;
 		numReadings = 0;
 		maxSpeed = 0.0f;

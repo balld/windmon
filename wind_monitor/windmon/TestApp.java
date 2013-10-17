@@ -31,8 +31,10 @@ public class TestApp extends JWindow
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {System.exit(0);}
             public void windowDeiconified(WindowEvent e) { 
+              // Ignore
             }
             public void windowIconified(WindowEvent e) { 
+              // Ignore
             }
         });
         
@@ -67,6 +69,7 @@ public class TestApp extends JWindow
         validate();
     }
     
+    @SuppressWarnings("unused")
     public static void main(String args[])
     {
     	new TestApp();

@@ -91,8 +91,8 @@ public class NMEALinkStub implements NMEALink
             try
             {
                 Thread.sleep(sleepStep);
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
+              // Ignore
             }
             
         }

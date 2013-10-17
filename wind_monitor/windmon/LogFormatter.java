@@ -27,7 +27,7 @@ public class LogFormatter extends Formatter {
 	 */
 	@Override
 	public String format(LogRecord rec) {
-	  return String.format("%s %-7s %9d %-30s %s\n", calcDate(rec.getMillis()), rec.getLevel().toString(), rec.getThreadID(), rec.getLoggerName(), formatMessage(rec));
+	  return String.format("%s %-7s %9d %-30s %s\n", calcDate(rec.getMillis()), rec.getLevel().toString(), Integer.valueOf(rec.getThreadID()), rec.getLoggerName(), formatMessage(rec));
 	}
 
 	private String calcDate(long millisecs) {
