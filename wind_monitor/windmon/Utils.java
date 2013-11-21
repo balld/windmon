@@ -3,6 +3,7 @@ package windmon;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Graphics;
@@ -512,4 +513,34 @@ public class Utils {
     		return gcd(b, a % b);
     	}
     } 
+    
+    /**
+     * Calculate maximum width and height of rectangle of given
+     * aspect ratio that will fit into given rectangle 
+     * @param x Rectangle width
+     * @param y Rectablge height
+     * @param aspectX Aspect ratio X component
+     * @param aspectY Aspect ratio Y component 
+     * @return
+     */
+    public static Dimension applyRatio(int x, int y, int aspectX, int aspectY) {
+      double aspect = ((double)aspectX)/((double)aspectY);
+      int derivedX = (int) Math.floor(y * aspect);
+      int derivedY = (int) Math.floor(x / aspect);
+      if (derivedX <= x) {
+        return new Dimension(derivedX, y);
+      } else {
+        return new Dimension(x, derivedY);
+      }
+    }
+
+    /**
+     * @param d
+     * @param aspectX
+     * @param aspectY
+     * @return
+     */
+    public static Dimension applyRatio(Dimension d, int aspectX, int aspectY) {
+      return applyRatio(d.width, d.height, aspectX, aspectY);
+    }
 }

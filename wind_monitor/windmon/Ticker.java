@@ -1,220 +1,354 @@
 package windmon;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.RenderingHints;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineBreakMeasurer;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextLayout;
 import java.awt.image.BufferedImage;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 
 public class Ticker extends JPanel implements Runnable {
-	private static final Logger logger = Logger.getLogger(Ticker.class.getName());
+  private static final Logger logger = Logger.getLogger(Ticker.class.getName());
+  
+  private static final int YPOS_STEP = 1;
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private static final Dimension ps = new Dimension(400,30);
-    private static int l_font_size = 25;
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
+  private static final Dimension ps = new Dimension(400,250);
 
-    // Check for update every second
-    private static final long sleepAmount = 25;
+  private int ypos = 0;
+  private int xpos = 0;
 
-    // Update display interval in millisec
-    private static final long updateIntervalUnit = 50;
-    private long updateInterval;
+  private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
+  private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
 
-    // Number of pixels text moved on each update
-    private static final int xposStepUnit = 5;
-    private int xposStep;
+  private Font font = null;
 
-    private int xpos = 0;
-    
-    private Object AntiAlias = RenderingHints.VALUE_ANTIALIAS_ON;
-    private Object Rendering = RenderingHints.VALUE_RENDER_SPEED;
-    
-    private Font b_font = null;
-    private Font l_font = null;
-    
-    private long now = -1;
+  private int fontSize = 24;
+  private String fontName = "serif";
+  private int displayIntervalSecs = 5;
+  
 
-    private String    text = "Set some text please! This is just some dummy text that I have entered to show how this ticker display will work. Hum dee hum dee hum";
-    private Image     textImg = null;
-    private Graphics2D  g_textImg = null;
-    private Dimension textImgSize = null;
-    
-    private Thread thread = null;
-    
-    private Map<Object,String> stringsMap = new HashMap<Object,String>();
-    private Iterator<String> stringsItr = null;
-    
-    public Ticker()
+
+  
+  private String    text = "Set some text please! This is just some dummy text that I have entered to show how this ticker display will work. Hum dee hum dee hum";
+  private Image     textImg = null;
+  private Graphics2D  g2Txt = null;
+  private Dimension textImgSize = null;
+
+  private Thread thread = null;
+
+  private Map<Object,String> stringsMap = new HashMap<Object,String>();
+  private Iterator<String> stringsItr = null;
+
+  public Ticker()
+  {
+    readConfig();
+    setDoubleBuffered(true);
+
+    font = new Font(fontName, Font.PLAIN, fontSize);
+  }
+
+  public void readConfig()
+  {
+    fontName = Config.getParamAsString("TickerFontName", "serif");
+    fontSize = Config.getParamAsInt("TickerFontSize", 24);
+    displayIntervalSecs = Config.getParamAsInt("TickerDisplayIntervalSecs", 5);
+  }
+
+  /* (non-Javadoc)
+   * @see javax.swing.JComponent#setVisible(boolean)
+   */
+  public void setVisible(boolean b)
+  {
+    logger.finest("Ticker setVisible: " + b);
+    super.setVisible(b);
+    if ( b == true )
     {
-        readConfig();
-        setDoubleBuffered(true);
-
-        b_font = Utils.getFont("LCD-N___.TTF");
-        l_font = b_font.deriveFont(Font.PLAIN, l_font_size);
+      if ( thread == null )
+      {
+        this.start();
+      }
     }
-
-    public void readConfig()
+    else
     {
-        updateInterval = Config.getParamAsLong("TickerRefresh", 2)*updateIntervalUnit;
-        xposStep = Config.getParamAsInt("TickerStep", 3) * xposStepUnit;
+      this.stop();
     }
-    
-    public void setVisible(boolean b)
+  }
+
+
+  /**
+   * Start the Ticker - begin displaying text.
+   */
+  public void start() {
+    if (thread == null) {
+      thread = new Thread(this);
+      thread.setPriority(Thread.MIN_PRIORITY);
+      thread.start();
+    }
+  }
+
+
+  /**
+   * Stop the Ticker - stop updating text
+   */
+  public synchronized void stop() {
+    if (thread != null) {
+      thread.interrupt();
+    }
+    thread = null;
+    notifyAll();
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Runnable#run()
+   */
+  public void run ()
+  {
+    Thread me = Thread.currentThread();
+
+    while (thread == me)
     {
-        logger.finest("Ticker setVisible: " + b);
-        super.setVisible(b);
-        if ( b == true )
-        {
-            if ( thread == null )
-            {
-                this.start();
-            }
-        }
-        else
-        {
-            this.stop();
-        }
+      // Reset the text (paint() will create new image)
+      synchronized (this) {
+        textImg = null;
+      }
+      while (!doAnimate()) {
+        try {
+          Thread.sleep(5);
+        } catch (InterruptedException e) { /* Ignore */ }
+      }
+      try {
+        Thread.sleep(displayIntervalSecs * 1000);
+      } catch (InterruptedException e) { /* Ignore */ }
     }
-
-    
-    public void start() {
-        if (thread == null) {
-            thread = new Thread(this);
-            thread.setPriority(Thread.MIN_PRIORITY);
-//            thread.setPriority(Thread.MAX_PRIORITY);
-            thread.start();
-        }
-    }
+    thread = null;
+  }
 
 
-    public synchronized void stop() {
-        if (thread != null) {
-            thread.interrupt();
-        }
-        thread = null;
-        notifyAll();
+  public synchronized boolean doAnimate() {
+    int top = getInsets().top;
+    ypos = Math.max(top, ypos - YPOS_STEP); // Don't go below zero
+    repaint();
+    try {
+      wait(1000); // Wait up to 1 sec for paint to complete.
+    } catch (InterruptedException e) {
+      // Ignore
     }
-    
-    public void run ()
+
+    if ( ypos <= top ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public synchronized void paint ( Graphics g )
+  {
+    super.paint(g);
+    if (textImg == null) {
+      prepareText(g);
+    }
+    if (textImg != null) {
+      Graphics2D g2 = (Graphics2D) g;
+      Insets insets = getInsets();
+      Dimension size = getSize();
+      g2.setClip(insets.left, insets.top,
+          size.width - (insets.left + insets.right),
+          size.height - (insets.top + insets.bottom));
+      g2.drawImage(textImg, xpos, ypos, this);
+      g2.setClip(null);
+    }
+    notify(); // Notify animation thread that painting is complete.
+  }        
+
+  public void prepareText (Graphics g) {
+    Insets insets = getInsets();
+    ypos = getHeight();
+    xpos = insets.left;
+
+    Graphics2D g2 = (Graphics2D) g;
+
+    if ( stringsMap.size() <= 0 )
     {
-        Thread me = Thread.currentThread();
-
-        long lastIntervalNum = 0;
-        while (thread == me)
-        {
-            now = System.currentTimeMillis();
-            if ( now/updateInterval > lastIntervalNum && isVisible())
-            {
-                lastIntervalNum = now/updateInterval;
-                repaint();
-            }
-            try {
-                Thread.sleep(sleepAmount);
-            } catch (InterruptedException e) { /* Ignore */ }
-        }
-        thread = null;
+      text = null;
     }
-    
-    public synchronized void paint ( Graphics g )
+    else 
     {
-        Dimension size = getSize();
-        super.paint(g);
-        Graphics2D g2 = (Graphics2D) g;
+      if ( stringsItr == null || stringsItr.hasNext() == false )
+      {
+        stringsItr = stringsMap.values().iterator();
+      }
+      text = (String) stringsItr.next();
+    }
 
-        if ( textImg == null )
-        {
-            xpos = size.width;
-            prepareText(g2);
-        }
-        
-        int y = (size.height - textImgSize.height) / 2;
-        g2.drawImage(textImg, xpos, y, this);
-        xpos -= xposStep;
+    if ( text == null )
+    {
+      text = "Default message. No text to display. Default message. No text to display. Default message. No text to display. Default message. No text to display. Default message. No text to display. Default message. No text to display. Default message. No text to display.Default message. No text to display.";
+    }
 
-        if ( xpos + textImgSize.width < 0 )
-        {
-            xpos = size.width;
-            prepareText(g2);
-        }
+
+    AttributedString attrString = new AttributedString(text);
+    attrString.addAttribute(TextAttribute.FONT, font);
+
+
+    AttributedCharacterIterator charIterator = attrString.getIterator();
+    int paragraphStart = charIterator.getBeginIndex();
+    int paragraphEnd = charIterator.getEndIndex();
+
+
+    // Set break width to width of Component.
+    float breakWidth = this.getWidth() - (insets.left + insets.right);
+
+    //
+    // Calculate height of text so we can render into image
+    //
+    FontRenderContext frcPanel = g2.getFontRenderContext();
+    LineBreakMeasurer lineMeasurerPanel = new LineBreakMeasurer(charIterator, frcPanel);
+    lineMeasurerPanel.setPosition(paragraphStart);
+
+    double totalHeight = 0.0;
+    while (lineMeasurerPanel.getPosition() < paragraphEnd) {
+      TextLayout layout = lineMeasurerPanel.nextLayout(breakWidth);
+      totalHeight += layout.getAscent() + layout.getDescent() + layout.getLeading();
     }        
 
-    public void prepareText ( Graphics2D g2 )
-    {
-        if ( stringsMap.size() <= 0 )
-        {
-            text = "Default message. No text to display";
-        }
-        else 
-        {
-            if ( stringsItr == null || stringsItr.hasNext() == false )
-            {
-                stringsItr = stringsMap.values().iterator();
-            }
-            text = (String) stringsItr.next();
-        }
-        
-        if ( text == null )
-        {
-        	text = "Default message. No text to display";
-        }
-        
-        TextLayout tl = new TextLayout(text,
-                                       l_font,
-                                       g2.getFontRenderContext());
-        textImgSize = new Dimension ( (int)tl.getBounds().getWidth(),
-                                      (int)tl.getBounds().getHeight());
-        textImg = (BufferedImage) g2.getDeviceConfiguration().
-        createCompatibleImage(textImgSize.width,
-                              textImgSize.height);
-        g_textImg = (Graphics2D) textImg.getGraphics();
-        g_textImg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
-        g_textImg.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
+    //
+    // Create image into which text is rendered
+    //
+    textImgSize = new Dimension ( (int)breakWidth,(int)totalHeight);
+    textImg = (BufferedImage) g2.getDeviceConfiguration()
+        .createCompatibleImage(textImgSize.width, textImgSize.height);
+    g2Txt = (Graphics2D) textImg.getGraphics();
+    g2Txt.setRenderingHint(RenderingHints.KEY_ANTIALIASING, AntiAlias);
+    g2Txt.setRenderingHint(RenderingHints.KEY_RENDERING, Rendering);
 
 
-        g_textImg.setColor(getBackground());
-        g_textImg.fillRect(0, 0, textImgSize.width,
-                                 textImgSize.height);
-        g_textImg.setColor(getForeground());
-        g_textImg.setFont(l_font);
-        TextLayout tl2 = new TextLayout(text,
-                l_font,
-                g_textImg.getFontRenderContext());
+    //    g2Txt.setColor(getBackground());
+    g2Txt.setColor(getBackground());
+    g2Txt.fillRect(0, 0, textImgSize.width,
+        textImgSize.height);
+    //    g2Txt.setColor(getForeground());
+    g2Txt.setColor(getForeground());
 
-        float y = textImgSize.height; // - tl.getDescent();
-        float x = 0;
-        
-        tl2.draw(g_textImg, x, y );
-    }
+    //
+    // Render text into image
+    //
+    charIterator = attrString.getIterator(); // Reset iterator
+    paragraphStart = charIterator.getBeginIndex();
+    paragraphEnd = charIterator.getEndIndex();
+    FontRenderContext frcTxt = g2Txt.getFontRenderContext();
+    LineBreakMeasurer lineMeasurerTxt = new LineBreakMeasurer(charIterator, frcTxt);
+    lineMeasurerTxt.setPosition(paragraphStart);
 
-    
-    public Dimension getPreferredSize()
-    {
-        return ps;
-    }
+    // Set break width to width of Component.
+    float drawPosY = 0.0f;
+    float startX = 10.0f;
 
-    /**
-     * @return Returns the text.
-     */
-    public String getText() {
-        return text;
-    }
-    /**
-     * @param text The text to set.
-     */
-    public synchronized void setText(Object key, String text) {
-        stringsMap.put(key, text);
-    }
+    // Get lines from until the entire paragraph has been displayed.
+    while (lineMeasurerTxt.getPosition() < paragraphEnd) {
+
+      TextLayout layout = lineMeasurerTxt.nextLayout(breakWidth);
+
+      // Compute pen x position. If the paragraph is right-to-left we
+      // will align the TextLayouts to the right edge of the panel.
+      float drawPosX = layout.isLeftToRight()
+          ? startX : breakWidth - layout.getAdvance();
+
+      // Draw the TextLayout at (drawPosX, drawPosY).
+      layout.draw(g2Txt, drawPosX, drawPosY + layout.getAscent());
+
+      // Move y-coordinate in preparation for next layout.
+      drawPosY += layout.getAscent() + layout.getDescent() + layout.getLeading();
+    }        
+  }
+
+
+  public Dimension getPreferredSize()
+  {
+    return ps;
+  }
+
+  /**
+   * @return Returns the text.
+   */
+  public String getText() {
+    return text;
+  }
+
+  /**
+   * @param text The text to set.
+   */
+  public synchronized void setText(Object key, String text) {
+    stringsMap.put(key, text);
+  }
+
+
+
+
+  //
+  // TEST CODE BELOW THIS POINT
+  //
+  public static void main(String args[])
+  {
+    LogUtils.initLog();
+    Config.loadConfig();
+    LogUtils.setAppLogDirectory(Config.getParamAsString("AppLogDirectory"));
+    LogUtils.setLogLevel(Config.getParamAsString("AppLogLevel", "FINE"));
+
+    Ticker ticker = new Ticker();
+
+    JFrame appFrame = new JFrame ("Wind Monitor");
+
+    //    Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+    Dimension d = new Dimension(600,  300);
+    appFrame.setLocation(0,0);
+    appFrame.setSize(d.width, d.height);
+    appFrame.setIconImage(Utils.getImage(ticker, "MSCLogo.gif"));
+
+    appFrame.addWindowListener(new WindowAdapter() {
+      public void windowClosing(WindowEvent e) {System.exit(0);}
+      public void windowDeiconified(WindowEvent e) { 
+        // Ignore
+      }
+      public void windowIconified(WindowEvent e) { 
+        // Ignore
+      }
+    });
+    appFrame.getAccessibleContext().setAccessibleDescription(
+        "Wind Monitoring Application");
+    appFrame.getContentPane().removeAll();
+    appFrame.getContentPane().setLayout(new BorderLayout(5,5));
+    appFrame.getContentPane().add(ticker, BorderLayout.CENTER);
+
+    appFrame.setBackground(Color.pink);
+    appFrame.setVisible(true);
+    appFrame.validate();
+    appFrame.requestFocus();
+
+    ticker.start();
+  }
+
 }
