@@ -52,17 +52,11 @@ public class WindMonitor extends JPanel implements ActionListener
 
   private JMenuItem screenModeMenuItem;
 
-  private FTPTaskQueue ftpQueue = null;
-
   private JPopupMenu popup;
 
   public WindMonitor()
   {
     super();
-    LogUtils.initLog();
-    Config.loadConfig();
-    LogUtils.setAppLogDirectory(Config.getParamAsString("AppLogDirectory"));
-    LogUtils.setLogLevel(Config.getParamAsString("AppLogLevel", "FINE"));
 
     screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     // TODO - Remove Me
@@ -157,92 +151,13 @@ public class WindMonitor extends JPanel implements ActionListener
     // Set cursor to something different - just because
     //
     setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+    
+    WindMonitorLogic logic = new WindMonitorLogic();
+    logic.init(plotter, tick);
+    NMEAController nmea = logic.getNmea();
 
-    //
-    // Set up the wind data connection
-    //
-    String connectionType = Config.getParamAsString("ConnectionType",
-        "serial");
-    NMEALink link = null;
-    if ( connectionType.compareToIgnoreCase("socket") == 0 )
-    {
-      link = new NMEALinkSocket(
-          Config.getParamAsString("SocketConnectionHost", "localhost"),
-          Config.getParamAsInt("SocketConnectionPort", 2468));
-    }
-    else if ( connectionType.compareToIgnoreCase("serial") == 0 )
-    {
-      link = new NMEALinkSerial();
-    }
-    else if ( connectionType.compareToIgnoreCase("dummy") == 0 )
-    {
-      link = new NMEALinkStub();
-    }
-    else
-    {
-      logger.info("Unrecognised connection type '" +
-          connectionType + "'. Using stub");
-      link = new NMEALinkStub();
-    }
-
-    NMEASocketServer ss = null;
-    if (Config.getParamAsBoolean("SocketServerEnabledYN", false)) {
-      ss = new NMEASocketServer(Config.getParamAsInt("SocketServerPort", 2468));
-    }
-    NMEAController nmea = NMEAController.getCreateInstance(link, ss);
     nmea.addWindDataListener(windDial);
     nmea.addWindDataListener(windDigits);
-
-
-    boolean ftpUpload = Config.getParamAsBoolean("FTPUploadToWebYN", false);
-    boolean ftpLiveUpdate = Config.getParamAsBoolean("FTPLiveUpdateYN", false);
-    String ftpHost = null;
-    String ftpUser = null;
-    String ftpPassword = null;
-    String ftpRemoteDirectory = null;
-
-    if (ftpUpload || ftpLiveUpdate) {
-      // FTP fields are mandatory if FTP upload is enabled.
-      ftpHost = Config.getParamAsString("FTPHost");
-      ftpUser = Config.getParamAsString("FTPUser");
-      ftpPassword = Config.getParamAsString("FTPPassword");
-      ftpRemoteDirectory = Config.getParamAsString("FTPRemoteDirectory", ".");
-      this.ftpQueue = new FTPTaskQueue(ftpHost, ftpUser, ftpPassword, ftpRemoteDirectory);
-    }
-
-    if (ftpLiveUpdate) {
-      WindDataLiveUpdate lu = new WindDataLiveUpdate(ftpQueue);
-      nmea.addWindDataListener(lu);
-    }
-
-    /*
-     * Original code logged wind data direct from the NMEA link.
-     * To aid stability, logging of data can be moved to external process,
-     * the Java app can just pull the data from a database.
-     */
-    String logMode = Config.getParamAsString("LogMode", "live");
-    if ( logMode.compareToIgnoreCase("DB") == 0 )
-    {
-      @SuppressWarnings("unused")
-      WindDataLoggerMySql dataLogger = new WindDataLoggerMySql(plotter, tick);
-      /* Gets data from DB, so we don't register this logger as
-       * a WindDataListener */
-    }
-    else if ( logMode.compareToIgnoreCase("file") == 0 )
-    {
-      WindDataLoggerFile dataLogger = new WindDataLoggerFile(plotter, tick, true, ftpQueue);
-      nmea.addWindDataListener(dataLogger);
-    }
-    else /* ( logMode == "live") */
-    {
-      if ( logMode.compareToIgnoreCase("live") != 0 )
-      {
-        logger.info("Unrecognised LogMode '" +
-            logMode + "'. Using 'live'");
-      }
-      WindDataLoggerFile dataLogger = new WindDataLoggerFile(plotter, tick, false, ftpQueue);
-      nmea.addWindDataListener(dataLogger);
-    }
 
     String initScreenMode = Config.getParamAsString("ScreenMode", "Normal");
     if ( initScreenMode.compareToIgnoreCase("FullScreen") == 0 )
@@ -257,7 +172,7 @@ public class WindMonitor extends JPanel implements ActionListener
     // JFrame : Set extended state
     // setExtendedState(getExtendedState() | MAXIMIZED_BOTH);
     repaint();
-    nmea.start();
+    logic.start();
   }
 
   // Handle actions from popup menu items
@@ -438,8 +353,20 @@ public class WindMonitor extends JPanel implements ActionListener
    */
   public static void main(String args[])
   {
-    @SuppressWarnings("unused")
-    WindMonitor wm = new WindMonitor();
+    LogUtils.initLog();
+    Config.loadConfig();
+    LogUtils.setAppLogDirectory(Config.getParamAsString("AppLogDirectory"));
+    LogUtils.setLogLevel(Config.getParamAsString("AppLogLevel", "FINE"));
+
+    String initScreenMode = Config.getParamAsString("ScreenMode", "Normal");
+    if ( initScreenMode.compareToIgnoreCase("Headless") == 0 ) {
+      WindMonitorLogic logic = new WindMonitorLogic();
+      logic.init(null,  null);
+      logic.start();
+    } else {
+      @SuppressWarnings("unused")
+      WindMonitor wm = new WindMonitor();
+    }
   }
 
   

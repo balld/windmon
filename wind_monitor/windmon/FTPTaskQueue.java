@@ -5,6 +5,7 @@ package windmon;
 
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.ball1.windmon.ftp.FTPClient;
@@ -87,12 +88,18 @@ public class FTPTaskQueue implements Runnable {
     Thread me = Thread.currentThread();
     while (thread == me) {
       try {
+        int count = queue.size();
         if (queue.isEmpty()) {
+          logger.info("FTP queue is empty");
           // Looks like we could be idle for a while. Close the FTP connection
           reset();
-        }
+        } else {
+          logger.info("FTP queue contains " + count + " tasks");
+        }          
         task = queue.take();
+        logger.info(("Got FTPTask: " + task));
       } catch (Exception e) {
+        logger.log(Level.SEVERE, "FTP queue exception xxxx ", e);
         continue;
       }
 
@@ -119,9 +126,11 @@ public class FTPTaskQueue implements Runnable {
 
 
   private void reset() {
-    logger.info("Clearing the FTP connection");
-    try {ftp.disconnect();} catch (IOException e) {/* Ignore */}
-    ftp = null;
+    if (ftp != null) {
+      logger.info("Clearing the FTP connection");
+      try {ftp.disconnect();} catch (IOException e) {/* Ignore */}
+      ftp = null;
+    }
   }
 
 

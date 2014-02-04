@@ -3,6 +3,8 @@
  */
 package windmon;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Formatter;
@@ -27,7 +29,15 @@ public class LogFormatter extends Formatter {
 	 */
 	@Override
 	public String format(LogRecord rec) {
-	  return String.format("%s %-7s %9d %-30s %s\n", calcDate(rec.getMillis()), rec.getLevel().toString(), Integer.valueOf(rec.getThreadID()), rec.getLoggerName(), formatMessage(rec));
+	  String s = String.format("%s %-7s %9d %-30s %s\n", calcDate(rec.getMillis()), rec.getLevel().toString(), Integer.valueOf(rec.getThreadID()), rec.getLoggerName(), formatMessage(rec));
+	  Throwable t = rec.getThrown();
+	  if (t != null) {
+	    StringWriter sw = new StringWriter();
+	    t.printStackTrace(new PrintWriter(sw));
+	    String exceptionDetails = sw.toString();
+	    s = s + exceptionDetails;
+	  }
+	  return s;
 	}
 
 	private String calcDate(long millisecs) {
