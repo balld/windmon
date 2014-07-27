@@ -83,7 +83,7 @@ public class TickerFileWatcher implements Runnable {
                         {
                             if ( buff.length() > 0 )
                             {
-                                buff.append("   " + line);
+                                buff.append("\n" + line);
                             }
                             else
                             {

@@ -543,4 +543,11 @@ public class Utils {
     public static Dimension applyRatio(Dimension d, int aspectX, int aspectY) {
       return applyRatio(d.width, d.height, aspectX, aspectY);
     }
+    
+    /**
+     * @return the common font name to be used throughout UI
+     */
+    public static String getFontName() {
+      return "Arial";
+    }
 }

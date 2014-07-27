@@ -183,5 +183,17 @@ public class FTPTask {
 		}
 		return true;
 	}
+
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "FTPTask [command=" + command + ", arg1=" + arg1 + ", arg2=" + arg2
+        + ", arg3=" + arg3 + "]";
+  }
+	
+	
 }
 

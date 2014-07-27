@@ -47,7 +47,7 @@ public class Ticker extends JPanel implements Runnable {
   private Font font = null;
 
   private int fontSize = 24;
-  private String fontName = "serif";
+  private String fontName = Utils.getFontName();
   private int displayIntervalSecs = 5;
   
 
@@ -73,7 +73,7 @@ public class Ticker extends JPanel implements Runnable {
 
   public void readConfig()
   {
-    fontName = Config.getParamAsString("TickerFontName", "serif");
+    fontName = Config.getParamAsString("TickerFontName", fontName);
     fontSize = Config.getParamAsInt("TickerFontSize", 24);
     displayIntervalSecs = Config.getParamAsInt("TickerDisplayIntervalSecs", 5);
   }
@@ -220,7 +220,7 @@ public class Ticker extends JPanel implements Runnable {
 
 
     // Set break width to width of Component.
-    float breakWidth = this.getWidth() - (insets.left + insets.right);
+    float breakWidth = this.getWidth() - ((insets.left + insets.right) + 6);
 
     //
     // Calculate height of text so we can render into image
@@ -231,7 +231,14 @@ public class Ticker extends JPanel implements Runnable {
 
     double totalHeight = 0.0;
     while (lineMeasurerPanel.getPosition() < paragraphEnd) {
-      TextLayout layout = lineMeasurerPanel.nextLayout(breakWidth);
+      int next = lineMeasurerPanel.nextOffset(breakWidth);
+      int limit = next;
+      int charat = text.indexOf('\n',lineMeasurerPanel.getPosition()+1);
+
+      if(next > (charat - lineMeasurerPanel.getPosition()) && charat != -1){
+        limit = charat - lineMeasurerPanel.getPosition();
+      }
+      TextLayout layout = lineMeasurerPanel.nextLayout(breakWidth, lineMeasurerPanel.getPosition()+limit, false);      
       totalHeight += layout.getAscent() + layout.getDescent() + layout.getLeading();
     }        
 
@@ -270,7 +277,14 @@ public class Ticker extends JPanel implements Runnable {
     // Get lines from until the entire paragraph has been displayed.
     while (lineMeasurerTxt.getPosition() < paragraphEnd) {
 
-      TextLayout layout = lineMeasurerTxt.nextLayout(breakWidth);
+      int next = lineMeasurerTxt.nextOffset(breakWidth);
+      int limit = next;
+      int charat = text.indexOf('\n',lineMeasurerTxt.getPosition()+1);
+
+      if(next > (charat - lineMeasurerTxt.getPosition()) && charat != -1){
+        limit = charat - lineMeasurerTxt.getPosition();
+      }
+      TextLayout layout = lineMeasurerTxt.nextLayout(breakWidth, lineMeasurerTxt.getPosition()+limit, false);      
 
       // Compute pen x position. If the paragraph is right-to-left we
       // will align the TextLayouts to the right edge of the panel.

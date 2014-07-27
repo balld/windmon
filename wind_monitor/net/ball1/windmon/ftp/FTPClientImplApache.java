@@ -8,7 +8,11 @@ import java.io.InputStream;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClientConfig;
 
+import windmon.Utils;
+
 public class FTPClientImplApache implements FTPClient {
+  
+  private static final long LOGOUT_SLEEP_MS = 1000;
 
   org.apache.commons.net.ftp.FTPClient apacheFtp;
   private boolean binary;
@@ -44,6 +48,7 @@ public class FTPClientImplApache implements FTPClient {
   public void disconnect() throws IOException {
     apacheFtp.abort();
     apacheFtp.logout();
+    Utils.justSleep(LOGOUT_SLEEP_MS);
     apacheFtp.disconnect();
   }
 
