@@ -104,6 +104,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
 	 * @see windmon.NMEALink#open()
 	 */
 	public boolean open() {
+        logger.info("SerialPort opening for '" + portName + "' begins....");
         CommPortIdentifier portId = null;
         
         // Obtain a CommPortIdentifier object for the port you want to open.
@@ -115,6 +116,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
             sPort = null;
             return false;
         }
+        logger.info("Have CommPortIdentifier : " + portId);
         
         // Open the port represented by the CommPortIdentifier object. Give
         // the open call a relatively long timeout of 30 seconds to allow
@@ -132,6 +134,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
             sPort = null;
             return false;
         }
+        logger.info("Opened SerialPort : " + sPort);
         
         // Set the parameters of the connection. If they won't set, close the
         // port before throwing an exception.
@@ -139,14 +142,14 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	    sPort.setSerialPortParams(this.baudRate,
     	    		this.databits,
     	    		this.stopbits,
-					this.parity);
+					    this.parity);
+          logger.info("SerialPort parameters set at first attempt");
     	} catch (UnsupportedCommOperationException e) {
     		logger.severe("Could not configure port " + portName);
     	    sPort.close();
     	    sPort = null;
     	    return false;
-    	} catch ( Exception e )
-    	{
+    	} catch ( Exception e ) {
     		// There is a bug in Java 1.5/Linux 2.6.x which means param config
     		// may fail first time, but work second time,
     		try {
@@ -154,6 +157,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     					this.databits,
     					this.stopbits,
     					this.parity);
+          logger.info("SerialPort parameters set at second attempt");
     		} catch (UnsupportedCommOperationException e2) {
     			logger.severe("Could not configure port " + portName);
     			sPort.close();
@@ -166,8 +170,10 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	// open, close the port before throwing an exception.
     	try {
     	    ps =  new PrintStream(sPort.getOutputStream());
+          logger.info("OutputStream obtained for SerialPort");
     	    is = sPort.getInputStream();
     	    br = new BufferedReader(new InputStreamReader(is));
+          logger.info("InputStream obtained for SerialPort");
     	} catch (IOException e) {
     		logger.severe("Could not create i/o streams for " + portName +
     	                       ": " + e.getMessage());
@@ -180,6 +186,7 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	    // Setting a port timeout will trigger read failures if no message
     	    // is received.
     	    sPort.enableReceiveTimeout(5000);
+          logger.info("SerialPort timeout set to 5000ms");
     	    // In theory, you can ask comm only to supply complete lines,
     	    // but this is not supported on the Linux version at present. We wrap
     	    // the serial port in a BufferedReader (above) instead.
@@ -192,11 +199,13 @@ public class NMEALinkSerial implements NMEALink, SerialPortEventListener {
     	
     	try {
     	    sPort.addEventListener(this);
+          logger.info("Added EventListener to SerialPort");
     	} catch (TooManyListenersException e) {
     	    sPort.close();
     	    logger.severe("Failed to add port event listener: " +
     	                       e.getMessage());
     	}
+      logger.info("SerialPort opening complete");
     	return true;
 	}
 

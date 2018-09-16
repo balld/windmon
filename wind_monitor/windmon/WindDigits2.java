@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.text.DecimalFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -12,6 +14,8 @@ import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
 public class WindDigits2 extends JPanel implements WindDataListener {
+  
+  private static Logger logger = Logger.getLogger(WindDigits2.class.getName());
 
   /**
    * 
@@ -221,9 +225,12 @@ public class WindDigits2 extends JPanel implements WindDataListener {
     final double sixteenNine = 16.0/9.0;
     
     double ratio = (double)width/(double)height;
+    logger.log(Level.INFO, "Detected screen ration is " + width + "/" + height + "=" + ratio);
     if (Math.abs(ratio - fourThree) < Math.abs(ratio - sixteenNine)) {
+      logger.log(Level.INFO, "Selected narrow screen layout");
       return Layout.NARROW;
     } else {
+      logger.log(Level.INFO, "Selected wide screen layout");
       return Layout.WIDE;
     }
   }
